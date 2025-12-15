@@ -1,0 +1,10 @@
+# .gitignore 내용
+/backend-core/build/
+/backend-core/.gradle/
+/backend-core/out/
+/ai-serving/__pycache__/
+/ai-serving/venv/
+.idea/
+.DS_Store
+*.class
+*.jar
