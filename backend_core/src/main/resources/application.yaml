@@ -1,17 +1,30 @@
 spring:
   datasource:
-    url: jdbc:h2:tcp://localhost/./plant
-    username: sa
-    password: 1234
-    driver-class-name: org.h2.Driver
+
+    url: jdbc:postgresql://localhost:5432/plant
+    username: postgres    # 아래 Docker 실행 시 설정할 ID
+    password: 1234     # 아래 Docker 실행 시 설정할 PW
+    driver-class-name: org.postgresql.Driver
+
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    # PostgreSQL 방언 설정 (스프링부트가 자동 감지하지만 명시하면 더 정확함)
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
+      # create-drop: 껐다 켜면 데이터 다 날아감 (테스트용)
+      # update: 껐다 켜도 데이터 유지됨 + 엔티티 변경사항 반영 (개발용 추천)
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         show_sql: true
+
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
 jwt:
   secret: ThisIsASecretKeyForJWTGeneration1234567890abcdefghijklmnopqrstuvwxyz1234567890HS512soLong
 

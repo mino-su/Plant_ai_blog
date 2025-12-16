@@ -1,40 +1,24 @@
 package com.project.plant_parent.entity;
 
-import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.time.LocalDateTime;
 
-@Entity
+@RedisHash(value="refreshToken", timeToLive=1209600) // TTL 2주 설정
 @Getter
-@NoArgsConstructor
-@Table(name = "refresh_token")
+@AllArgsConstructor
+@Builder
 public class RefreshToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String key; // Key: 사용자 ID(email or primaryKey)
 
-    @Column(unique = true)
-    private String token;
+    private String value; // Value: Refresh Token String
 
-    @ManyToOne(fetch=FetchType.LAZY) // 한사람이 여러 기기에 로그인 가능
-    @JoinColumn(name="member_id", nullable = false)
-    private Member member;
-
-    private LocalDateTime expiryDate;
-
-    @Builder
-    public RefreshToken(Member member, String token) {
-        this.member = member;
-        this.token = token;
-    }
-
-    public RefreshToken updateToken(String token) {
-        this.token = token;
-        return this;
+    public void updateToken(String token) {
+        this.value = token;
     }
 
 }

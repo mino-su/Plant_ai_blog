@@ -115,6 +115,20 @@ public class JwtTokenProvider {
         return false;
         }
 
+    public Long getExpiration(String accessToken){
+        // accessToken에서 만료시간 추출
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(accessToken)
+                .getBody()
+                .getExpiration();
+
+        // 현재 시간과 차이를 계산해서 반환
+        long now = new Date().getTime();
+        return expiration.getTime() - now;
+    }
+
 
 
 

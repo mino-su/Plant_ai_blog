@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class TokenDto {
     private String grantType; // Bearer
     private String accessToken;
-    private String refreshToken;
+    private String refreshToken; // refreshToken redis로 교체
     private Long accessTokenExpiresIn; // access token 남은 유효시간
 }

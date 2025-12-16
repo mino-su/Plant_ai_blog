@@ -9,12 +9,15 @@ import com.project.plant_parent.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
 
     @Transactional
@@ -56,20 +60,10 @@ public class AuthService {
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
         // 4. RefreshToken 저장
-        // DB에서 Member 조회
-        Member member = memberRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-
-        // 기존 토큰 조회후 업데이트 or 새로 생성
-        RefreshToken refreshToken = refreshTokenRepository.findByMember(member)
-                .map(
-                        token -> token.updateToken(tokenDto.getRefreshToken()))
-                .orElseGet(() ->
-                        RefreshToken.builder()
-                                .member(member)
-                                .token(tokenDto.getRefreshToken())
-                                .build());
-
-
+       RefreshToken refreshToken = RefreshToken.builder()
+               .key(authentication.getName())
+               .value(tokenDto.getRefreshToken())
+               .build();
         refreshTokenRepository.save(refreshToken);
         return tokenDto;
     }
@@ -82,18 +76,17 @@ public class AuthService {
         }
         // 2. Access Token 에서 Member Email 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequestDto.getAccessToken());
-        // 3. DB에서 Member 조회
-        Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-        // 4. 저장소에서 Member ID로 Refresh Token 값 가져오기
-        RefreshToken refreshToken = refreshTokenRepository.findByMember(member)
+
+        // 3. Authentication 에서 email 가져오기
+        RefreshToken refreshToken = refreshTokenRepository.findById(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
-        // 5. Refresh Token 일치하는지 검사
-        if (!refreshToken.getToken().equals(tokenRequestDto.getRefreshToken())) {
+        // 4. Refresh Token 일치하는지 검사
+        if (!refreshToken.getValue().equals(tokenRequestDto.getRefreshToken())) {
             throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
         }
-        // 6. 새로운 토큰 생성
+        // 5. 새로운 토큰 생성
         TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
-        // 7. 저장소 정보 업데이트
+        // 6. Redis 정보 업데이트
         refreshToken.updateToken(tokenDto.getRefreshToken());
         refreshTokenRepository.save(refreshToken);
 
@@ -102,9 +95,21 @@ public class AuthService {
 
     @Transactional
     public void logout(String accessToken) {
+        // 1. accessToken에서 authentication 정보 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-        Member member = memberRepository.findByEmail(authentication.getName()).orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-        refreshTokenRepository.deleteByMember(member);
+        // 2. refreshRepository에서 refreshToken 삭제
+        if(refreshTokenRepository.existsById(authentication.getName())){
+            refreshTokenRepository.deleteById(authentication.getName());
+
+        }
+        // 3. AccessToken BlackList 처리
+        Long expiration = jwtTokenProvider.getExpiration(accessToken);
+
+        // (Key: 토큰 값, value: logout, TTL: 남은시간)
+        // 토큰이 만료 될때까지만 저장
+        redisTemplate.opsForValue()
+                .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+
 
     }
 }
