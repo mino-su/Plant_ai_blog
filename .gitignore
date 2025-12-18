@@ -2,8 +2,11 @@
 /backend-core/build/
 /backend-core/.gradle/
 /backend-core/out/
-/ai-serving/__pycache__/
-/ai-serving/venv/
+# Python
+ai-serving/venv/
+ai-serving/__pycache__/
+ai-serving/*.pyc
+ai-serving/.env
 .idea/
 .DS_Store
 *.class
