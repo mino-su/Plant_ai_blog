@@ -4,32 +4,64 @@ import os
 
 app = Flask(__name__)
 
-# 1. YOLO 모델 로드 (점심 후에 할 Custom 모델 경로를 여기에 넣을 거예요)
-# 일단 기본 제공 모델인 yolov8n.pt를 사용해봅시다.
-model = YOLO('yolov8n.pt')
+#  YOLO 모델 로드
+plant_model = YOLO('plant_best.pt')
+disease_model = YOLO('disease_best.pt')
+
+
+# 이미지 저장 경로 설정
+UPLOAD_FOLDER = '../uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 @app.route('/detect', methods=['POST'])
 def detect():
     if 'image' not in request.files:
-        return jsonify({"error": "No image provided"}), 400
+        return jsonify({"error": "이미지가 없습니다."}), 400
 
     file = request.files['image']
-    # 이미지를 임시 저장하거나 바로 처리
-    file.save("temp.jpg")
 
-    # 2. YOLO 추론
-    results = model.predict(source="temp.jpg", save=False)
+    # uuid를 통해 고유 파일명 생성
 
-    # 3. 결과 파싱 (간단 예시)
-    detections = []
-    for r in results:
+    filename = file.filename
+    save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    # 파일 저장
+    file.save(save_path)
+
+
+    # 2. 첫 번째 모델 분석
+    plant_results = plant_model.predict(source=save_path, conf=0.1, save=True)
+    plant_data = []
+    for r in plant_results:
         for box in r.boxes:
-            detections.append({
-                "class": model.names[int(box.cls)],
-                "confidence": float(box.conf)
+            plant_data.append({
+                "label": plant_model.names[int(box.cls)],
+                "confidence": round(float(box.conf), 2)
             })
 
-    return jsonify({"detections": detections})
+    # 3. 두 번째 모델 분석
+    disease_results = disease_model.predict(source=save_path, conf=0.1, save=True)
+    disease_data = []
+    for r in disease_results:
+        for box in r.boxes:
+            disease_data.append({
+                "label": disease_model.names[int(box.cls)],
+                "confidence": round(float(box.conf), 2)
+            })
+
+    # 4. 통합 결과 반환
+    return jsonify({
+        "status": "success",
+        "filename": filename,
+        "results": {
+            "plant_detection": plant_data,
+            "disease_analysis": disease_data
+        }
+    })
+
+
+
 
 if __name__ == '__main__':
     # Flask 기본 포트는 5000번입니다.
