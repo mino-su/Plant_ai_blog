@@ -1,9 +1,9 @@
 spring:
   datasource:
 
-    url: jdbc:postgresql://localhost:5432/plant
-    username: postgres    # 아래 Docker 실행 시 설정할 ID
-    password: 1234     # 아래 Docker 실행 시 설정할 PW
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db:5432/plant}  # 아래 Docker 실행 시 설정할 DB 주소
+    username: ${SRPING_DATASOURCE_USERNAME:postgres}  # 아래 Docker 실행 시 설정할 ID
+    password: ${SPRING_DATASOURCE_PASSWORD:1234}  # 아래 Docker 실행 시 설정할 PW
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,8 +21,12 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
+
+  flask:
+    api:
+      url: http://ai-flask:5000
 
 
 jwt:

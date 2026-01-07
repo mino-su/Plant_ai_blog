@@ -1,6 +1,8 @@
 package com.project.plant_parent.service;
 
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +17,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Service
+@Slf4j
 public class FlaskService {
+
+    @Value("${spring.flask.api.url}")
+    private String flask_api_url; // Flask 서버 URL
+
     // 분석 결과를 받아올 dto
     public FlaskResponseDto analyzeImage(MultipartFile image, String customFilename){
         // 다른 서버와 통신하기 위해 객체 생성(TODO: 나중에 websocket으로 변경예정)
@@ -45,20 +52,14 @@ public class FlaskService {
         }
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, httpHeaders);
+        String flaskUrl = flask_api_url + "/detect";
 
-        String flaskUrl = "http://localhost:5000/detect";
+        // [개선] 한 번만 호출하고 바로 DTO로 받습니다.
+        // 로그가 필요하다면 이 결과값을 toString()으로 찍으면 됩니다.
+        FlaskResponseDto response = restTemplate.postForObject(flaskUrl, requestEntity, FlaskResponseDto.class);
 
-
-        // 1. 일단 String 형태로 날것(Raw)의 응답을 받아옵니다.
-        ResponseEntity<String> rawResponse = restTemplate.postForEntity(flaskUrl, requestEntity, String.class);
-
-        // 2. 인텔리제이 콘솔창에 Flask가 보낸 진짜 JSON 모양을 출력합니다.
-        System.out.println("========= Flask가 보낸 진짜 데이터 =========");
-        System.out.println(rawResponse.getBody());
-        System.out.println("==========================================");
-
-
-        return restTemplate.postForObject(flaskUrl, requestEntity, FlaskResponseDto.class);
+        log.info("Flask 응답 결과: {}", response); // log를 사용하거나 System.out 사용
+        return response;
 
 
     }

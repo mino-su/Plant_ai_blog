@@ -1,0 +1,48 @@
+
+services:
+  db:
+    image: postgres:15
+    container_name: plant-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: plant
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+
+
+  redis:
+    image: redis:alpine
+    container_name: plant-redis
+    ports:
+        - "6379:6379"
+
+  ai-flask:
+    build: ./ai-flask
+    container_name: plant-flask
+    hostname: ai-flask
+    ports:
+      - "5000:5000"
+    depends_on:
+     - redis
+    environment:
+        REDIS_HOST: redis
+
+  spring-app:
+    build: ./backend_core
+    container_name: plant-spring
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+      - ai-flask
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATA_REDIS_HOST: redis
+      FLASK_AI_HOST: http://ai-flask:5000

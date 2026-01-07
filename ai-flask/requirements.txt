@@ -1,0 +1,16 @@
+# 웹 서버 프레임워크
+flask
+
+# AI 모델 (YOLO) - 설치 시 자동으로 opencv-python 등을 포함하려고 시도함
+ultralytics
+
+# 서버 환경 전용 OpenCV (GUI 기능이 빠진 가벼운 버전)
+opencv-python-headless
+
+# 수치 계산 및 배열 처리 (YOLO 결과 처리용)
+numpy
+
+# Redis 통신 및 기타 유틸리티
+redis
+requests
+python-dotenv
