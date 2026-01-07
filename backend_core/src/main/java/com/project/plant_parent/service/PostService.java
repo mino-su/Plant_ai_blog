@@ -3,6 +3,7 @@ package com.project.plant_parent.service;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.PostImage;
+import com.project.plant_parent.entity.dto.FlaskResponseDto;
 import com.project.plant_parent.entity.dto.PostRequestDto;
 import com.project.plant_parent.entity.dto.PostResponseDto;
 import com.project.plant_parent.entity.dto.PostUpdateRequestDto;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
+    private final FlaskService flaskService;
 
     // 파일 저장 경로(프로젝트 루트/uploads)
     private final String uploadDir = System.getProperty("user.dir")+"/uploads/";
@@ -61,18 +63,48 @@ public class PostService {
                 }
                 image.transferTo(saveFile);
 
-                // DB에 PostImage 엔티티 저장
-                PostImage postImage = PostImage.builder()
-                        .imageUrl("/images/" + filename) // 나중에 WebConfig에서 매핑 필요
-                        .originalFileName(image.getOriginalFilename())
-                        .post(newPost)
-                        .build();
+                PostImage postImage = processImageWithAi(image, filename, newPost);
                 postImageRepository.save(postImage);
 
             }
+
         }
 
         return new PostResponseDto(newPost);
+    }
+
+    private PostImage processImageWithAi(MultipartFile image, String filename, Post newPost) {
+        // 저장된 각 이미지에 대해 Flask 서버에 분석 요청
+        String plant = "Unknown";
+        String disease = "Healthy";
+        double confidence = 0.0;
+
+        try{
+            FlaskResponseDto aiResult = flaskService.analyzeImage(image, filename);
+            if (aiResult != null && "success".equals(aiResult.getStatus())) {
+                if(!aiResult.getResults().getPlant_detection().isEmpty()){
+                    plant = aiResult.getResults().getPlant_detection().get(0).getLabel();
+                    confidence = aiResult.getResults().getPlant_detection().get(0).getConfidence();
+                }
+                if(!aiResult.getResults().getDisease_analysis().isEmpty()){
+                    disease = aiResult.getResults().getDisease_analysis().get(0).getLabel();
+            }
+            }
+        }catch (Exception e){
+            log.error("AI 분석 중 오류 발생: {}", image.getOriginalFilename(), e);
+        }
+
+
+        // DB에 PostImage 엔티티 저장
+        PostImage postImage = PostImage.builder()
+                .imageUrl("/images/" + filename) // 나중에 WebConfig에서 매핑 필요
+                .originalFileName(image.getOriginalFilename())
+                .post(newPost)
+                .plant(plant)
+                .disease(disease)
+                .confidence(confidence)
+                .build();
+        return postImage;
     }
 
 
@@ -134,12 +166,8 @@ public class PostService {
                 }
                 image.transferTo(saveFile);
 
-                // DB에 PostImage 엔티티 저장
-                PostImage postImage = PostImage.builder()
-                        .imageUrl("/images/" + filename) // 나중에 WebConfig에서 매핑 필요
-                        .originalFileName(image.getOriginalFilename())
-                        .post(post)
-                        .build();
+                // 저장된 각 이미지에 대해 Flask 서버에 분석 요청
+                PostImage postImage = processImageWithAi(image, filename, post);
                 postImageRepository.save(postImage);
 
 
