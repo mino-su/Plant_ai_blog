@@ -33,6 +33,10 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider; // jwt토큰 검증 유틸 클래스
 
+
+
+
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
@@ -48,6 +52,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, RedisTemplate<String, String> redisTemplate) throws Exception {
+
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -67,24 +73,16 @@ public class SecurityConfig {
     }
 
 
-    // [2] CORS 설정 구체화 (React 포트 5173 허용)
+    // [2] CORS 설정 구체화
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 프론트엔드 주소 허용 (localhost:5173)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost*"));
 
-        // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // 허용할 헤더
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
-        // 자격 증명 허용 (토큰 주고받기 위해 필수)
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-
-        // 브라우저가 토큰을 볼 수 있게 허용
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
