@@ -9,18 +9,6 @@ import java.nio.file.Paths;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173") // 리액트 기본 포트 (Vite 기준)
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("Authorization", "Content-Type")
-                .exposedHeaders("Custom-Header")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
-
-
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

@@ -46,3 +46,11 @@ services:
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_DATA_REDIS_HOST: redis
       FLASK_AI_HOST: http://ai-flask:5000
+
+  frontend:
+    build: ./frontend-react
+    container_name: plant-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - spring-app
