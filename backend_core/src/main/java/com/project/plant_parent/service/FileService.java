@@ -1,0 +1,65 @@
+package com.project.plant_parent.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+
+@Slf4j
+@Service
+public class FileService {
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    // 파일 저장 메서드
+    public String saveFile(MultipartFile image) throws IOException {
+
+        // 파일명 중복 방지를 위한 UUID 생성
+        String uuid = UUID.randomUUID().toString();
+        String filename = uuid + "_" + image.getOriginalFilename();
+
+        // 저장한 경로가 없을경우 파일 생성
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        File directory = uploadPath.toFile();
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // 실제 파일을 해당 경로에 저장
+        File saveFile  = new File(directory, filename);
+
+
+        try {
+            image.transferTo(saveFile);
+            log.info(">>> [FileService] 파일 저장 성공: {}", saveFile.getAbsolutePath());
+            return filename;
+        } catch (IOException e) {
+            log.info(">>> [FileService] 파일 저장중 오류 발생: {}", e.getMessage());
+            throw e;
+        }
+
+
+
+
+    }
+
+    // 파일명을 받아 실제 디스크에서 파일 삭제
+    public void deleteFile(String fileName) {
+        Path filePath = Paths.get(uploadDir, fileName);
+        try{
+            boolean result = Files.deleteIfExists(filePath);
+            if(result) log.info("파일 삭제 성공:{}", fileName);
+            else log.warn("삭제할 파일이 존재하지 않습니다. : {}", fileName);
+        } catch (IOException e) {
+            log.error("파일 삭제 중 오류 발생:{}",fileName, e);
+        }
+    }
+}

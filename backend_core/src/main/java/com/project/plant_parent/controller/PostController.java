@@ -1,5 +1,6 @@
 package com.project.plant_parent.controller;
 
+import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.PostRequestDto;
 import com.project.plant_parent.entity.dto.PostResponseDto;
 import com.project.plant_parent.entity.dto.PostUpdateRequestDto;
@@ -7,6 +8,7 @@ import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,18 +26,28 @@ public class PostController {
 
     // 게시글 생성
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> createPost(
+    public ResponseEntity<PostResponseDto> createPost(
             @RequestPart("post") PostRequestDto postRequestDto,
             @RequestPart(value = "image", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) throws IOException {
-        return ResponseEntity.ok(postService.createPost(postRequestDto, images, userDetails.getMember()));
 
+        PostResponseDto response = postService.createPost(postRequestDto, images, userDetails.getMember());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+    }
+
+    // 이미지 별 AI 분석 요청
+    @GetMapping("/images/{imageId}/analyze")
+    public ResponseEntity<AiAnalysisResponseDto> analyzeImage(@PathVariable Long imageId) {
+        AiAnalysisResponseDto result = postService.analyzeImage(imageId);
+        return ResponseEntity.ok(result);
     }
 
     // 전체 게시글 조회
     @GetMapping("")
     public ResponseEntity<List<PostResponseDto>> getAllPosts() {
+
         return ResponseEntity.ok(postService.getAllPosts());
     }
 

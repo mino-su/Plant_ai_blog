@@ -1,184 +1,205 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api from '../api';
+import axios from 'axios';
 
-function PostDetail() {
-  const { id } = useParams();
-  const [post, setPost] = useState(null);
-  const [commentContent, setCommentContent] = useState('');
-  const navigate = useNavigate();
-  // 이미지 기본 URL (백엔드 주소)
-  const BASE_URL = "http://localhost:8080";
+/**
+ * [API 설정 및 인터셉터 수정]
+ * 사용자님이 제공하신 TokenDto 구조(accessToken 필드)에 맞춰
+ * 인증 로직을 더 정교하게 수정했습니다.
+ */
+const api = axios.create({
+    baseURL: 'http://localhost:8080',
+    withCredentials: true
+});
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    fetchPost();
-  }, []);
+// [작동 원리] 요청 인터셉터
+api.interceptors.request.use(
+    (config) => {
+        // 1. 로컬 스토리지에서 저장된 데이터를 가져옵니다.
+        // 보통 TokenDto 전체를 JSON 문자열로 저장하거나, accessToken만 따로 저장합니다.
+        const savedToken = localStorage.getItem('accessToken');
 
-  const fetchPost = async () => {
-    try {
-      const res = await api.get(`/api/posts/${id}`);
-      setPost(res.data);
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-      alert("게시글을 불러올 수 없습니다.");
-      navigate('/');
-    }
-  };
+        if (savedToken) {
+            /**
+             * [수정 포인트]
+             * 만약 localStorage에 TokenDto 객체를 통째로 넣었다면
+             * JSON.parse(savedToken).accessToken 으로 꺼내야 하지만,
+             * 보통은 로그인 시 accessToken 문자열만 따로 저장하는 것이 더 평범하고 관리하기 쉽습니다.
+             */
+            const cleanToken = savedToken.replace(/^"(.*)"$/, '$1'); // 따옴표 제거 방어 코드
 
-  const handleDelete = async () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      try {
-        await api.delete(`/api/posts/${id}`);
-        alert("삭제되었습니다.");
-        navigate('/');
-      } catch (err) {
-        alert("작성자만 삭제할 수 있습니다.");
-      }
-    }
-  };
+            // 2. TokenDto의 grantType이 'Bearer'이므로 형식을 맞춥니다.
+            config.headers.Authorization = `Bearer ${cleanToken}`;
 
-  // 댓글 작성 함수
-  const submitComment = async (parentId = null) => {
-    if(!commentContent.trim()) return;
-    try {
-      await api.post(`/api/posts/${id}/comments`, {
-        content: commentContent,
-        parentId: parentId
-      });
-      setCommentContent('');
-      fetchPost(); // 댓글 작성 후 새로고침
-    } catch (err) {
-      alert("댓글 작성 실패");
-    }
-  };
+            console.log(">>> [API 요청] TokenDto 기반 accessToken 부착 완료");
+        } else {
+            console.warn(">>> [API 요청] accessToken을 찾을 수 없습니다. 로그인이 필요합니다.");
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-  if (!post) return <div>로딩중...</div>;
+/**
+ * [이미지 분석 전담 컴포넌트]
+ */
+function AnalysisImage({ imageInfo }) {
+    const BASE_URL = "http://localhost:8080";
 
-  return (
-    <div>
-      {/* 1. 게시글 영역 */}
-      <h1>{post.title}</h1>
-      <p style={{color: 'gray'}}>작성자: {post.writer} | {new Date(post.createdAt).toLocaleString()}</p>
-      
-      {/* 이미지 렌더링 */}
-      {post.images && post.images.map((img) => (
-        <img 
-          key={img.id} 
-          src={`${BASE_URL}${img.imageUrl}`} 
-          alt="post-img"
-          crossOrigin="anonymous"
-          style={{maxWidth: '100%', borderRadius: '8px'}} 
-        />
-      ))}
-      
-      <div style={{minHeight: '100px', margin: '20px 0'}}>{post.content}</div>
+    const [result, setResult] = useState({
+        plant: imageInfo.plant || "분석 대기 중...",
+        disease: imageInfo.disease || "분석 대기 중...",
+        confidence: imageInfo.confidence || 0,
+        loading: !(imageInfo.plant && imageInfo.plant !== "분석 대기 중")
+    });
 
-      <div style={{display: 'flex', gap: '10px'}}>
-        <Link to={`/posts/${id}/edit`}><button>수정</button></Link>
-        <button onClick={handleDelete} style={{backgroundColor: '#ff4444'}}>삭제</button>
-        <Link to="/"><button style={{backgroundColor: 'gray'}}>목록</button></Link>
-      </div>
+    useEffect(() => {
+        if (imageInfo.plant && imageInfo.plant !== "분석 대기 중" && imageInfo.plant !== "") {
+            return;
+        }
 
-      <hr />
+        const runAnalysis = async () => {
+            try {
+                const res = await api.get(`/api/posts/images/${imageInfo.id}/analyze`);
+                setResult({
+                    plant: res.data.plant,
+                    disease: res.data.disease,
+                    confidence: res.data.confidence,
+                    loading: false
+                });
+            } catch (err) {
+                console.error("AI 분석 요청 실패:", err);
+                setResult(prev => ({ ...prev, plant: "분석 실패", loading: false }));
+            }
+        };
 
-      {/* 2. 댓글 작성 영역 (루트) */}
-      <div style={{display: 'flex', gap: '5px'}}>
-        <input 
-          type="text" 
-          value={commentContent} 
-          onChange={(e) => setCommentContent(e.target.value)}
-          placeholder="댓글을 입력하세요..." 
-        />
-        <button onClick={() => submitComment(null)} style={{width: '80px'}}>등록</button>
-      </div>
+        runAnalysis();
+    }, [imageInfo.id, imageInfo.plant]);
 
-      {/* 3. 댓글 리스트 (재귀 컴포넌트) */}
-      <div style={{marginTop: '20px', textAlign: 'left'}}>
-        {post.comments.map(comment => (
-          <CommentItem key={comment.id} comment={comment} fetchPost={fetchPost} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// [핵심] 대댓글을 그리기 위한 재귀 컴포넌트
-function CommentItem({ comment, fetchPost }) {
-  const [replyOpen, setReplyOpen] = useState(false);
-  const [replyContent, setReplyContent] = useState('');
-
-  const handleDeleteComment = async () => {
-    if(window.confirm("댓글을 삭제할까요?")) {
-      try {
-        await api.delete(`/api/comments/${comment.id}`);
-        fetchPost();
-      } catch(err) { alert("본인 댓글만 삭제 가능합니다."); }
-    }
-  };
-
-  const handleReplySubmit = async () => {
-    try {
-      // 대댓글 작성 (부모 ID 포함)
-      await api.post(`/api/posts/${comment.postId}/comments`, { // 주의: postId를 comment 객체에 포함시키거나 props로 내려줘야 함. (여기선 간략화)
-        // 실제로는 postId는 상위에서 props로 받아야 가장 정확함. 
-        // 편의상 url을 /api/comments/reply/{id} 처럼 안 짰다면 postId가 필요함.
-        // **수정 제안**: CommentResponseDto에 postId가 없다면 PostDetail에서 postId를 props로 내려줘야 함.
-        content: replyContent,
-        parentId: comment.id
-      });
-      setReplyContent('');
-      setReplyOpen(false);
-      fetchPost();
-    } catch(err) { 
-        // 여기서 에러나면 postId가 없어서일 확률 높음. 
-        // 해결: api 주소를 /api/posts/${useParams().id}/comments 로 보내야 함.
-        alert("대댓글 작성 실패"); 
-    }
-  };
-  
-  // PostDetail의 ID 가져오기 (Hook 사용)
-  const params = useParams(); 
-  
-  const submitReplyReal = async () => {
-      try {
-          await api.post(`/api/posts/${params.id}/comments`, {
-              content: replyContent,
-              parentId: comment.id
-          });
-          setReplyContent('');
-          setReplyOpen(false);
-          fetchPost();
-      } catch (e) { alert(e.message); }
-  }
-
-
-  return (
-    <div style={{borderLeft: '2px solid #ddd', paddingLeft: '10px', marginTop: '10px'}}>
-      <div style={{fontSize: '14px'}}>
-        <strong>{comment.writer}</strong>: {comment.content}
-        <span style={{marginLeft: '10px', fontSize: '12px', cursor: 'pointer', color: 'blue'}} onClick={() => setReplyOpen(!replyOpen)}>
-           [답글]
-        </span>
-        <span style={{marginLeft: '5px', fontSize: '12px', cursor: 'pointer', color: 'red'}} onClick={handleDeleteComment}>
-           [삭제]
-        </span>
-      </div>
-
-      {/* 답글 입력창 */}
-      {replyOpen && (
-        <div style={{display: 'flex', marginTop: '5px'}}>
-           <input size="small" value={replyContent} onChange={(e)=>setReplyContent(e.target.value)} />
-           <button onClick={submitReplyReal} style={{fontSize:'12px', padding: '2px 5px'}}>등록</button>
+    return (
+        <div className="border rounded-2xl overflow-hidden shadow-sm bg-gray-50 mb-6">
+            <img
+                src={`${BASE_URL}${imageInfo.imageUrl}`}
+                alt="식물 사진"
+                crossOrigin="anonymous"
+                className="w-full h-auto object-cover"
+            />
+            <div className="p-4 bg-white border-t text-left">
+                {result.loading ? (
+                    <div className="flex items-center gap-2 text-blue-600 animate-pulse font-medium">
+                        <span>🔍 AI가 식물을 분석하고 있습니다...</span>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base">
+                        <div><span className="font-bold text-green-700">🌿 식물:</span> {result.plant}</div>
+                        <div><span className="font-bold text-red-600">🦠 진단:</span> {result.disease}</div>
+                        <div><span className="font-bold text-gray-500">📊 정확도:</span> {(result.confidence * 100).toFixed(1)}%</div>
+                    </div>
+                )}
+            </div>
         </div>
-      )}
-
-      {/* 자식 댓글 렌더링 (재귀) */}
-      {comment.children && comment.children.map(child => (
-        <CommentItem key={child.id} comment={child} fetchPost={fetchPost} />
-      ))}
-    </div>
-  );
+    );
 }
 
-export default PostDetail;
+/**
+ * [게시글 상세 페이지 메인 컴포넌트]
+ */
+export default function PostDetail() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [post, setPost] = useState(null);
+    const [commentContent, setCommentContent] = useState('');
+
+    useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const res = await api.get(`/api/posts/${id}`);
+                setPost(res.data);
+            } catch (err) {
+                if (err.response && err.response.status === 403) {
+                    alert("인증 정보가 올바르지 않거나 만료되었습니다. 다시 로그인해 주세요.");
+                    navigate('/');
+                } else {
+                    alert("게시글을 불러올 수 없습니다.");
+                    navigate('/');
+                }
+            }
+        };
+        fetchPost();
+    }, [id, navigate]);
+
+    const handleDelete = async () => {
+        if (window.confirm("정말 이 게시글을 삭제하시겠습니까?")) {
+            try {
+                await api.delete(`/api/posts/${id}`);
+                alert("삭제되었습니다.");
+                navigate('/');
+            } catch (err) {
+                alert("삭제 권한이 없습니다.");
+            }
+        }
+    };
+
+    const submitComment = async () => {
+        if (!commentContent.trim()) return;
+        try {
+            await api.post(`/api/posts/${id}/comments`, { content: commentContent });
+            setCommentContent('');
+            const res = await api.get(`/api/posts/${id}`);
+            setPost(res.data);
+        } catch (err) {
+            alert("댓글 작성 권한이 없습니다.");
+        }
+    };
+
+    if (!post) return <div className="p-10 text-center text-gray-400">데이터 로딩 중...</div>;
+
+    return (
+        <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-2xl mt-10 mb-20 text-left">
+            <h1 className="text-3xl font-bold mb-2 text-gray-800">{post.title}</h1>
+            <p className="text-gray-400 text-sm mb-6 border-b pb-4">
+                작성자: {post.writer} | {post.createdAt ? new Date(post.createdAt).toLocaleString() : '날짜 없음'}
+            </p>
+
+            <div className="space-y-4">
+                {post.images && post.images.length > 0 ? (
+                    post.images.map((img) => (
+                        <AnalysisImage key={img.id} imageInfo={img} />
+                    ))
+                ) : (
+                    <p className="text-gray-300 italic py-4">등록된 이미지가 없습니다.</p>
+                )}
+            </div>
+
+            <div className="min-h-[200px] text-lg text-gray-700 leading-relaxed my-8 whitespace-pre-wrap">
+                {post.content}
+            </div>
+
+            <div className="flex gap-3 mb-10">
+                <Link to={`/posts/${id}/edit`}><button className="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">수정</button></Link>
+                <button onClick={handleDelete} className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">삭제</button>
+                <Link to="/"><button className="px-5 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">목록</button></Link>
+            </div>
+
+            <hr className="mb-8" />
+
+            <div className="flex gap-2 mb-6">
+                <input className="flex-1 p-3 border rounded-xl outline-none" value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder="의견을 남겨주세요..." />
+                <button onClick={submitComment} className="px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition">등록</button>
+            </div>
+
+            <div className="space-y-4">
+                <h3 className="font-bold text-gray-600 mb-4">댓글 ({post.comments ? post.comments.length : 0})</h3>
+                {post.comments && post.comments.map(comment => (
+                    <div key={comment.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="flex justify-between mb-1">
+                            <span className="font-bold text-sm text-green-700">{comment.writer}</span>
+                            <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-gray-700">{comment.content}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
