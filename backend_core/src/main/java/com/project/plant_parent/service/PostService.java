@@ -3,10 +3,7 @@ package com.project.plant_parent.service;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.PostImage;
-import com.project.plant_parent.entity.dto.FlaskResponseDto;
-import com.project.plant_parent.entity.dto.PostRequestDto;
-import com.project.plant_parent.entity.dto.PostResponseDto;
-import com.project.plant_parent.entity.dto.PostUpdateRequestDto;
+import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.PostImageRepository;
 import com.project.plant_parent.repository.PostRepository;
@@ -34,11 +31,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final FlaskService flaskService;
+    private final FileService fileService;
 
-    // 파일 저장 경로(프로젝트 루트/uploads)
-    private final String uploadDir = System.getProperty("user.dir")+"/uploads/";
-
-
+    @Transactional
     public PostResponseDto createPost(PostRequestDto postRequestDto, List<MultipartFile> images, Member member) throws IOException {
         // 1. Post 엔티티 생성 및 저장
         Post newPost = Post.builder()
@@ -50,61 +45,31 @@ public class PostService {
         postRepository.save(newPost);
 
         // 2. 이미지 파일 처리 및 저장
+        saveImages(images, newPost);
+
+        return new PostResponseDto(newPost);
+    }
+
+
+    private void saveImages(List<MultipartFile> images, Post newPost) throws IOException {
         if (images != null && !images.isEmpty()) {
             for (MultipartFile image : images) {
-                // 파일명 중복 방지
-                String uuid = UUID.randomUUID().toString();
-                String filename = uuid + "_" + image.getOriginalFilename();
 
-                // 실제 파일 저장
-                File saveFile = new File(uploadDir, filename);
-                if(!saveFile.getParentFile().exists()){
-                    saveFile.getParentFile().mkdirs();
-                }
-                image.transferTo(saveFile);
+                String filename = fileService.saveFile(image);
 
-                PostImage postImage = processImageWithAi(image, filename, newPost);
+                // DB에는 이미지 경로와 기본 상태만 저장
+                PostImage postImage = PostImage.builder()
+                        .imageUrl("/images/" + filename)
+                        .originalFileName(image.getOriginalFilename())
+                        .post(newPost)
+                        .plant("분석 대기중...")
+                        .disease("분석 대기중...")
+                        .build();
                 postImageRepository.save(postImage);
 
             }
 
         }
-
-        return new PostResponseDto(newPost);
-    }
-
-    private PostImage processImageWithAi(MultipartFile image, String filename, Post newPost) {
-        // 저장된 각 이미지에 대해 Flask 서버에 분석 요청
-        String plant = "Unknown";
-        String disease = "Healthy";
-        double confidence = 0.0;
-
-        try{
-            FlaskResponseDto aiResult = flaskService.analyzeImage(image, filename);
-            if (aiResult != null && "success".equals(aiResult.getStatus())) {
-                if(!aiResult.getResults().getPlant_detection().isEmpty()){
-                    plant = aiResult.getResults().getPlant_detection().get(0).getLabel();
-                    confidence = aiResult.getResults().getPlant_detection().get(0).getConfidence();
-                }
-                if(!aiResult.getResults().getDisease_analysis().isEmpty()){
-                    disease = aiResult.getResults().getDisease_analysis().get(0).getLabel();
-            }
-            }
-        }catch (Exception e){
-            log.error("AI 분석 중 오류 발생: {}", image.getOriginalFilename(), e);
-        }
-
-
-        // DB에 PostImage 엔티티 저장
-        PostImage postImage = PostImage.builder()
-                .imageUrl("/images/" + filename) // 나중에 WebConfig에서 매핑 필요
-                .originalFileName(image.getOriginalFilename())
-                .post(newPost)
-                .plant(plant)
-                .disease(disease)
-                .confidence(confidence)
-                .build();
-        return postImage;
     }
 
 
@@ -143,7 +108,7 @@ public class PostService {
                 // 삭제 목록에 포함된 이미지라면?
                 if (postUpdateRequestDto.getDeleteImageIds().contains(image.getId())) {
                     // 실제 파일 삭제(디스크 정리)
-                    deleteFile(image.getImageUrl());
+                    deleteFileByUrl(image.getImageUrl());
 
                     // 이미지 리스트에서 제거
                     iterator.remove(); // orphanRemoval =true 이므로 DB에서도 제거
@@ -152,28 +117,16 @@ public class PostService {
         }
 
 
+
         // 3. 이미지 추가 로직
-        if (newImages != null && !newImages.isEmpty()) {
-            for (MultipartFile image : newImages) {
-                // 파일명 중복 방지
-                String uuid = UUID.randomUUID().toString();
-                String filename = uuid + "_" + image.getOriginalFilename();
-
-                // 실제 파일 저장
-                File saveFile = new File(uploadDir, filename);
-                if (!saveFile.getParentFile().exists()) {
-                    saveFile.getParentFile().mkdirs();
-                }
-                image.transferTo(saveFile);
-
-                // 저장된 각 이미지에 대해 Flask 서버에 분석 요청
-                PostImage postImage = processImageWithAi(image, filename, post);
-                postImageRepository.save(postImage);
-
-
-            }
-        }
+        saveImages(newImages, post);
         return new PostResponseDto(post);
+    }
+
+    public void deleteFileByUrl(String imageUrl) {
+        String fileName = imageUrl.replace("/images/,", "");
+
+        fileService.deleteFile(fileName);
     }
 
     //삭제
@@ -184,6 +137,35 @@ public class PostService {
 
         // 연관 댓글, 이미지, 좋야요는 CascadeType.All에 의해 자동으로 삭제
         postRepository.delete(post);
+    }
+
+
+    @Transactional
+    public AiAnalysisResponseDto analyzeImage(Long imageId) {
+        PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
+                () -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID: " + imageId)
+        );
+
+        String fileName = postImage.getImageUrl().replace("/images/", "");
+
+        // flask 서버로 분석 요청을 보냄
+        try {
+            FlaskResponseDto aiResult = flaskService.analyzeImage(fileName);
+            if (aiResult != null && "success".equals(aiResult.getStatus())) {
+                String plant = aiResult.getResults().getPlant_detection().get(0).getLabel();
+                Double confidence = aiResult.getResults().getDisease_analysis().get(0).getConfidence();
+                String disease = aiResult.getResults().getDisease_analysis().get(0).getLabel();
+
+                postImage.updateAiResult(plant, disease, confidence);
+            }
+
+
+        } catch (Exception e) {
+            log.error("AI 분석 중 오류 발생: {}", e.getMessage());
+            postImage.updateAiResult("분석 실패", "분석 실패", 0.0);
+        }
+
+        return new AiAnalysisResponseDto(postImage);
     }
 
     // [공통 메서드] 게시글 찾기
@@ -198,29 +180,13 @@ public class PostService {
         }
     }
 
-    public void deleteFile(String imageUrl) {
-        // imageUrl ex) "/images/uuid_cat.jpg"
-
-        String fileName = imageUrl.substring(8);// "/images/" 부분 제거
-
-        // String 경로 -> Path 객체로 변환
-        Path filePath = Paths.get(uploadDir, fileName);
-        try {
-            boolean result = Files.deleteIfExists(filePath);
-
-            if(result){
-                log.info("파일 삭제 성공: {}", fileName);
-            } else{
-                log.info("파일이 존재하지 않음: {}", fileName);
-            }
-
-        } catch (IOException e) {
-            // 권한 문제, 잠긴 파일 등 실패시 예외 발생
-            log.error("파일 삭제 실패: {}", fileName, e);
-        }
-    }
 
 
 
 
 }
+
+
+
+
+

@@ -26,31 +26,48 @@ services:
     hostname: ai-flask
     ports:
       - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
      - redis
     environment:
         REDIS_HOST: redis
 
-  spring-app:
-    build: ./backend_core
-    container_name: plant-spring
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-      - redis
-      - ai-flask
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 1234
-      SPRING_DATA_REDIS_HOST: redis
-      FLASK_AI_HOST: http://ai-flask:5000
+#  spring-app:
+#    build: ./backend_core
+#    container_name: plant-spring
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - ./build/libs:/app/libs
+#      - ./uploads:/app/uploads
+#    depends_on:
+#      - db
+#      - redis
+#      - ai-flask
+#    environment:
+#      SPRING_DEVTOOLS_RESTART_ENABLED: true
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: 1234
+#      SPRING_DATA_REDIS_HOST: redis
+#      FLASK_AI_HOST: http://ai-flask:5000
 
   frontend:
-    build: ./frontend-react
+
+    build:
+      context: ./frontend-react
     container_name: plant-frontend
     ports:
-      - "80:80"
-    depends_on:
-      - spring-app
+
+      - "80:5173"
+    volumes:
+
+      - ./frontend-react:/app
+
+      - /app/node_modules
+    environment:
+
+      - CHOKIDAR_USEPOLLING=true
+
+    command: npm run dev

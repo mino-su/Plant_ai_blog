@@ -22,24 +22,31 @@ public class PostImage extends BaseTimeEntity{
     private Post post;
 
     @Builder
-    public PostImage(String imageUrl, String originalFileName, Post post, String plant, String disease, double confidence) {
+    public PostImage(String imageUrl, String originalFileName, Post post, String plant, String disease, double confidence){
         this.imageUrl = imageUrl;
         this.originalFileName = originalFileName;
         this.post = post;
         this.plant = plant;
         this.disease = disease;
         this.confidence = confidence;
+
     }
 
     // ai-flask에서 받아온 결과 PostImage 업데이트
     @Column
-    private String plant;
+    private String plant = "분석 중...";
 
     @Column
-    private String disease;
+    private String disease = "분석 중...";
 
     @Column
-    private double confidence;
+    private double confidence = 0.0;
+
+    public void updateAiResult(String plant, String disease, double confidence){
+        this.plant = plant;
+        this.disease = disease;
+        this.confidence = confidence;
+    }
 
 
 }
