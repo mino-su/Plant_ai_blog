@@ -1,49 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import api from '../api'; // 공통 API 모듈 사용
+import Header from "../components/Header";
+import '../App.css';
 
 /**
- * [API 설정 및 인터셉터 수정]
- * 사용자님이 제공하신 TokenDto 구조(accessToken 필드)에 맞춰
- * 인증 로직을 더 정교하게 수정했습니다.
- */
-const api = axios.create({
-    baseURL: 'http://localhost:8080',
-    withCredentials: true
-});
-
-// [작동 원리] 요청 인터셉터
-api.interceptors.request.use(
-    (config) => {
-        // 1. 로컬 스토리지에서 저장된 데이터를 가져옵니다.
-        // 보통 TokenDto 전체를 JSON 문자열로 저장하거나, accessToken만 따로 저장합니다.
-        const savedToken = localStorage.getItem('accessToken');
-
-        if (savedToken) {
-            /**
-             * [수정 포인트]
-             * 만약 localStorage에 TokenDto 객체를 통째로 넣었다면
-             * JSON.parse(savedToken).accessToken 으로 꺼내야 하지만,
-             * 보통은 로그인 시 accessToken 문자열만 따로 저장하는 것이 더 평범하고 관리하기 쉽습니다.
-             */
-            const cleanToken = savedToken.replace(/^"(.*)"$/, '$1'); // 따옴표 제거 방어 코드
-
-            // 2. TokenDto의 grantType이 'Bearer'이므로 형식을 맞춥니다.
-            config.headers.Authorization = `Bearer ${cleanToken}`;
-
-            console.log(">>> [API 요청] TokenDto 기반 accessToken 부착 완료");
-        } else {
-            console.warn(">>> [API 요청] accessToken을 찾을 수 없습니다. 로그인이 필요합니다.");
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-/**
- * [이미지 분석 전담 컴포넌트]
+ * [AI 분석 이미지 컴포넌트]
+ * 스타일을 App.css 기반으로 변경하여 일관성 유지
  */
 function AnalysisImage({ imageInfo }) {
+    // 이미지는 보통 정적 리소스이므로 서버 주소가 필요할 수 있음 (환경변수 권장)
     const BASE_URL = "http://localhost:8080";
 
     const [result, setResult] = useState({
@@ -54,6 +22,7 @@ function AnalysisImage({ imageInfo }) {
     });
 
     useEffect(() => {
+        // 이미 분석된 데이터가 있으면 API 호출 스킵
         if (imageInfo.plant && imageInfo.plant !== "분석 대기 중" && imageInfo.plant !== "") {
             return;
         }
@@ -77,24 +46,37 @@ function AnalysisImage({ imageInfo }) {
     }, [imageInfo.id, imageInfo.plant]);
 
     return (
-        <div className="border rounded-2xl overflow-hidden shadow-sm bg-gray-50 mb-6">
+        <div className="analysis-box">
             <img
                 src={`${BASE_URL}${imageInfo.imageUrl}`}
                 alt="식물 사진"
+                className="analysis-img"
                 crossOrigin="anonymous"
-                className="w-full h-auto object-cover"
             />
-            <div className="p-4 bg-white border-t text-left">
+            <div className="analysis-result">
                 {result.loading ? (
-                    <div className="flex items-center gap-2 text-blue-600 animate-pulse font-medium">
-                        <span>🔍 AI가 식물을 분석하고 있습니다...</span>
+                    <div style={{ color: '#12b886', fontWeight: 'bold' }}>
+                        🔍 AI가 식물을 꼼꼼히 살펴보고 있어요...
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm sm:text-base">
-                        <div><span className="font-bold text-green-700">🌿 식물:</span> {result.plant}</div>
-                        <div><span className="font-bold text-red-600">🦠 진단:</span> {result.disease}</div>
-                        <div><span className="font-bold text-gray-500">📊 정확도:</span> {(result.confidence * 100).toFixed(1)}%</div>
-                    </div>
+                    <>
+
+                        <div style={{ marginBottom: '0.5rem' }}>
+                            <span className="analysis-badge badge-green">식물 종류</span>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', marginLeft: '0.5rem' }}>
+                                {result.plant}
+                            </span>
+                        </div>
+                        <div style={{ marginBottom: '0.5rem' }}>
+                            <span className="analysis-badge badge-red">진단 결과</span>
+                            <span style={{ fontSize: '1.1rem', marginLeft: '0.5rem' }}>
+                                {result.disease}
+                            </span>
+                        </div>
+                        <div style={{ color: '#868e96', fontSize: '0.9rem', marginTop: '1rem' }}>
+                            AI 확신도: {(result.confidence * 100).toFixed(1)}%
+                        </div>
+                    </>
                 )}
             </div>
         </div>
@@ -102,7 +84,7 @@ function AnalysisImage({ imageInfo }) {
 }
 
 /**
- * [게시글 상세 페이지 메인 컴포넌트]
+ * [메인 상세 페이지]
  */
 export default function PostDetail() {
     const { id } = useParams();
@@ -117,12 +99,11 @@ export default function PostDetail() {
                 setPost(res.data);
             } catch (err) {
                 if (err.response && err.response.status === 403) {
-                    alert("인증 정보가 올바르지 않거나 만료되었습니다. 다시 로그인해 주세요.");
-                    navigate('/');
+                    alert("접근 권한이 없습니다.");
                 } else {
-                    alert("게시글을 불러올 수 없습니다.");
-                    navigate('/');
+                    alert("존재하지 않거나 삭제된 게시글입니다.");
                 }
+                navigate('/');
             }
         };
         fetchPost();
@@ -145,61 +126,96 @@ export default function PostDetail() {
         try {
             await api.post(`/api/posts/${id}/comments`, { content: commentContent });
             setCommentContent('');
+            // 댓글 작성 후 게시글 데이터 갱신 (댓글 목록 업데이트)
             const res = await api.get(`/api/posts/${id}`);
             setPost(res.data);
         } catch (err) {
-            alert("댓글 작성 권한이 없습니다.");
+            alert("로그인이 필요하거나 권한이 없습니다.");
         }
     };
 
-    if (!post) return <div className="p-10 text-center text-gray-400">데이터 로딩 중...</div>;
+    if (!post) return (
+        <>
+            <Header />
+            <div className="container" style={{ textAlign: 'center', marginTop: '5rem', color: '#868e96' }}>
+                데이터를 불러오는 중입니다...
+            </div>
+        </>
+    );
 
     return (
-        <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-2xl mt-10 mb-20 text-left">
-            <h1 className="text-3xl font-bold mb-2 text-gray-800">{post.title}</h1>
-            <p className="text-gray-400 text-sm mb-6 border-b pb-4">
-                작성자: {post.writer} | {post.createdAt ? new Date(post.createdAt).toLocaleString() : '날짜 없음'}
-            </p>
-
-            <div className="space-y-4">
-                {post.images && post.images.length > 0 ? (
-                    post.images.map((img) => (
-                        <AnalysisImage key={img.id} imageInfo={img} />
-                    ))
-                ) : (
-                    <p className="text-gray-300 italic py-4">등록된 이미지가 없습니다.</p>
-                )}
-            </div>
-
-            <div className="min-h-[200px] text-lg text-gray-700 leading-relaxed my-8 whitespace-pre-wrap">
-                {post.content}
-            </div>
-
-            <div className="flex gap-3 mb-10">
-                <Link to={`/posts/${id}/edit`}><button className="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">수정</button></Link>
-                <button onClick={handleDelete} className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">삭제</button>
-                <Link to="/"><button className="px-5 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">목록</button></Link>
-            </div>
-
-            <hr className="mb-8" />
-
-            <div className="flex gap-2 mb-6">
-                <input className="flex-1 p-3 border rounded-xl outline-none" value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder="의견을 남겨주세요..." />
-                <button onClick={submitComment} className="px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition">등록</button>
-            </div>
-
-            <div className="space-y-4">
-                <h3 className="font-bold text-gray-600 mb-4">댓글 ({post.comments ? post.comments.length : 0})</h3>
-                {post.comments && post.comments.map(comment => (
-                    <div key={comment.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="flex justify-between mb-1">
-                            <span className="font-bold text-sm text-green-700">{comment.writer}</span>
-                            <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+        <>
+            <Header />
+            <main className="container">
+                {/* 1. 게시글 헤더 영역 */}
+                <div className="post-header">
+                    <h1 className="post-title">{post.title}</h1>
+                    <div className="post-info">
+                        <div>
+                            <span style={{ fontWeight: 'bold', color: '#343a40' }}>{post.writer}</span>
+                            <span style={{ margin: '0 0.5rem' }}>·</span>
+                            <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}</span>
                         </div>
-                        <p className="text-gray-700">{comment.content}</p>
+                        {/* 작성자 본인일 경우에만 보이게 처리하면 더 좋음 */}
+                        <div className="post-actions">
+                            <button onClick={() => navigate(`/posts/${id}/edit`)}>수정</button>
+                            <button onClick={handleDelete} style={{ color: '#fa5252' }}>삭제</button>
+                        </div>
                     </div>
-                ))}
-            </div>
-        </div>
+                </div>
+
+                {/* 2. AI 이미지 분석 영역 */}
+                {post.images && post.images.length > 0 && (
+                    <div style={{ marginBottom: '4rem' }}>
+                        {post.images.map((img) => (
+                            <AnalysisImage key={img.id} imageInfo={img} />
+                        ))}
+                    </div>
+                )}
+
+                {/* 3. 마크다운 본문 영역 */}
+                <div className="post-content">
+                    {/* 일반 텍스트가 아닌 마크다운으로 렌더링 */}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {post.content}
+                    </ReactMarkdown>
+                </div>
+
+                {/* 4. 댓글 영역 */}
+                <div className="comment-section">
+                    <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+                        {post.comments ? post.comments.length : 0}개의 댓글
+                    </h4>
+
+                    <div className="comment-input-wrapper">
+                        <textarea
+                            className="comment-textarea"
+                            placeholder="댓글을 작성하세요"
+                            value={commentContent}
+                            onChange={(e) => setCommentContent(e.target.value)}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn-primary" onClick={submitComment}>
+                                댓글 등록
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="comment-list">
+                        {post.comments && post.comments.map(comment => (
+                            <div key={comment.id} className="comment-item">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#343a40' }}>{comment.writer}</span>
+                                    <span style={{ fontSize: '0.875rem', color: '#868e96' }}>
+                                        {new Date(comment.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <p style={{ color: '#495057', lineHeight: '1.5' }}>{comment.content}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </main>
+        </>
     );
 }

@@ -18,7 +18,7 @@ public class PostResponseDto {
     private String writer; // Member 전체가 아니라 username만 전달
     private List<CommentResponseDto> comments;
 
-    // [핵심 1] 이미지 리스트 (Entity가 아닌 DTO 리스트)
+
     private List<PostImageDto> images;
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
