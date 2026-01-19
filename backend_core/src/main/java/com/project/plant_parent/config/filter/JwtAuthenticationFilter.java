@@ -36,16 +36,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwt = resolveToken(request); // 요청 헤더에서 Bearer 을 떼고 순수 토큰 추출
 
-        // 토큰 유효 확인
-        if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-            // Redis에서 해당 토큰이 blackList된 상태인지 확인
-            String isLogout = redisTemplate.opsForValue().get(jwt);
-            if (ObjectUtils.isEmpty(isLogout)) {
-                // blackList에 없으면 정상적인 인증 수행
-                Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else{
-                log.info("로그아웃된 토큰입니다.");
+        if (StringUtils.hasText(jwt)) {
+            if (jwtTokenProvider.validateToken(jwt)) {
+                // Redis에서 로그아웃 여부 확인
+                String isLogout = redisTemplate.opsForValue().get(jwt);
+
+                if (ObjectUtils.isEmpty(isLogout)) {
+                    // 정상 토근일 경우 SecurityContext에 인증 정보 저장
+                    Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info(" >>>[인증 성공] 사용자: {}", authentication.getName());
+
+                } else{
+                    // 로그아웃된 토큰의 경우
+                    log.info(" >>>[인증 실패] 로그아웃된 토큰입니다.");
+                    sendErrorResponse(response, "이미 로그아웃 된 토큰입니다.");
+                    return;
+                }
+            } else {
+                log.info(">>>[인증 실패] 만료되거나 유효하지 않은 토큰입니다.");
+                sendErrorResponse(response, "인증 세션이 만료되었습니다.");
+                return;
             }
         }
 
@@ -61,6 +72,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    // 클라이언트에게 401에러와 메세지를 json 형태로 전달
+    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        response.setContentType("application/json;charset=UTF-8");
+
+        // Json 응답 바디 작성
+        String json = String.format("{\"error\": 401,  \"message\" : \"%s\"}", message);
+        response.getWriter().write(json);
+
     }
 
 
