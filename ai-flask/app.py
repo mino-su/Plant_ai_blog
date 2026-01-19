@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 #  YOLO 모델 로드
 plant_model = YOLO('plant_best.pt')
-disease_model = YOLO('disease_best.pt')
+disease_model = YOLO('disease_best_v2.pt')
 
 
 # 이미지 저장 경로 설정
