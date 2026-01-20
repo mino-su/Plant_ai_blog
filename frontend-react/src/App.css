@@ -407,6 +407,79 @@ body {
     width: 100%;
 }
 
+
+/* --- 마이페이지 전용 스타일 --- */
+
+.mypage-profile {
+    display: flex;
+    align-items: center;
+    margin-top: 3.5rem;
+    margin-bottom: 3rem;
+}
+
+.profile-img-large {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background-color: var(--bg-element);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    box-shadow: var(--shadow);
+    margin-right: 1.5rem;
+}
+
+.profile-info h1 {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.profile-info p {
+    font-size: 1.125rem;
+    color: var(--text-sub);
+}
+
+/* 탭 메뉴 (글 / 시리즈 / 소개 등) */
+.mypage-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-item {
+    width: 8rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.tab-item.active {
+    color: #12b886; /* 알리프 포인트 컬러 */
+    font-weight: bold;
+    border-bottom: 2px solid #12b886;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .mypage-profile {
+        flex-direction: column;
+        text-align: center;
+    }
+    .profile-img-large {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+}
 .dropdown-item:hover {
     background: #f8f9fa;
     color: #12b886; /* Velog 초록색 */
