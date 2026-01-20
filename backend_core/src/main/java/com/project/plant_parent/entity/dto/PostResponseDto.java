@@ -3,6 +3,8 @@ package com.project.plant_parent.entity.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PostResponseDto {
     private Long id;
     private String title;
@@ -29,26 +34,26 @@ public class PostResponseDto {
 
 
     // Entity -> DTO 변환 생성자
-    public PostResponseDto(Post post) {
-        this.id = post.getId();
-        this.title = post.getTitle();
-        this.content = post.getContent();
-        this.writer = post.getMember().getUsername();
-
-        // [수정 후] 부모가 없는(null) '최상위 댓글'만 필터링해서 리스트에 담음
-        this.comments = post.getComments().stream()
-                .filter(comment -> comment.getParent() == null) // ★ 핵심: 부모 없는 애들만!
-                .map(CommentResponseDto::new)
-                .collect(Collectors.toList());
-
-        // [변환 로직 1] PostImage Entity List -> ImageDto List
-        this.images = post.getPostImages().stream()
-                .map(PostImageDto::new)
-                .collect(Collectors.toList());
-
-        this.createdAt = post.getCreatedAt();
-        this.modifiedAt = post.getModifiedAt();
-
+    public static PostResponseDto from(Post post) {
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .writer(post.getMember().getUsername())
+                .comments(
+                        post.getComments().stream()
+                                .filter(comment -> comment.getParent() == null) // 부모가 없는 원 댓글만 추축
+                                .map(CommentResponseDto::from)
+                                .collect(Collectors.toList())
+                )
+                .images(
+                        post.getPostImages().stream()
+                                .map(PostImageDto::from)
+                                .collect(Collectors.toList())
+                )
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build();
     }
 
 }

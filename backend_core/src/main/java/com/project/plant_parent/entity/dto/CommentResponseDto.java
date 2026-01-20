@@ -2,7 +2,10 @@ package com.project.plant_parent.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project.plant_parent.entity.Comment;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,6 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CommentResponseDto {
     private Long id;
     private String content;
@@ -22,17 +28,20 @@ public class CommentResponseDto {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime modifiedAt;
 
-    public CommentResponseDto(Comment comment) {
-        this.id = comment.getId();
-        this.content = comment.getContent();
-        this.writer = comment.getMember().getUsername();
-        // 자식 댓글들도 dto로 변환해서 저장
-        this.children = comment.getChildren().stream()
-                .map(CommentResponseDto::new)
-                .collect(Collectors.toList());
 
-        this.createdAt = comment.getCreatedAt();
-        this.modifiedAt = comment.getModifiedAt();
+    public static CommentResponseDto from(Comment comment) {
+        return CommentResponseDto.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .writer(comment.getMember().getUsername())
+                .children(
+                        comment.getChildren().stream()
+                                .map(CommentResponseDto::from)
+                                .collect(Collectors.toList())
+                )
+                .createdAt(comment.getCreatedAt())
+                .modifiedAt(comment.getModifiedAt())
+                .build();
     }
 
 }

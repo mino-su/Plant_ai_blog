@@ -47,7 +47,7 @@ public class PostService {
         // 2. 이미지 파일 처리 및 저장
         saveImages(images, newPost);
 
-        return new PostResponseDto(newPost);
+        return PostResponseDto.from(newPost);
     }
 
 
@@ -77,14 +77,14 @@ public class PostService {
     public List<PostResponseDto> getAllPosts() {
         // 작성일 기준 최신순 내림차순
         return postRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(PostResponseDto::new)
+                .map(PostResponseDto::from)
                 .collect(Collectors.toList());
     }
 
 
     // 아이디로 조회
     public PostResponseDto getPost(Long postId) {
-        return new PostResponseDto(findPost(postId));
+        return PostResponseDto.from(findPost(postId));
     }
 
     // 수정
@@ -120,7 +120,7 @@ public class PostService {
 
         // 3. 이미지 추가 로직
         saveImages(newImages, post);
-        return new PostResponseDto(post);
+        return PostResponseDto.from(post);
     }
 
     public void deleteFileByUrl(String imageUrl) {
@@ -165,7 +165,7 @@ public class PostService {
             postImage.updateAiResult("분석 실패", "분석 실패", 0.0);
         }
 
-        return new AiAnalysisResponseDto(postImage);
+        return AiAnalysisResponseDto.from(postImage);
     }
 
     // [공통 메서드] 게시글 찾기
