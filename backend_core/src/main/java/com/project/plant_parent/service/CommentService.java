@@ -49,7 +49,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return new CommentResponseDto(comment);
+        return CommentResponseDto.from(comment);
     }
 
     // 댓글 수정
@@ -60,7 +60,7 @@ public class CommentService {
 
         comment.update(commentRequestDto.getContent());
 
-        return new CommentResponseDto(comment);
+        return CommentResponseDto.from(comment);
     }
 
     private Comment findComment(Long commentId) {

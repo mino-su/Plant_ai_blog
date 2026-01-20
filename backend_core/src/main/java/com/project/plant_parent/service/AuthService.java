@@ -48,7 +48,7 @@ public class AuthService {
         System.out.println(">>> 저장된 Email: " + savedMember.getEmail());
         System.out.println("=========================================");
 
-        return MemberResponseDto.of(savedMember);
+        return MemberResponseDto.from(savedMember);
     }
 
     @Transactional
