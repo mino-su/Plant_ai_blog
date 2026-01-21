@@ -2,6 +2,8 @@ package com.project.plant_parent.controller;
 
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.dto.FollowResponseDto;
+import com.project.plant_parent.entity.dto.MemberIdResponseDto;
+import com.project.plant_parent.entity.dto.MemberResponseDto;
 import com.project.plant_parent.entity.dto.MyPageResponseDto;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.FollowService;
@@ -60,9 +62,19 @@ public class MembersController {
 
     @GetMapping("/{memberId}/mypage")
     public ResponseEntity<MyPageResponseDto> getMyPageInfo(
-            @PathVariable Long memberId
-    ){
-        MyPageResponseDto myPageInfo = myPageService.getMyPageInfo(memberId);
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = userDetails.getMember();
+        MyPageResponseDto myPageInfo = myPageService.getMyPageInfo(memberId, currentMember);
         return ResponseEntity.ok(myPageInfo);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<MemberIdResponseDto> getMyInfo(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        MemberIdResponseDto memberId = MemberIdResponseDto.from(userDetails.getMember().getId());
+        return ResponseEntity.ok(memberId);
     }
 }

@@ -1,26 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../App.css'; // 스타일 적용
+import '../App.css';
 
 const PostCard = ({ post }) => {
-
+    const navigate = useNavigate();
+    // 백엔드 서버 주소 (환경에 따라 수정 가능)
     const BASE_URL = "http://localhost:8080";
 
-    const navigate = useNavigate();
-
-    // 날짜 포맷팅 함수 (YYYY년 MM월 DD일)
+    // 1. 날짜 포맷팅 (백엔드의 createdAt 필드 사용)
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
         return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
     };
 
-    // 본문 요약 (HTML 태그나 마크다운 기호 제거하고 순수 텍스트만 100자)
-    // 실제 서비스에선 백엔드에서 'summary' 필드를 따로 주는 게 좋습니다.
+    // 2. 본문 요약 (Velog 스타일로 특수문자 제거 및 3줄 제한)
     const summary = post.content
-        ? post.content.replace(/[#*`]/g, '').substring(0, 100) + (post.content.length > 100 ? '...' : '')
-        : "내용이 없습니다.";
+        ? post.content.replace(/[#*`\n]/g, ' ').substring(0, 120) + (post.content.length > 120 ? '...' : '')
+        : "내용이 없는 게시글입니다.";
 
+    // 3. 썸네일 URL 추출 (렌지님의 PostImageDto 구조: images[0].imageUrl)
     const thumbnailUrl = (post.images && post.images.length > 0)
         ? `${BASE_URL}${post.images[0].imageUrl}`
         : null;
@@ -30,36 +29,38 @@ const PostCard = ({ post }) => {
             className="post-card"
             onClick={() => navigate(`/posts/${post.id}`)}
         >
-            {/* 1. 썸네일 영역 */}
+            {/* 썸네일 영역: 비율 16:9 유지 */}
             <div className="card-thumbnail-wrapper">
                 {thumbnailUrl ? (
                     <img
                         src={thumbnailUrl}
                         alt={post.title}
                         className="card-thumbnail-img"
+                        loading="lazy" /* 성능을 위한 지연 로딩 */
                     />
                 ) : (
-                    // 리스트가 비어있을 때 보여줄 기본 배경
                     <div className="card-thumbnail-placeholder">
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>No Image</span>
+                        <span>Alleaf</span>
                     </div>
                 )}
             </div>
 
-            {/* 2. 텍스트 영역 */}
+            {/* 메인 컨텐츠 영역 */}
             <div className="card-content">
                 <h4 className="card-title">{post.title}</h4>
                 <p className="card-desc">{summary}</p>
 
+                {/* 하단 푸터: 날짜 및 댓글 수 */}
                 <div className="card-footer">
-                    <span className="card-date">{formatDate(post.createdDate || post.date)}</span>
-                    <span className="card-comments">{(post.comments?.length || 0)}개의 댓글</span>
+                    <span>{formatDate(post.createdAt)}</span>
+                    <span className="separator">·</span>
+                    <span>{(post.comments?.length || 0)}개의 댓글</span>
                 </div>
+            </div>
 
-                {/* (선택) 작성자 정보 표시 */}
-                <div className="card-user-info">
-                    <span>by <b>{post.writer || '익명'}</b></span>
-                </div>
+            {/* 작성자 정보 (Velog 카드 하단 구분선 영역) */}
+            <div className="card-user-info">
+                <span>by <b>{post.writer || '익명'}</b></span>
             </div>
         </div>
     );

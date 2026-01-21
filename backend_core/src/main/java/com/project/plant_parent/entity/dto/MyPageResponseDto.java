@@ -18,19 +18,24 @@ import java.util.stream.Collectors;
 public class MyPageResponseDto {
     private String username;
     private String email;
-    private int postCount;
-    private int followerCount;
-    private int followingCount;
+    private long postCount;
+    private long followerCount;
+    private long followingCount;
+    private boolean isFollowing;
+    private boolean isFollower;
 
     private List<PostResponseDto> posts;
 
-    public static MyPageResponseDto of(Member member, List<Post> posts, int followerCount, int followingCount) {
+    public static MyPageResponseDto of(Member member, List<Post> posts,
+                                       long followerCount, long followingCount, boolean isFollowing, boolean isFollower) {
         return MyPageResponseDto.builder()
                 .username(member.getUsername())
                 .email(member.getEmail())
                 .postCount(posts.size())
                 .followerCount(followerCount)
                 .followingCount(followingCount)
+                .isFollowing(isFollowing)
+                .isFollower(isFollower)
                 .posts(posts.stream().map(PostResponseDto::from).collect(Collectors.toList()))
                 .build();
     }

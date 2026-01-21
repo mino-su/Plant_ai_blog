@@ -40,11 +40,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 팔로잉 수
     // select count(*) from follows where from_member_id = ?
-    int countByFromMember(Member fromMember);
+    long countByFromMember(Member fromMember);
 
     // 팔로워 수
     // select count(*) from follows where to_member_id = ?
-    int countByToMember(Member toMember);
+    long countByToMember(Member toMember);
 
 
 
