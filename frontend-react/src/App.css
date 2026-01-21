@@ -407,6 +407,79 @@ body {
     width: 100%;
 }
 
+
+/* --- 마이페이지 전용 스타일 --- */
+
+.mypage-profile {
+    display: flex;
+    align-items: center;
+    margin-top: 3.5rem;
+    margin-bottom: 3rem;
+}
+
+.profile-img-large {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background-color: var(--bg-element);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    box-shadow: var(--shadow);
+    margin-right: 1.5rem;
+}
+
+.profile-info h1 {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.profile-info p {
+    font-size: 1.125rem;
+    color: var(--text-sub);
+}
+
+/* 탭 메뉴 (글 / 시리즈 / 소개 등) */
+.mypage-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab-item {
+    width: 8rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.tab-item.active {
+    color: #12b886; /* 알리프 포인트 컬러 */
+    font-weight: bold;
+    border-bottom: 2px solid #12b886;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .mypage-profile {
+        flex-direction: column;
+        text-align: center;
+    }
+    .profile-img-large {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+}
 .dropdown-item:hover {
     background: #f8f9fa;
     color: #12b886; /* Velog 초록색 */
@@ -432,3 +505,186 @@ body {
     }
 }
 
+/* --- 마이페이지 Velog 스타일 보완 --- */
+
+.mypage-header {
+    margin-top: 5rem;
+    margin-bottom: 4rem;
+    display: flex;
+    align-items: center;
+}
+
+.mypage-profile-img {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--shadow);
+}
+
+.mypage-user-info {
+    margin-left: 1.5rem;
+    flex: 1;
+}
+
+.mypage-user-info h2 {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mypage-stats {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-item {
+    font-size: 1.125rem;
+    color: var(--text-main);
+}
+
+.stat-item b {
+    font-weight: bold;
+}
+
+.stat-item span {
+    color: var(--text-muted);
+    margin-right: 0.5rem;
+}
+
+/* 팔로우 버튼 (Velog 스타일) */
+.follow-btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 1.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #12b886;
+}
+
+.follow-btn.unfollow {
+    background: white;
+    color: #12b886;
+}
+
+.follow-btn.follow {
+    background: #12b886;
+    color: white;
+}
+
+.follow-btn:hover {
+    opacity: 0.8;
+}
+
+/* App.css에 추가 */
+.separator {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+/* 마이페이지 레이아웃 */
+.mypage-header {
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.mypage-user-info h2 {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 2.25rem;
+    color: var(--text-main);
+}
+
+.user-email {
+    color: var(--text-sub);
+    margin-top: 0.5rem;
+}
+
+.mypage-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.mypage-tab-bar {
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2.5rem;
+}
+
+.tab-active {
+    width: fit-content;
+    padding: 1rem 1.5rem;
+    color: #12b886;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #12b886;
+}
+
+.mypage-post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    padding-bottom: 5rem;
+}
+
+.empty-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 5rem 0;
+    color: var(--text-muted);
+}
+
+/* 프로필 수정 버튼 전용 스타일 */
+.edit-btn {
+    /* 1. 크기 축소 */
+    padding: 0 1rem !important;  /* 좌우 여백만 주고 상하는 높이로 조절 */
+    height: 2rem !important;    /* 32px 정도로 낮게 설정 */
+    font-size: 0.85rem !important; /* 글씨를 작게 */
+
+    /* 2. 디자인 변경 */
+    background: transparent;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border-color) !important;
+    font-weight: 500;
+
+    /* 3. 정렬 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+}
+
+.edit-btn:hover {
+    color: var(--text-main) !important;
+    border-color: var(--text-muted) !important;
+    background: var(--bg-element);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .mypage-header {
+        flex-direction: column;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    .mypage-user-info {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    .mypage-user-info h2 {
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .mypage-stats {
+        justify-content: center;
+    }
+}

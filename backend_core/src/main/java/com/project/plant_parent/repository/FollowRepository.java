@@ -37,9 +37,12 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     List<Follow> findAllByToMember(@Param("member") Member toMember);
 
     // 카운트 조회(마이페이지 숫자 표시)
+
+    // 팔로잉 수
     // select count(*) from follows where from_member_id = ?
     long countByFromMember(Member fromMember);
 
+    // 팔로워 수
     // select count(*) from follows where to_member_id = ?
     long countByToMember(Member toMember);
 

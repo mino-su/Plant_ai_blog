@@ -6,6 +6,7 @@ import PostCreate from './pages/PostCreate'; // 글쓰기
 import PostDetail from './pages/PostDetail'; // 상세보기
 import PostEdit from './pages/PostEdit'; // 수정하기
 import './App.css';
+import MyPage from "./pages/MyPage.jsx";
 
 function App() {
   const PrivateRoute = ({ children }) => {
@@ -22,15 +23,20 @@ function App() {
           
           {/* 메인: 게시글 목록 */}
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-          
+
           {/* 글쓰기 */}
           <Route path="/write" element={<PrivateRoute><PostCreate /></PrivateRoute>} />
-          
+
+
+            {/* 마이페이지 */}
+            <Route path="/members/:id/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+
           {/* 상세 조회 */}
           <Route path="/posts/:id" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
           
           {/* 수정하기 */}
           <Route path="/posts/:id/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
+
         </Routes>
       </div>
     </Router>
