@@ -2,9 +2,11 @@ package com.project.plant_parent.service;
 
 import com.project.plant_parent.config.JwtTokenProvider;
 import com.project.plant_parent.entity.Member;
+import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.entity.RefreshToken;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.repository.MemberRepository;
+import com.project.plant_parent.repository.ProfileRepository;
 import com.project.plant_parent.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final ProfileRepository profileRepository;
 
 
     @Transactional
@@ -38,8 +41,15 @@ public class AuthService {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
         Member member = memberRequestDto.toMember(passwordEncoder);
-        Member savedMember = memberRepository.saveAndFlush(member);
 
+        Profile profile = Profile.builder()
+                .member(member)
+                .bio("반갑습니다! " + member.getUsername() + "님의 정원입니다.") // 여기서 초기화
+                .build();
+
+        member.setProfile(profile);
+
+        Member savedMember = memberRepository.saveAndFlush(member);
 
         // [★ 디버깅 코드 추가]
         System.out.println("=========================================");
@@ -47,6 +57,7 @@ public class AuthService {
         System.out.println(">>> 저장된 ID: " + savedMember.getId());
         System.out.println(">>> 저장된 Email: " + savedMember.getEmail());
         System.out.println("=========================================");
+
 
         return MemberResponseDto.from(savedMember);
     }
