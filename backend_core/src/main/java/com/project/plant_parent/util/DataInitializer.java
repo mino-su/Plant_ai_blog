@@ -2,9 +2,12 @@ package com.project.plant_parent.util;
 
 import com.project.plant_parent.entity.Authority;
 import com.project.plant_parent.entity.Member;
+import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.PostRepository;
+import com.project.plant_parent.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,64 +18,106 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 
-//@Component
+@Slf4j
+@Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
+
     private final MemberRepository memberRepository;
-    private final PostRepository postRepository; // [추가] 게시글 상태 확인용
+    private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DataSource dataSource;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        // 기존 유저들의 프로필 유실 복구 (Migration)
+//        syncMissingProfiles();
 
-        // 1. 현재 어떤 DB 파일에 접속 중인지 로그로 박멸합니다.
-        try (Connection connection = dataSource.getConnection()) {
-            String url = connection.getMetaData().getURL();
-            System.out.println("==========================================");
-            System.out.println(">>> [연결 성공] 접속 주소: " + url);
-            System.out.println(">>> [연결 성공] 접속 유저: " + connection.getMetaData().getUserName());
-            System.out.println("==========================================");
+        // 신규 더미 유저 생성
+//        createDummyMembers();
+
+        cleanExistingProfiles();
+    }
+
+    private void syncMissingProfiles() {
+        log.info(">>> [Migration] 프로필 유실 검사 및 복구 시작...");
+
+        List<Member> allMembers = memberRepository.findAll();
+        int count = 0;
+
+        for (Member member : allMembers) {
+            // [작동 원리] Member 엔티티에 Profile이 연결되어 있지 않은 경우에만 생성
+            if (member.getProfile() == null) {
+                Profile profile = Profile.builder()
+                        .member(member)
+                        .bio("반갑습니다! " + member.getUsername() + "님의 정원입니다.")
+                        .build();
+
+                // Member에 연결 (Cascade 설정에 의해 함께 저장되거나 직접 저장)
+                member.setProfile(profile);
+                profileRepository.save(profile);
+                count++;
+            }
         }
 
-        long memberCount = memberRepository.count();
-        long postCount = postRepository.count(); // [추가]
-
-        System.out.println(">>> [현황 보고] 현재 DB 내 Member 수: " + memberCount);
-        System.out.println(">>> [현황 보고] 현재 DB 내 Post 수: " + postCount);
-
-        // Member가 하나라도 있으면 초기 생성을 건너뜁니다.
-        if (memberCount > 2) {
-            System.out.println(">>> 이미 유저 데이터가 존재합니다. 생성을 중단합니다.");
-            return;
+        if (count > 0) {
+            log.info(">>> [Migration] 총 {}명의 유저에게 누락된 프로필을 생성했습니다.", count);
+        } else {
+            log.info(">>> [Migration] 모든 유저가 프로필을 가지고 있습니다.");
         }
+    }
 
-        System.out.println(">>> 영어 이름 기반 100명 더미 유저 생성 시작...");
+    private void createDummyMembers() {
+        if (memberRepository.count() > 100) return;
 
-        List<String> names = Arrays.asList(
-                "James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda",
-                "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph",
-                "Jessica", "Thomas", "Sarah", "Charles", "Karen"
-        );
-
+        log.info(">>> 더미 유저 생성 시작...");
+        List<String> names = Arrays.asList("James", "Mary", "Robert", "Patricia", "John");
         String encodedPassword = passwordEncoder.encode("1234");
 
-        for (int i = 1; i <= 100; i++) {
-            String baseName = names.get(i % names.size());
-            String username = baseName + i;
-            String email = username.toLowerCase() + "@test.com";
-
+        for (int i = 1; i <= 20; i++) {
+            String username = names.get(i % names.size()) + i;
             Member member = Member.builder()
-                    .email(email)
+                    .email(username.toLowerCase() + "@test.com")
                     .password(encodedPassword)
                     .username(username)
                     .authority(Authority.ROLE_USER)
                     .build();
 
+            // 생성 시점에 프로필도 함께 생성하여 연결
+            Profile profile = Profile.builder()
+                    .member(member)
+                    .bio("안녕하세요, " + username + "입니다.")
+                    .build();
+
+            member.setProfile(profile);
             memberRepository.save(member);
         }
+        log.info(">>> 더미 유저 생성 완료.");
+    }
 
-        System.out.println(">>> 100명의 더미 유저 생성이 완료되었습니다.");
+    private void cleanExistingProfiles() {
+        log.info(">>> [DataCleaner] 프로필 문구 정화 작업 시작...");
+
+        List<Profile> allProfiles = profileRepository.findAll();
+        int fixCount = 0;
+
+        for (Profile profile : allProfiles) {
+            String bio = profile.getBio();
+
+            if (bio != null && bio.contains("(자동 생성됨)")) {
+                // 문구에서 "(자동 생성됨)" 부분만 제거 (공백 포함)
+                String cleanedBio = bio.replace(" (자동 생성됨)", "");
+
+                // [원리] 영속성 컨텍스트의 변경 감지(Dirty Checking)를 통해 DB에 반영됩니다.
+                profile.updateProfile(cleanedBio, profile.getProfileImageUrl(), profile.getWebsiteUrl());
+                fixCount++;
+            }
+        }
+
+        if (fixCount > 0) {
+            log.info(">>> [DataCleaner] 총 {}개의 프로필 문구를 성공적으로 정화했습니다!", fixCount);
+        } else {
+            log.info(">>> [DataCleaner] 정화할 프로필이 없습니다. 모두 깨끗합니다.");
+        }
     }
 }

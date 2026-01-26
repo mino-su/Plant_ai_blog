@@ -26,12 +26,19 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Authority authority;
 
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Profile profile;
+
     @Builder
     public Member(String email, String password, String username, Authority authority) {
         this.email = email;
         this.password = password;
         this.username = username;
         this.authority = authority;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 
 }

@@ -7,6 +7,7 @@ import PostDetail from './pages/PostDetail'; // 상세보기
 import PostEdit from './pages/PostEdit'; // 수정하기
 import './App.css';
 import MyPage from "./pages/MyPage.jsx";
+import Setting from "./pages/settings.jsx";
 
 function App() {
   const PrivateRoute = ({ children }) => {
@@ -36,6 +37,9 @@ function App() {
           
           {/* 수정하기 */}
           <Route path="/posts/:id/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
+
+            {/* 프로필 수정 */}
+            <Route path="/setting" element={<PrivateRoute><Setting /></PrivateRoute>} />
 
         </Routes>
       </div>
