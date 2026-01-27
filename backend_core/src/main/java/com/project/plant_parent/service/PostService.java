@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -26,15 +27,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 기본 읽기 전용
+@Transactional(readOnly = true)
 public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final FlaskService flaskService;
     private final FileService fileService;
 
+
+    // Refactor: 리액트에서 보낸 json 본문을 그대로 저장
+    // 같이 보낸 imageIds 리스트를 통해 미리 올라간 사진들을 mapping
     @Transactional
-    public PostResponseDto createPost(PostRequestDto postRequestDto, List<MultipartFile> images, Member member) throws IOException {
+    public PostResponseDto createPost(PostRequestDto postRequestDto, Member member){
         // 1. Post 엔티티 생성 및 저장
         Post newPost = Post.builder()
                 .title(postRequestDto.getTitle())
@@ -42,34 +46,45 @@ public class PostService {
                 .member(member)
                 .build();
 
-        postRepository.save(newPost);
+        Post savedPost = postRepository.save(newPost);
 
-        // 2. 이미지 파일 처리 및 저장
-        saveImages(images, newPost);
+        // 미리 올린 이미지와 연결
+        if (postRequestDto.getImageIds() != null && !postRequestDto.getImageIds().isEmpty()) {
+            for (Long imageId : postRequestDto.getImageIds()) {
+                PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
+                        () -> new IllegalArgumentException("존재하지 않는 이미지 Id 입니다." + imageId)
+                );
 
-        return PostResponseDto.from(newPost);
+                // postImage에 post 매핑, 이제 postId가 null이 아님
+                postImage.mappingPost(savedPost);
+            }
+        }
+
+        return PostResponseDto.from(savedPost);
     }
 
-
-    private void saveImages(List<MultipartFile> images, Post newPost) throws IOException {
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-
-                String filename = fileService.saveFile(image);
-
-                // DB에는 이미지 경로와 기본 상태만 저장
-                PostImage postImage = PostImage.builder()
-                        .imageUrl("/images/" + filename)
-                        .originalFileName(image.getOriginalFilename())
-                        .post(newPost)
-                        .plant("분석 대기중...")
-                        .disease("분석 대기중...")
-                        .build();
-                postImageRepository.save(postImage);
-
-            }
-
+ // 이미지 파일 저장
+    @Transactional
+    public PostImageDto saveImage(MultipartFile image) throws IOException {
+        if (image == null || image.isEmpty()) {
+            throw new IOException("업로드 할 이미지 파일이 비어있습니다.");
         }
+
+        String filename = fileService.saveFile(image);
+
+        // DB에는 이미지 경로와 기본 상태만 저장
+
+        PostImage postImage = PostImage.builder()
+                                .imageUrl("/images/" + filename)
+                                .originalFileName(image.getOriginalFilename())
+                                .plant("분석 대기중...")
+                                .disease("분석 대기중...")
+                                .build();
+        // 지금은 .post(null)인 상태로 저장되지만 나중에 저장 api가 호출될때 Id를 찾아 연결
+
+        postImageRepository.save(postImage);
+        return PostImageDto.from(postImage);
+
     }
 
 
@@ -89,7 +104,7 @@ public class PostService {
 
     // 수정
     @Transactional
-    public PostResponseDto update(Long postId, PostUpdateRequestDto postUpdateRequestDto, List<MultipartFile> newImages, Member member)
+    public PostResponseDto update(Long postId, PostUpdateRequestDto postUpdateRequestDto, Member member)
     throws IOException {
         Post post = findPost(postId);
         validateWriter(post, member);
@@ -100,31 +115,37 @@ public class PostService {
         // 2. 이미지 삭제 로직
         // 사용자가 삭제하라고 보낸 ID리스트가 있다면
         if (postUpdateRequestDto.getDeleteImageIds() != null && !postUpdateRequestDto.getDeleteImageIds().isEmpty()) {
-            // 현재글의 이미지 리스트에서 하나씩 검사
             List<PostImage> currentImages = post.getPostImages();
-            Iterator<PostImage> iterator = currentImages.iterator();
-            while (iterator.hasNext()) {
-                PostImage image = iterator.next();
-                // 삭제 목록에 포함된 이미지라면?
-                if (postUpdateRequestDto.getDeleteImageIds().contains(image.getId())) {
-                    // 실제 파일 삭제(디스크 정리)
-                    deleteFileByUrl(image.getImageUrl());
-
-                    // 이미지 리스트에서 제거
-                    iterator.remove(); // orphanRemoval =true 이므로 DB에서도 제거
-                }
-            }
+            currentImages.removeIf(
+                    image -> {
+                        if (postUpdateRequestDto.getDeleteImageIds().contains(image.getId())) {
+                            // 실제 파일 삭제
+                            deleteFileByUrl(image.getImageUrl());
+                            return true; // 리스트에서 제거
+                        }
+                        return false;
+                    }
+            );
         }
 
 
 
-        // 3. 이미지 추가 로직
-        saveImages(newImages, post);
+        // 이미지 추가 로직
+        // 수정 중에 에디터에서 미리 추가한 사진들의 id를 가져와 post를 Mapping
+        if (postUpdateRequestDto.getNewImageIds() != null && !postUpdateRequestDto.getNewImageIds().isEmpty()) {
+            for (Long imageId : postUpdateRequestDto.getNewImageIds()) {
+                PostImage newImage= postImageRepository.findById(imageId).orElseThrow(
+                        () -> new IllegalArgumentException("이미지가 존재하지 않습니다." + imageId)
+                );
+                newImage.mappingPost(post);
+            }
+        }
+
         return PostResponseDto.from(post);
     }
 
     public void deleteFileByUrl(String imageUrl) {
-        String fileName = imageUrl.replace("/images/,", "");
+        String fileName = imageUrl.replace("/images/", "");
 
         fileService.deleteFile(fileName);
     }
