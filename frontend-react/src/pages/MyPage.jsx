@@ -6,23 +6,25 @@ import PostCard from "../components/PostCard";
 import '../App.css';
 
 export default function MyPage() {
-    const { id: memberId } = useParams();
+    // 1. URL 파라미터에서 memberId 추출
+    const { memberId } = useParams();
     const navigate = useNavigate();
 
-    // 상태 관리
-    const [data, setData] = useState(null);       // 게시글, 팔로워 등 (mypage API)
+    // 2. 상태 관리 (myId 선언 포함)
+    const [data, setData] = useState(null);
     const [profile, setProfile] = useState({
-        bio: "",           // null 대신 ""
-        websiteUrl: "",    // null 대신 ""
+        bio: "",
+        websiteUrl: "",
         profileImageUrl: ""
-    });// bio, websiteUrl, 이미지 (profile API)
+    });
     const [loading, setLoading] = useState(true);
     const [isFollowing, setIsFollowing] = useState(false);
-    const [myId, setMyId] = useState(null);
+    const [myId, setMyId] = useState(null); // 로그인한 사용자의 ID 저장
 
     const BASE_URL = "http://localhost:8080";
 
     useEffect(() => {
+        if (!memberId || memberId === 'undefined') return;
         fetchAllData();
     }, [memberId]);
 
@@ -30,23 +32,27 @@ export default function MyPage() {
         try {
             setLoading(true);
 
-            // 1. 내 정보 가져오기 (비교용)
-            const meRes = await api.get('/api/members/me');
-            setMyId(meRes.data.memberId);
+            // 로그인 정보 가져오기 (본인 확인용)
+            try {
+                const meRes = await api.get('/api/members/me');
+                setMyId(meRes.data.memberId);
+            } catch (e) {
+                console.log("비로그인 상태입니다.");
+            }
 
-            // 2. [핵심] 병렬로 두 API 호출 (마이페이지 정보 + 프로필 상세 정보)
+            // 마이페이지 & 프로필 병렬 호출
             const [mypageRes, profileRes] = await Promise.all([
                 api.get(`/api/members/${memberId}/mypage`),
-                api.get(`/api/members/${memberId}/profile`) // 렌지님이 알려주신 컨트롤러 주소
+                api.get(`/api/members/${memberId}/profile`)
             ]);
 
             setData(mypageRes.data);
             setProfile(profileRes.data);
             setIsFollowing(mypageRes.data.isFollowing || false);
 
-            document.title = `${mypageRes.data.username}님의 페이지 - Alleaf`;
+            document.title = `${mypageRes.data.username}님의 정원`;
         } catch (err) {
-            console.error("데이터 로드 실패:", err);
+            console.error("로드 실패:", err);
         } finally {
             setLoading(false);
         }
@@ -63,35 +69,40 @@ export default function MyPage() {
             }
             setIsFollowing(!isFollowing);
         } catch (err) {
-            alert("요청 처리 중 오류가 발생했습니다.");
+            alert("요청 실패");
         }
     };
 
-    const isMe = myId === Number(memberId);
+    // [핵심] 본인 여부 확인
+    const isMe = myId !== null && Number(myId) === Number(memberId);
 
     if (loading) return (
         <>
             <Header />
-            <div className="container" style={{ textAlign: 'center', marginTop: '10rem', color: 'var(--text-muted)' }}>
-                식물 집사의 정보를 불러오는 중... 🌱
+            <div className="container" style={{ textAlign: 'center', marginTop: '10rem', color: '#868e96' }}>
+                식물 정보를 불러오고 있습니다... 🌱
             </div>
         </>
     );
 
-    if (!data || !profile) return <div className="p-20 text-center">사용자를 찾을 수 없습니다.</div>;
+    if (!data) return <div className="p-20 text-center">사용자를 찾을 수 없습니다.</div>;
 
     return (
         <>
             <Header />
             <main className="container">
                 <section className="mypage-header">
-                    {/* 프로필 이미지 (ProfileResponseDto의 경로 사용) */}
-                    <div className="mypage-profile-img" style={{ background: 'var(--border-color)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="mypage-profile-img" style={{ background: '#f1f3f5', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {profile.profileImageUrl ? (
                             <img
                                 src={profile.profileImageUrl.startsWith('http') ? profile.profileImageUrl : `${BASE_URL}${profile.profileImageUrl}`}
                                 alt="profile"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                crossOrigin="anonymous"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/default_profile.jpg"; // 프론트의 public 폴더 내 대체 이미지
+                                }}
                             />
                         ) : (
                             <span style={{ fontSize: '3.5rem' }}>🌿</span>
@@ -100,40 +111,23 @@ export default function MyPage() {
 
                     <div className="mypage-user-info">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <h2 style={{ fontSize: '2.25rem', fontWeight: 'bold', margin: 0 }}>
-                                {data.username}
-                            </h2>
-                            {isMe && (
-                                <button onClick={() => navigate('/setting')} className="edit-btn">
-                                    프로필 수정
-                                </button>
-                            )}
+                            <h2 style={{ fontSize: '2.25rem', fontWeight: 'bold', margin: 0 }}>{data.username}</h2>
+                            {isMe && <button onClick={() => navigate('/setting')} className="edit-btn">프로필 수정</button>}
                         </div>
 
-                        {/* [수정 완료] ProfileResponseDto에서 가져온 bio와 websiteUrl */}
                         <div className="user-profile-details" style={{ marginTop: '1rem' }}>
-                            <p className="user-bio" style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: '0 0 0.5rem 0' }}>
-                                {profile.bio || "아직 소개글이 없습니다. 반려 식물 이야기를 채워보세요!"}
+                            <p className="user-bio" style={{ fontSize: '1.1rem', color: '#495057', margin: '0 0 0.5rem 0' }}>
+                                {profile.bio || "반려 식물과 함께하는 일상을 소개해 보세요!"}
                             </p>
-
                             {profile.websiteUrl && (
-                                <a
-                                    href={profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: '#12b886', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
+                                <a href={profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`} target="_blank" rel="noopener noreferrer" style={{ color: '#12b886', textDecoration: 'none', fontSize: '0.9rem' }}>
                                     🔗 {profile.websiteUrl}
                                 </a>
                             )}
                         </div>
 
                         {!isMe && (
-                            <button
-                                onClick={handleFollowToggle}
-                                className={`follow-btn ${isFollowing ? 'unfollow' : 'follow'}`}
-                                style={{ marginTop: '1rem' }}
-                            >
+                            <button onClick={handleFollowToggle} className={`follow-btn ${isFollowing ? 'unfollow' : 'follow'}`} style={{ marginTop: '1rem' }}>
                                 {isFollowing ? "언팔로우" : "팔로우"}
                             </button>
                         )}
@@ -145,20 +139,14 @@ export default function MyPage() {
                     </div>
                 </section>
 
-                <div className="mypage-tab-bar">
-                    <div className="tab-active">글 ({data.postCount || 0})</div>
+                <div className="mypage-tab-bar" style={{ marginTop: '3rem', borderBottom: '1px solid #dee2e6' }}>
+                    <div style={{ padding: '1rem 0', borderBottom: '2px solid #12b886', color: '#12b886', fontWeight: 'bold' }}>
+                        작성한 일지 ({data.postCount || 0})
+                    </div>
                 </div>
 
-                <div className="mypage-post-grid">
-                    {data.posts && data.posts.length > 0 ? (
-                        data.posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))
-                    ) : (
-                        <div className="empty-message">
-                            아직 작성한 식물 일지가 없습니다.
-                        </div>
-                    )}
+                <div className="mypage-post-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
+                    {data.posts?.map((post) => <PostCard key={post.id} post={post} />)}
                 </div>
             </main>
         </>

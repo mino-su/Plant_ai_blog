@@ -22,7 +22,7 @@ public class PostController {
     private final PostService postService;
 
     // 게시글 생성
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping
     public ResponseEntity<PostResponseDto> createPost(
             @RequestBody PostRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -37,7 +37,7 @@ public class PostController {
     // 게시글 이미지 업로드
     @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostImageDto> uploadPostImages(
-            @RequestPart(value="images") MultipartFile image
+            @RequestPart(value="image") MultipartFile image
     ) throws IOException {
         // 에디터는 파일을 한장식 보냄.
         PostImageDto postImageDtos = postService.saveImage(image);

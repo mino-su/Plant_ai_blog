@@ -1,182 +1,143 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import api from '../api';
-import '../App.css'; // 버튼 스타일(btn-primary) 등 공통 CSS
+import EditorJS from '@editorjs/editorjs';
+import HeaderTool from '@editorjs/header';
+import ImageTool from '@editorjs/image';
+import List from '@editorjs/list';
+import api, { uploadImage } from '../api';
+import CustomHeader from "../components/Header";
+import '../App.css';
 
 function PostEdit() {
-    const { id } = useParams();
+    // [중요] App.jsx의 :postId와 이름을 반드시 맞춰야 합니다.
+    const { postId } = useParams();
     const navigate = useNavigate();
-    const BASE_URL = "http://localhost:8080"; // 이미지 경로용
+    const editorInstance = useRef(null);
 
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-
-    // 이미지 관리 State
-    const [existingImages, setExistingImages] = useState([]); // 서버에서 불러온 기존 이미지
-    const [deleteImageIds, setDeleteImageIds] = useState([]); // 삭제할 이미지 ID 목록
-    const [newFiles, setNewFiles] = useState([]); // 새로 추가할 파일 객체들
+    const [newImageIds, setNewImageIds] = useState([]);
+    const [deleteImageIds, setDeleteImageIds] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchPost();
-    }, []);
-
-    const fetchPost = async () => {
-        try {
-            const res = await api.get(`/api/posts/${id}`);
-            setTitle(res.data.title);
-            setContent(res.data.content);
-            // 서버 응답 필드명이 imgUrl 인지 imageUrl 인지 확인 필요 (여기선 imgUrl 가정)
-            setExistingImages(res.data.images || []);
-        } catch (err) {
-            console.error(err);
-            alert("데이터를 불러오지 못했습니다.");
-            navigate(-1); // 뒤로 가기
-        }
-    };
-
-    // 기존 이미지 삭제 (UI에서 숨기고 ID 저장)
-    const handleDeleteExistingImage = (imgId) => {
-        setDeleteImageIds([...deleteImageIds, imgId]); // 삭제할 ID 리스트에 추가
-        setExistingImages(existingImages.filter(img => img.id !== imgId)); // 화면 목록에서 제거
-    };
-
-    const handleNewFileChange = (e) => {
-        if (e.target.files) {
-            setNewFiles(Array.from(e.target.files));
-        }
-    };
-
-    const handleSubmit = async () => {
-        if (!title || !content) {
-            alert("제목과 내용을 모두 입력해주세요.");
-            return;
+        if (postId) {
+            fetchPostAndInitEditor();
         }
 
-        const formData = new FormData();
-
-        // 1. JSON 데이터 (수정된 내용 + 삭제할 이미지 ID들)
-        const jsonBody = {
-            title: title,
-            content: content,
-            deleteImageIds: deleteImageIds // 예: [1, 5]
+        // 페이지를 벗어날 때 에디터 인스턴스를 메모리에서 해제합니다.
+        return () => {
+            if (editorInstance.current && editorInstance.current.destroy) {
+                editorInstance.current.destroy();
+                editorInstance.current = null;
+            }
         };
+    }, [postId]);
 
-        formData.append(
-            "post",
-            new Blob([JSON.stringify(jsonBody)], { type: "application/json" })
-        );
-
-        // 2. 새로 추가할 파일들
-        newFiles.forEach(file => {
-            formData.append("image", file);
-        });
-
+    const fetchPostAndInitEditor = async () => {
         try {
-            // Content-Type 헤더 제거 (Axios 자동 설정 권장)
-            await api.put(`/api/posts/${id}`, formData);
+            // 주소에 postId를 넣어 정상적인 데이터를 가져옵니다.
+            const res = await api.get(`/api/posts/${postId}`);
+            setTitle(res.data.title);
 
-            alert("수정이 완료되었습니다!");
-            navigate(`/posts/${id}`); // 수정된 상세 페이지로 이동
+            let initialData;
+            try {
+                // 본문이 JSON 형식이면 파싱하여 블록 단위로 에디터에 주입합니다.
+                initialData = JSON.parse(res.data.content);
+            } catch (e) {
+                // 일반 텍스트라면 에디터가 인식할 수 있는 문단(paragraph) 블록으로 감싸줍니다.
+                initialData = {
+                    blocks: [{ type: 'paragraph', data: { text: res.data.content } }]
+                };
+            }
+
+            // Editor.js 인스턴스를 생성합니다.
+            const editor = new EditorJS({
+                holder: 'editorjs',
+                data: initialData,
+                tools: {
+                    header: HeaderTool,
+                    list: List,
+                    image: {
+                        class: ImageTool,
+                        config: {
+                            uploader: {
+                                uploadByFile: async (file) => {
+                                    // 수정 중 새 이미지를 올릴 때의 처리입니다.
+                                    const data = await uploadImage(file);
+                                    setNewImageIds(prev => [...prev, data.id]);
+                                    return {
+                                        success: 1,
+                                        file: {
+                                            url: `http://localhost:8080${data.imageUrl}`,
+                                            imageId: data.id
+                                        }
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            editorInstance.current = editor;
+            setIsLoading(false);
         } catch (err) {
-            console.error(err);
-            alert("수정 실패: " + (err.response?.data || err.message));
+            console.error("데이터 로드 실패:", err);
+            alert("게시글 정보를 불러올 수 없습니다.");
+            navigate(-1);
         }
     };
+
+    const handleUpdate = async () => {
+        try {
+            // 에디터에 작성된 최종 내용을 가져와 JSON 문자열로 변환합니다.
+            const outputData = await editorInstance.current.save();
+            const payload = {
+                title: title,
+                content: JSON.stringify(outputData),
+                newImageIds: newImageIds,
+                deleteImageIds: deleteImageIds
+            };
+
+            await api.put(`/api/posts/${postId}`, payload);
+            alert("수정이 완료되었습니다! ✨");
+            navigate(`/posts/${postId}`);
+        } catch (err) {
+            alert("수정에 실패했습니다.");
+        }
+    };
+
+    if (isLoading) return <CustomHeader />;
 
     return (
-        <div style={{ display: 'flex', height: '100vh' }}>
-            {/* --- 왼쪽: 에디터 영역 --- */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '2rem', overflowY: 'auto' }}>
-
-                {/* 제목 입력 */}
+        <>
+            <CustomHeader />
+            <div className="container" style={{ marginTop: '3rem', maxWidth: '800px' }}>
                 <input
                     type="text"
-                    placeholder="제목을 입력하세요"
+                    className="post-title"
+                    style={{
+                        border: 'none',
+                        outline: 'none',
+                        width: '100%',
+                        background: 'transparent',
+                        fontSize: '2.5rem',
+                        fontWeight: 'bold',
+                        marginBottom: '1rem'
+                    }}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    style={{ fontSize: '2.5rem', border: 'none', outline: 'none', fontWeight: 'bold', marginBottom: '1rem', width: '100%' }}
                 />
+                <div style={{ width: '100%', height: '4px', background: '#12b886', marginBottom: '2rem' }}></div>
 
-                <div style={{ width: '100%', height: '4px', background: 'rgb(73, 80, 87)', marginBottom: '2rem' }}></div>
+                {/* 에디터가 그려질 공간입니다. */}
+                <div id="editorjs" className="post-content"></div>
 
-                {/* --- 이미지 관리 영역 시작 --- */}
-                <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px' }}>
-                    <h4 style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '0.5rem' }}>📷 이미지 관리</h4>
-
-                    {/* 1. 기존 이미지 목록 */}
-                    {existingImages.length > 0 && (
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                            {existingImages.map(img => (
-                                <div key={img.id} style={{ position: 'relative', width: '80px', height: '80px' }}>
-                                    <img
-                                        src={`${BASE_URL}${img.imgUrl || img.imageUrl}`} // 필드명 방어코드
-                                        alt="existing"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-                                    />
-                                    {/* 삭제 버튼 (X) */}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDeleteExistingImage(img.id)}
-                                        style={{
-                                            position: 'absolute', top: -5, right: -5,
-                                            background: '#fa5252', color: 'white',
-                                            border: 'none', borderRadius: '50%',
-                                            width: '20px', height: '20px',
-                                            fontSize: '12px', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* 2. 새 이미지 추가 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <label className="btn-primary" style={{ background: '#868e96', fontSize: '0.8rem', padding: '0.4rem 0.8rem', cursor: 'pointer' }}>
-                            + 새 이미지 추가
-                            <input type="file" multiple onChange={handleNewFileChange} style={{ display: 'none' }} />
-                        </label>
-                        <span style={{ fontSize: '0.8rem', color: '#12b886' }}>
-                    {newFiles.length > 0 ? `${newFiles.length}개의 새 파일 선택됨` : ""}
-                </span>
-                    </div>
-                </div>
-                {/* --- 이미지 관리 영역 끝 --- */}
-
-                {/* 본문 에디터 */}
-                <textarea
-                    style={{ flex: 1, border: 'none', resize: 'none', outline: 'none', fontSize: '1.125rem', fontFamily: 'monospace', minHeight: '300px' }}
-                    placeholder="내용을 입력하세요..."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
-
-                {/* 하단 버튼 */}
-                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1rem' }}>
-                        ← 나가기
-                    </button>
-                    <button className="btn-primary" onClick={handleSubmit}>
-                        수정 완료
-                    </button>
+                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', paddingBottom: '5rem' }}>
+                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', color: '#868e96', cursor: 'pointer' }}>취소</button>
+                    <button className="btn-primary" onClick={handleUpdate}>수정 완료</button>
                 </div>
             </div>
-
-            {/* --- 오른쪽: 미리보기 영역 --- */}
-            <div style={{ flex: 1, background: '#fbfdfc', padding: '2rem', overflowY: 'auto', borderLeft: '1px solid #eee' }}>
-                <h2 style={{color: '#868e96', marginBottom: '2rem'}}>미리보기</h2>
-                <div className="markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {content}
-                    </ReactMarkdown>
-                </div>
-            </div>
-        </div>
+        </>
     );
 }
 
