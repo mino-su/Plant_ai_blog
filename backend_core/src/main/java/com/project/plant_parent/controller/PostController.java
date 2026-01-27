@@ -1,9 +1,6 @@
 package com.project.plant_parent.controller;
 
-import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
-import com.project.plant_parent.entity.dto.PostRequestDto;
-import com.project.plant_parent.entity.dto.PostResponseDto;
-import com.project.plant_parent.entity.dto.PostUpdateRequestDto;
+import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +22,26 @@ public class PostController {
     private final PostService postService;
 
     // 게시글 생성
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping
     public ResponseEntity<PostResponseDto> createPost(
-            @RequestPart("post") PostRequestDto postRequestDto,
-            @RequestPart(value = "image", required = false) List<MultipartFile> images,
+            @RequestBody PostRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) throws IOException {
+    ) {
 
-        PostResponseDto response = postService.createPost(postRequestDto, images, userDetails.getMember());
+        PostResponseDto response = postService.createPost(postRequestDto, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
+    }
+
+
+    // 게시글 이미지 업로드
+    @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostImageDto> uploadPostImages(
+            @RequestPart(value="image") MultipartFile image
+    ) throws IOException {
+        // 에디터는 파일을 한장식 보냄.
+        PostImageDto postImageDtos = postService.saveImage(image);
+        return ResponseEntity.ok(postImageDtos);
     }
 
     // 이미지 별 AI 분석 요청
@@ -66,15 +73,13 @@ public class PostController {
     }
 
     // 게시글 수정
-    @PutMapping(value="/{postId}",
-    consumes ={MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value="/{postId}")
     public ResponseEntity<PostResponseDto> updatePost(
             @PathVariable Long postId,
-            @RequestPart("post") PostUpdateRequestDto postupdateRequestDto,
-            @RequestPart(value="image", required = false) List<MultipartFile> images,
+            @RequestBody PostUpdateRequestDto postupdateRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) throws IOException{
-        return ResponseEntity.ok(postService.update(postId, postupdateRequestDto, images, userDetails.getMember()));
+        return ResponseEntity.ok(postService.update(postId, postupdateRequestDto, userDetails.getMember()));
     }
 
 

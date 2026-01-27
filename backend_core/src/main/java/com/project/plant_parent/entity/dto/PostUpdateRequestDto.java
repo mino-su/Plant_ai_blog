@@ -13,4 +13,6 @@ public class PostUpdateRequestDto {
 
     // 삭제할 이미지의 id 리스트 [1,3] -> 1번, 3번 이미지 삭제
     private List<Long> deleteImageIds;
+
+    private List<Long> newImageIds;
 }

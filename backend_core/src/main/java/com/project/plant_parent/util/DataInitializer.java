@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
@@ -30,13 +30,15 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // 기존 유저들의 프로필 유실 복구 (Migration)
-//        syncMissingProfiles();
 
         // 신규 더미 유저 생성
-//        createDummyMembers();
+        createDummyMembers();
 
-        cleanExistingProfiles();
+
+        // 기존 유저들의 프로필 유실 복구 (Migration)
+        syncMissingProfiles();
+
+
     }
 
     private void syncMissingProfiles() {
@@ -95,29 +97,5 @@ public class DataInitializer implements CommandLineRunner {
         log.info(">>> 더미 유저 생성 완료.");
     }
 
-    private void cleanExistingProfiles() {
-        log.info(">>> [DataCleaner] 프로필 문구 정화 작업 시작...");
 
-        List<Profile> allProfiles = profileRepository.findAll();
-        int fixCount = 0;
-
-        for (Profile profile : allProfiles) {
-            String bio = profile.getBio();
-
-            if (bio != null && bio.contains("(자동 생성됨)")) {
-                // 문구에서 "(자동 생성됨)" 부분만 제거 (공백 포함)
-                String cleanedBio = bio.replace(" (자동 생성됨)", "");
-
-                // [원리] 영속성 컨텍스트의 변경 감지(Dirty Checking)를 통해 DB에 반영됩니다.
-                profile.updateProfile(cleanedBio, profile.getProfileImageUrl(), profile.getWebsiteUrl());
-                fixCount++;
-            }
-        }
-
-        if (fixCount > 0) {
-            log.info(">>> [DataCleaner] 총 {}개의 프로필 문구를 성공적으로 정화했습니다!", fixCount);
-        } else {
-            log.info(">>> [DataCleaner] 정화할 프로필이 없습니다. 모두 깨끗합니다.");
-        }
-    }
 }

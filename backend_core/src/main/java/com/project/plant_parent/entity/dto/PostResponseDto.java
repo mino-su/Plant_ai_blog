@@ -24,7 +24,7 @@ public class PostResponseDto {
     private List<CommentResponseDto> comments;
 
 
-    private List<PostImageDto> images;
+//    private List<PostImageDto> images; // Refactor: editor 개편 (Content에 이미지 정보(Url) 포함 예정)
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
@@ -46,11 +46,11 @@ public class PostResponseDto {
                                 .map(CommentResponseDto::from)
                                 .collect(Collectors.toList())
                 )
-                .images(
-                        post.getPostImages().stream()
-                                .map(PostImageDto::from)
-                                .collect(Collectors.toList())
-                )
+//                .images(
+//                        post.getPostImages().stream()
+//                                .map(PostImageDto::from)
+//                                .collect(Collectors.toList())
+//                )
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();

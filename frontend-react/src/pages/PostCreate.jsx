@@ -1,117 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import EditorJS from '@editorjs/editorjs';
+import Header from '@editorjs/header';
+import ImageTool from '@editorjs/image';
+import List from '@editorjs/list';
+import api, { uploadImage } from '../api'; // 수정된 api.js 활용
+import CustomHeader from "../components/Header";
+import '../App.css';
 
+/**
+ * [게시글 생성 페이지 - Editor.js 버전]
+ * 작동 원리:
+ * 1. 사용자가 사진을 추가하면 즉시 uploadImage API가 호출됩니다.
+ * 2. 서버가 준 {id, imageUrl} 중 id는 imageIds 배열에 보관하고, imageUrl은 에디터에 보여줍니다.
+ * 3. 최종 저장 시, 에디터의 모든 블록을 JSON 문자열로 변환하여 보냅니다.
+ */
 function PostCreate() {
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState(''); // 마크다운 내용은 여기에 저장됩니다.
-    const [files, setFiles] = useState([]);
     const navigate = useNavigate();
+    const editorInstance = useRef(null); // 에디터 객체를 담을 참조 변수
+    const [title, setTitle] = useState('');
+    const [imageIds, setImageIds] = useState([]); // 업로드된 사진들의 ID를 추적
 
-    const handleFileChange = (e) => {
-        // 파일 선택 시 state 업데이트
-        if (e.target.files) {
-            setFiles(Array.from(e.target.files));
+    useEffect(() => {
+        // [중요] 리액트의 StrictMode 때문에 에디터가 두 번 생기는 것을 방지하기 위해 초기화 체크
+        if (!editorInstance.current) {
+            initEditor();
         }
+        return () => {
+            if (editorInstance.current && editorInstance.current.destroy) {
+                editorInstance.current.destroy();
+                editorInstance.current = null;
+            }
+        };
+    }, []);
+
+    const initEditor = () => {
+        const editor = new EditorJS({
+            holder: 'editorjs', // 이 ID를 가진 div에 에디터가 생깁니다.
+            placeholder: '당신의 식물 이야기를 블록 단위로 적어보세요...',
+            tools: {
+                header: Header,
+                list: List,
+                image: {
+                    class: ImageTool,
+                    config: {
+                        /**
+                         * [커스텀 업로드 핸들러]
+                         * 에디터에서 사진을 선택하면 실행되는 로직입니다.
+                         */
+                        uploader: {
+                            uploadByFile: async (file) => {
+                                try {
+                                    // 1. 서버에 사진 단독 업로드
+                                    const data = await uploadImage(file);
+
+                                    // 2. 나중에 게시글과 연결하기 위해 ID 저장
+                                    setImageIds(prev => [...prev, data.id]);
+
+                                    // 3. 에디터 화면에 사진을 띄우기 위한 결과 반환
+                                    return {
+                                        success: 1,
+                                        file: {
+                                            url: `http://localhost:8080${data.imageUrl}`,
+                                            imageId: data.id // 이미지 블록 데이터에 ID 포함
+                                        }
+                                    };
+                                } catch (error) {
+                                    return { success: 0 };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        editorInstance.current = editor;
     };
 
-    const handleSubmit = async () => { // form 태그가 아니므로 e.preventDefault() 불필요
-        if (!title || !content) {
-            alert("제목과 내용을 모두 입력해주세요.");
+    const handleSave = async () => {
+        if (!title.trim()) {
+            alert("제목을 입력해주세요.");
             return;
         }
 
-        const formData = new FormData();
-
-        // 1. JSON 데이터 (Spring @RequestPart("post")에 대응)
-        const jsonBody = {
-            title: title,
-            content: content
-        };
-
-        // JSON을 Blob으로 감싸서 추가 (한글 깨짐 방지 및 타입 명시)
-        formData.append(
-            "post",
-            new Blob([JSON.stringify(jsonBody)], { type: "application/json" })
-        );
-
-        // 2. 이미지 파일들 (Spring @RequestPart("image")에 대응)
-        files.forEach((file) => {
-            formData.append("image", file);
-        });
-
         try {
-            // Content-Type 헤더를 직접 설정하지 마세요!
-            // axios가 formData를 감지하면 자동으로 boundary를 포함한 올바른 헤더를 생성합니다.
-            await api.post('/api/posts', formData);
+            // 에디터의 모든 데이터를 가져옵니다 (JSON 형태)
+            const outputData = await editorInstance.current.save();
 
-            alert("게시글 작성 완료!");
-            navigate('/'); // 메인으로 이동
+            // 백엔드 PostRequestDto 구조에 맞게 조립
+            const payload = {
+                title: title,
+                content: JSON.stringify(outputData), // 블록 데이터를 문자열로 직렬화
+                imageIds: imageIds // 이번 글에 쓰인 사진 ID 리스트
+            };
+
+            await api.post('/api/posts', payload);
+            alert("식물 일기가 출간되었습니다! 🌿");
+            navigate('/');
         } catch (err) {
-            console.error(err);
-            alert("작성 실패: " + (err.response?.data || err.message));
+            console.error("저장 실패:", err);
+            alert("저장에 실패했습니다.");
         }
     };
 
     return (
-        <div style={{ display: 'flex', height: '100vh' }}>
-            {/* 왼쪽: 에디터 영역 */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '2rem' }}>
-                {/* 제목 입력 연결 */}
+        <>
+            <CustomHeader />
+            <div className="container" style={{ marginTop: '3rem', maxWidth: '800px' }}>
                 <input
                     type="text"
                     placeholder="제목을 입력하세요"
-                    style={{ fontSize: '2.5rem', border: 'none', outline: 'none', fontWeight: 'bold', marginBottom: '1rem' }}
+                    className="post-title"
+                    style={{ border: 'none', outline: 'none', width: '100%', background: 'transparent' }}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
+                <div style={{ width: '100%', height: '4px', background: '#12b886', marginBottom: '2rem' }}></div>
 
-                <div style={{ width: '100%', height: '4px', background: 'rgb(73, 80, 87)', marginBottom: '1rem' }}></div>
+                {/* Editor.js가 마운트될 구역 */}
+                <div id="editorjs" className="post-content" style={{ minHeight: '500px' }}></div>
 
-                {/* 태그나 파일 업로드 UI 추가 (Velog 스타일 하단 바 처럼) */}
-                <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ cursor: 'pointer', padding: '5px 10px', background: '#eee', borderRadius: '4px' }}>
-                        📷 이미지 첨부하기 (여러장 가능)
-                        <input
-                            type="file"
-                            multiple
-                            onChange={handleFileChange}
-                            style={{ display: 'none' }} // 못생긴 기본 input은 숨김
-                        />
-                    </label>
-                    <span style={{ marginLeft: '10px', fontSize: '0.8rem', color: '#888'}}>
-                        {files.length > 0 ? `${files.length}개의 파일 선택됨` : "선택된 파일 없음"}
-                    </span>
-                </div>
-
-                {/* 본문 입력 연결 */}
-                <textarea
-                    style={{ flex: 1, border: 'none', resize: 'none', outline: 'none', fontSize: '1.125rem', fontFamily: 'monospace' }}
-                    placeholder="당신의 식물 이야기를 적어보세요..."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
-
-                {/* 하단 버튼 영역 */}
-                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}>나가기</button>
-                    {/* onClick 이벤트 연결 필수 */}
-                    <button className="btn-primary" onClick={handleSubmit}>출간하기</button>
+                <div className="flex justify-between" style={{ marginTop: '2rem', paddingBottom: '5rem' }}>
+                    <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer' }}>나가기</button>
+                    <button className="btn-primary" onClick={handleSave}>출간하기</button>
                 </div>
             </div>
-
-            {/* 오른쪽: 미리보기 영역 */}
-            <div style={{ flex: 1, background: '#fbfdfc', padding: '2rem', overflowY: 'auto', borderLeft: '1px solid #eee' }}>
-                <h2 style={{color: '#868e96', marginBottom: '2rem'}}>미리보기</h2>
-                <div className="markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {content}
-                    </ReactMarkdown>
-                </div>
-            </div>
-        </div>
+        </>
     );
 }
 

@@ -2,6 +2,7 @@ package com.project.plant_parent.entity;
 
 import com.project.plant_parent.entity.dto.PostUpdateRequestDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Builder
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Post extends BaseTimeEntity{
 
     @Id
@@ -32,14 +35,17 @@ public class Post extends BaseTimeEntity{
     private Member member;
 
     // 댓글 리스트 (1:N) - 게시글 삭제시 댓글도 삭제(Cascade)
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     // 이미지 리스트 (1:N)
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> postImages = new ArrayList<>();
 
     // 좋아요 리스트 (1:N)
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PostLike> postLike = new HashSet<>(); // 중복 방지를 위해 Set 사용
 
