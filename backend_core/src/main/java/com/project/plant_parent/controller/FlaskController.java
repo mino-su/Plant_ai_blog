@@ -1,8 +1,10 @@
 package com.project.plant_parent.controller;
 
+import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
 import com.project.plant_parent.security.UserDetailsImpl;
 
+import com.project.plant_parent.service.AiAnalysisService;
 import com.project.plant_parent.service.FlaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FlaskController {
 
-    private final FlaskService flaskService;
+    //    private final FlaskService flaskService;
+    private final AiAnalysisService aiAnalysisService;
 
     @PostMapping("/detect")
-    public ResponseEntity<FlaskResponseDto> detect(MultipartFile image, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<AiAnalysisResponseDto> detect(MultipartFile image, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long memberId = userDetails.getMember().getId();
 
         // 파일명 : memberId_UUID_원래이름
@@ -35,7 +38,8 @@ public class FlaskController {
 
         String customFileName = memberId.toString() + "_" + UUID.randomUUID() +  extension;
 
-        FlaskResponseDto result = flaskService.analyzeImage(image, customFileName);
+//        FlaskResponseDto result = flaskService.analyzeImage(image, customFileName);
+        AiAnalysisResponseDto result = aiAnalysisService.getFullAnalysis(image, customFileName);
 
         return ResponseEntity.ok(result);
 
