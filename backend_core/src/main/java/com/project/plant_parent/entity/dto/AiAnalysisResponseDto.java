@@ -1,5 +1,7 @@
 package com.project.plant_parent.entity.dto;
 
+import com.project.plant_parent.entity.DiseaseDictionary;
+import com.project.plant_parent.entity.PlantDictionary;
 import com.project.plant_parent.entity.PostImage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,29 +14,45 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AiAnalysisResponseDto {
     private Long imageId;
-    private String plant;
-    private String disease;
-
-    private double confidence;
     private String status; // FAILED, SUCCESS
 
 
-    public static AiAnalysisResponseDto from(PostImage postImage) {
-        String status;
-        String plantName = postImage.getPlant();
+    // PlantDecionary 정보
+    private String plantLabel;
+    private String plantNameKr;
+    private String plantDescription;
 
-        if ("분석 실패".equals(plantName)) {
-            status = "FAILED"; // 분석 시도했으나 에러 발생
-        } else {
-            status = "SUCCESS"; // 정상 결과 나옴
-        }
+    // DiseaseDictionary 정보
+    private String diseaseLabel;
+    private String diseaseNameKr;
+    private Double diseaseConfidence;
+
+    // Guide 정보
+    private String symptoms;
+    private String solutions;
+    private String prevention;
+    private String dangerLevel;
+
+
+    public static AiAnalysisResponseDto of(PostImage postImage,
+                                           PlantDictionary plantDictionary,
+                                           DiseaseDictionary diseaseDictionary) {
 
         return AiAnalysisResponseDto.builder()
                 .imageId(postImage.getId())
-                .plant(plantName)
-                .disease(postImage.getDisease())
-                .confidence(postImage.getConfidence())
-                .status(status)
+                .status("SUCCESS")
+                .plantLabel(plantDictionary.getLabel())
+                .plantNameKr(plantDictionary.getNameKr())
+                .plantDescription(plantDictionary.getDescription())
+                .diseaseLabel(diseaseDictionary.getLabel())
+                .diseaseNameKr(diseaseDictionary.getNameKr())
+                // TODO: diseaseConfidence 어떻게 처리할지 논의 필요
+                .diseaseConfidence(postImage.getConfidence())
+
+                .symptoms(diseaseDictionary.getGuide().getSymptoms())
+                .solutions(diseaseDictionary.getGuide().getSolutions())
+                .prevention(diseaseDictionary.getGuide().getPrevention())
+                .dangerLevel(diseaseDictionary.getGuide().getDangerLevel().name())
                 .build();
 
     }

@@ -161,53 +161,53 @@ public class PostService {
     }
 
 
-    @Transactional
-    public AiAnalysisResponseDto analyzeImage(Long imageId) {
-        PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
-                () -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID: " + imageId)
-        );
-
-        String fileName = postImage.getImageUrl().replace("/images/", "");
-
-        try {
-            FlaskResponseDto aiResult = flaskService.analyzeImage(fileName);
-
-            // 1. API 통신 자체가 성공했는지 확인
-            if (aiResult != null && "success".equals(aiResult.getStatus()) && aiResult.getResults() != null) {
-
-                // 기본값 설정 (분석 결과가 없을 경우를 대비)
-                String plant = "알 수 없는 식물";
-                String disease = "판독 불가";
-                Double confidence = 0.0;
-
-                // 2. 식물 검출 결과가 있는지 확인 (리스트가 비어있지 않은지 체크)
-                var plantList = aiResult.getResults().getPlant_detection();
-                if (plantList != null && !plantList.isEmpty()) {
-                    plant = plantList.get(0).getLabel();
-                }
-
-                // 3. 질병 분석 결과가 있는지 확인
-                var diseaseList = aiResult.getResults().getDisease_analysis();
-                if (diseaseList != null && !diseaseList.isEmpty()) {
-                    disease = diseaseList.get(0).getLabel();
-                    confidence = diseaseList.get(0).getConfidence();
-                }
-
-                // 결과를 DB에 업데이트
-                postImage.updateAiResult(plant, disease, confidence);
-            } else {
-                // API는 성공했지만 status가 success가 아닌 경우 처리
-                postImage.updateAiResult("분석 실패", "서버 응답 오류", 0.0);
-            }
-
-        } catch (Exception e) {
-            // 네트워크 오류, 타임아웃, 인덱스 오류 등 모든 예외를 잡아서 처리
-            log.error("AI 분석 중 예상치 못한 오류 발생: {}", e.getMessage());
-            postImage.updateAiResult("분석 실패", "시스템 오류", 0.0);
-        }
-
-        return AiAnalysisResponseDto.from(postImage);
-    }
+//    @Transactional
+//    public AiAnalysisResponseDto analyzeImage(Long imageId) {
+//        PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
+//                () -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID: " + imageId)
+//        );
+//
+//        String fileName = postImage.getImageUrl().replace("/images/", "");
+//
+//        try {
+//            FlaskResponseDto aiResult = flaskService.analyzeImage(fileName);
+//
+//            // 1. API 통신 자체가 성공했는지 확인
+//            if (aiResult != null && "success".equals(aiResult.getStatus()) && aiResult.getResults() != null) {
+//
+//                // 기본값 설정 (분석 결과가 없을 경우를 대비)
+//                String plant = "알 수 없는 식물";
+//                String disease = "판독 불가";
+//                Double confidence = 0.0;
+//
+//                // 2. 식물 검출 결과가 있는지 확인 (리스트가 비어있지 않은지 체크)
+//                var plantList = aiResult.getResults().getPlant_detection();
+//                if (plantList != null && !plantList.isEmpty()) {
+//                    plant = plantList.get(0).getLabel();
+//                }
+//
+//                // 3. 질병 분석 결과가 있는지 확인
+//                var diseaseList = aiResult.getResults().getDisease_analysis();
+//                if (diseaseList != null && !diseaseList.isEmpty()) {
+//                    disease = diseaseList.get(0).getLabel();
+//                    confidence = diseaseList.get(0).getConfidence();
+//                }
+//
+//                // 결과를 DB에 업데이트
+//                postImage.updateAiResult(plant, disease, confidence);
+//            } else {
+//                // API는 성공했지만 status가 success가 아닌 경우 처리
+//                postImage.updateAiResult("분석 실패", "서버 응답 오류", 0.0);
+//            }
+//
+//        } catch (Exception e) {
+//            // 네트워크 오류, 타임아웃, 인덱스 오류 등 모든 예외를 잡아서 처리
+//            log.error("AI 분석 중 예상치 못한 오류 발생: {}", e.getMessage());
+//            postImage.updateAiResult("분석 실패", "시스템 오류", 0.0);
+//        }
+//
+//        return AiAnalysisResponseDto.from(postImage);
+//    }
 
     // [공통 메서드] 게시글 찾기
     public Post findPost(Long postId) {
