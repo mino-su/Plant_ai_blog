@@ -5,6 +5,7 @@ import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
+@Slf4j
 public class PostController {
     private final PostService postService;
 
@@ -48,6 +50,7 @@ public class PostController {
     @GetMapping("/images/{imageId}/analyze")
     public ResponseEntity<AiAnalysisResponseDto> analyzeImage(@PathVariable Long imageId) {
         AiAnalysisResponseDto result = postService.analyzeImage(imageId);
+        log.info(">>> PostController");
         return ResponseEntity.ok(result);
     }
 
