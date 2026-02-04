@@ -8,8 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "plant_dictionary", uniqueConstraints = {
-        @UniqueConstraint(name = "unique_label", columnNames = {"label"})
+@Table(name = "plant_dictionary",
+        uniqueConstraints = {
+            @UniqueConstraint(name = "unique_plant_label", columnNames = {"label"})
 })
 public class PlantDictionary {
     @Id

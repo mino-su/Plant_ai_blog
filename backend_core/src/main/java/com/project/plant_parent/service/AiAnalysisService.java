@@ -1,9 +1,6 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.entity.DangerLevel;
-import com.project.plant_parent.entity.DiseaseDictionary;
-import com.project.plant_parent.entity.Guide;
-import com.project.plant_parent.entity.PlantDictionary;
+import com.project.plant_parent.entity.*;
 import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
 import com.project.plant_parent.repository.DiseaseDictionaryRepository;
@@ -27,8 +24,12 @@ public class AiAnalysisService {
      *  받아온 라벨을 이용해서 DB(도감 테이블)에서 상세 정보 조회
      *  분석 결과와 도감 정보를 합쳐서 최종 응답 DTO 생성후 반환
      **/
-    public AiAnalysisResponseDto getFullAnalysis(MultipartFile image, String customFileName) {
-        FlaskResponseDto flaskResult = flaskService.analyzeImage(image, customFileName);
+    public AiAnalysisResponseDto getFullAnalysis(PostImage postImage) {
+
+
+        String fileName = postImage.getImageUrl().replace("/images/", "");
+
+        FlaskResponseDto flaskResult = flaskService.analyzeImage(fileName);
 
         if (flaskResult == null || flaskResult.getResults() == null) {
             log.error(">>> AI 분석 결과가 유효하지 않습니다.");
@@ -52,7 +53,7 @@ public class AiAnalysisService {
             dLabel = flaskResult.getResults().getDisease_analysis().get(0).getLabel();
             dConfidence = flaskResult.getResults().getDisease_analysis().get(0).getConfidence();
         } else {
-            dLabel = "normal";
+            dLabel = "Unknown";
         }
 
         // plant dictionary 조회
@@ -65,33 +66,53 @@ public class AiAnalysisService {
         );
 
         // disease dictionary 조회
-        DiseaseDictionary diseaseDictionary = diseaseDictionaryRepository.findByLabel(dLabel).orElseGet(
-                () -> DiseaseDictionary.builder()
-                        .label(dLabel)
-                        .nameKr("진단 정보 알수 없음")
-                        .guide(
-                                Guide.builder()
-                                        .symptoms("정보가 없습니다.")
-                                        .solutions("가까운 화원이나 전문가에게 문의하세요.")
-                                        .dangerLevel(DangerLevel.LOW)
-                                        .build()
-                        )
-                        .build()
-        );
 
-        return AiAnalysisResponseDto.builder()
-                .status("SUCCESS")
-                .plantLabel(plantDictionary.getLabel())
-                .plantNameKr(plantDictionary.getNameKr())
-                .plantDescription(plantDictionary.getDescription())
-                .diseaseConfidence(dConfidence)
-                .diseaseLabel(diseaseDictionary.getLabel())
-                .diseaseNameKr(diseaseDictionary.getNameKr())
-                .symptoms(diseaseDictionary.getGuide().getSymptoms())
-                .solutions(diseaseDictionary.getGuide().getSolutions())
-                .prevention(diseaseDictionary.getGuide().getPrevention())
-                .dangerLevel(diseaseDictionary.getGuide().getDangerLevel().name())
-                .build();
+        if(dLabel.equals("healthy")){
+            return AiAnalysisResponseDto.builder()
+                    .status("SUCCESS")
+                    .plantLabel(plantDictionary.getLabel())
+                    .plantNameKr(plantDictionary.getNameKr())
+                    .plantDescription(plantDictionary.getDescription())
+                    .diseaseConfidence(dConfidence)
+                    .diseaseLabel("Healthy")
+                    .diseaseNameKr("건강한 식물")
+                    .symptoms("식물이 건강합니다.")
+                    .solutions("특별한 관리가 필요하지 않습니다.")
+                    .prevention("정기적인 관리를 통해 건강을 유지하세요.")
+                    .dangerLevel(DangerLevel.LOW.name())
+                    .build();
+        }
+        else {
+            DiseaseDictionary diseaseDictionary = diseaseDictionaryRepository.findByLabel(dLabel).orElseGet(
+                    () -> DiseaseDictionary.builder()
+                            .label(dLabel)
+                            .nameKr("진단 정보 알수 없음")
+                            .guide(
+                                    Guide.builder()
+                                            .symptoms("정보가 없습니다.")
+                                            .solutions("가까운 화원이나 전문가에게 문의하세요.")
+                                            .dangerLevel(DangerLevel.LOW)
+                                            .build()
+                            )
+                            .build()
+            );
+
+
+            return AiAnalysisResponseDto.builder()
+                    .status("SUCCESS")
+                    .plantLabel(plantDictionary.getLabel())
+                    .plantNameKr(plantDictionary.getNameKr())
+                    .plantDescription(plantDictionary.getDescription())
+                    .diseaseConfidence(dConfidence)
+                    .diseaseLabel(diseaseDictionary.getLabel())
+                    .diseaseNameKr(diseaseDictionary.getNameKr())
+                    .symptoms(diseaseDictionary.getGuide().getSymptoms())
+                    .solutions(diseaseDictionary.getGuide().getSolutions())
+                    .prevention(diseaseDictionary.getGuide().getPrevention())
+                    .dangerLevel(diseaseDictionary.getGuide().getDangerLevel().name())
+                    .build();
+
+        }
     }
 
 

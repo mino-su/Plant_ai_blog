@@ -46,7 +46,6 @@ public class AiAnalysisResponseDto {
                 .plantDescription(plantDictionary.getDescription())
                 .diseaseLabel(diseaseDictionary.getLabel())
                 .diseaseNameKr(diseaseDictionary.getNameKr())
-                // TODO: diseaseConfidence 어떻게 처리할지 논의 필요
                 .diseaseConfidence(postImage.getConfidence())
 
                 .symptoms(diseaseDictionary.getGuide().getSymptoms())

@@ -1,5 +1,5 @@
 -- 1. 식물 도감 테이블 (PlantDictionary)
--- AI가 식물을 찾았을 때 "이 식물은 무엇인가"를 알려주는 용도
+
 INSERT INTO plant_dictionary (label, name_kr, description) VALUES
                                                                ('PhilodendronGloriosum', '필로덴드론 글로리오섬', '크고 심장 모양의 잎에 벨벳 질감이 특징인 열대 식물입니다.'),
                                                                ('PileaPeperomioides', '필레아 페페로미오이데스', '동전 모양의 동그란 잎이 특징이며 다산과 행운을 상징합니다.'),
@@ -24,7 +24,7 @@ INSERT INTO plant_dictionary (label, name_kr, description) VALUES
                                                                ('AglaonemaSnowdrop', '아글라오네마 스노우드롭', '흰색과 초록색이 섞여 청량감을 주며 빛이 적은 실내에서도 잘 자랍니다.'),
                                                                ('BanyanTree', '뱅갈고무나무', '밝은 연두색 잎과 흰 줄기가 특징이며 미세먼지 제거 효과가 큽니다.'),
                                                                ('FicusElastica', '인도고무나무', '광택이 나는 두꺼운 잎이 특징이며 생명력이 매우 강합니다.'),
-                                                               ('Adiantum', '아디안툼', '은행잎을 닮은 아주 얇고 섬세한 잎을 가진 습기를 사랑하는 식물입니다.');
+                                                               ('Adiantum', '아디안툼', '은행잎을 닮은 아주 얇고 섬세한 잎을 가진 습기를 사랑하는 식물입니다.') ON CONFLICT DO NOTHING;
 
 -- 2. 병해 도감 테이블 (DiseaseDictionary)
 -- AI가 질병을 분석했을 때 "어떤 상태이고 어떻게 고치나"를 알려주는 가이드용
@@ -34,4 +34,4 @@ INSERT INTO disease_dictionary (label, name_kr, symptoms, solutions, prevention,
                                                                                                    ('black spot', '검은 점 (Black Spot)', '잎 표면에 검은색 또는 암갈색 반점이 나타납니다.', '병든 잎을 즉시 제거하고 살균제를 살포하세요.', '통풍을 원활하게 하고 잎에 직접 물이 닿지 않게 하세요.', 'HIGH'),
                                                                                                    ('lower leaf', '하엽 탈락 (Lower Leaf Drop)', '식물 아래쪽 잎이 노랗게 변하며 힘없이 떨어집니다.', '자연스러운 노화일 수 있으나 과습 여부를 확인하세요.', '주기적인 영양 공급과 환기에 신경 써주세요.', 'LOW'),
                                                                                                    ('dropping', '잎 처짐 (Dropping)', '식물 전체가 축 처지고 잎에 힘이 없습니다.', '즉시 물을 흠뻑 주고 통풍이 잘 되는 곳에 두세요.', '흙의 건조 상태를 수시로 확인하고 물주기를 놓치지 마세요.', 'MEDIUM'),
-                                                                                                   ('curling', '잎 말림 (Curling)', '잎이 안쪽이나 바깥쪽으로 돌돌 말리는 현상입니다.', '해충(응애 등) 유무를 확인하거나 빛의 세기를 조절하세요.', '적절한 광량 유지와 정기적인 잎 닦기를 권장합니다.', 'MEDIUM');
+                                                                                                   ('curling', '잎 말림 (Curling)', '잎이 안쪽이나 바깥쪽으로 돌돌 말리는 현상입니다.', '해충(응애 등) 유무를 확인하거나 빛의 세기를 조절하세요.', '적절한 광량 유지와 정기적인 잎 닦기를 권장합니다.', 'MEDIUM')ON CONFLICT DO NOTHING;

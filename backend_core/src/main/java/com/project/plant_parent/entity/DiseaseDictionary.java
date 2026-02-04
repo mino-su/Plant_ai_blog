@@ -8,8 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "disease_dictionary", uniqueConstraints={
-        @UniqueConstraint(name="unique_label", columnNames = {"label"})
+@Table(name = "disease_dictionary",
+        uniqueConstraints={
+            @UniqueConstraint(name="unique_disease_label", columnNames = {"label"})
 })
 public class DiseaseDictionary {
     @Id
@@ -39,7 +40,7 @@ public class DiseaseDictionary {
      *   "guide": {
      *     "symptoms": "잎 가장자리가 갈색으로 타들어 가며...",
      *     "solutions": "감염된 잎을 즉시 제거하고...",
-     *     "dangerLevel": "높음"
+     *     "dangerLevel": "MEDIUM"
      *   }
      * }
      */

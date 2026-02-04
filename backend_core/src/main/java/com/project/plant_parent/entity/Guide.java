@@ -21,5 +21,6 @@ public class Guide {
     @Column(columnDefinition = "TEXT")
     private String prevention; // 예방
 
+    @Enumerated(EnumType.STRING)
     private DangerLevel dangerLevel; // 위험도
 }
