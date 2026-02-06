@@ -1,6 +1,6 @@
 # 🪴 AI 식물 집사 블로그 #
 
-**AI 모델을 활용한 식물 종류 판별 및 병애 진단 커뮤니티 플랫폼**
+**AI 모델을 활용한 식물 종류 판별 및 병해 진단 커뮤니티 플랫폼**
 
 
 ## 🏗️ 1. System Architecture ##
@@ -131,8 +131,6 @@ Fetch Join & Distinct: JPA N+1 문제를 해결하여 대량 데이터 조회 �
 - Docker & Docker Compose
 
 - JDK 17
-
-- Node.js & npm
 
 
 **Installation & Run**
