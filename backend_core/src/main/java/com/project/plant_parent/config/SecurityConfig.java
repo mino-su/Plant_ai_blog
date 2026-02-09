@@ -38,7 +38,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
         // 원래는 spring securit 내부에서만 쓰이지만 , AuthService에서 사용하기 위해 bean으로 등룍
     }

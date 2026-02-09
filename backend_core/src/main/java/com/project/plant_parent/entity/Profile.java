@@ -43,9 +43,6 @@ public class Profile {
         this.websiteUrl = websiteUrl;
     }
 
-    public void updateBio(String bio) {
-        this.bio = bio;
-    }
 
 
 }
