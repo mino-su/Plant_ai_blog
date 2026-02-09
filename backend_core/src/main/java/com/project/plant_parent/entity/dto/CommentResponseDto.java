@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class CommentResponseDto {
     private Long id;
     private String content;
+    @Builder.Default
     private List<CommentResponseDto> children =  new ArrayList<>(); // 보여줄땐 자식들을 리스트로 묶어서
     private String writer;
 

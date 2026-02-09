@@ -64,7 +64,7 @@ public class AuthService {
 
     @Transactional
     public TokenDto login(LoginRequestDto loginRequestDto) {
-        // 1. login ID/PW 를 기반으로 AuthenticationToken 생성
+        // 1. login ID/PW 를 기반으로 AuthenticationToken 생성 (아직 인증전)
         UsernamePasswordAuthenticationToken authenticationToken = loginRequestDto.toAuthentication();
         // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
         Authentication authentication = authenticationManager.authenticate(authenticationToken);

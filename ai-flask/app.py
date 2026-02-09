@@ -4,7 +4,10 @@ import os
 
 app = Flask(__name__)
 
-#  YOLO 모델 로드
+
+# TODO: Gunicorn 같은 WSGI 서버 추후 도입 - 성능 향상 및 배포 용이, 여러명의 사용자가 접속해도 과부화 X
+
+#  YOLO 모델 로드,
 plant_model = YOLO('plant_best.pt')
 disease_model = YOLO('disease_best_v2.pt')
 
@@ -32,7 +35,7 @@ def detect():
 
     # 2. 첫 번째 모델 분석
     try:
-        plant_results = plant_model.predict(source=save_path, conf=0.1)
+        plant_results = plant_model.predict(source=save_path, conf=0.2)
         plant_data = []
         for r in plant_results:
             for box in r.boxes:
@@ -56,15 +59,18 @@ def detect():
         # 신뢰도가 가장 높은 결과가 맨위(index 0)에 오도록 정렬
         disease_data = sorted(disease_data, key= lambda x: x['confidence'], reverse= True)
 
-        # 4. 통합 결과 반환
-        return jsonify({
+        response_data = {
             "status": "success",
             "filename": filename,
             "results": {
                 "plant_detection": plant_data,
                 "disease_analysis": disease_data
             }
-        })
+        }
+
+
+        # 4. 통합 결과 반환
+        return jsonify(response_data)
 
     except Exception as e:
         # 서버 내부 오류 처리

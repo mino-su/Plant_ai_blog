@@ -1,5 +1,7 @@
 package com.project.plant_parent.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.plant_parent.entity.*;
 import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
@@ -18,6 +20,7 @@ public class AiAnalysisService {
     private final FlaskService flaskService;
     private final PlantDictionaryRepository plantDictionaryRepository;
     private final DiseaseDictionaryRepository diseaseDictionaryRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      *  FlaskService를 통해서 ai 분석 label을 받아온 다음
@@ -30,6 +33,8 @@ public class AiAnalysisService {
         String fileName = postImage.getImageUrl().replace("/images/", "");
 
         FlaskResponseDto flaskResult = flaskService.analyzeImage(fileName);
+
+//        printJson(flaskResult); // 로그로 flask 분석 결과 raw 데이터 출력
 
         if (flaskResult == null || flaskResult.getResults() == null) {
             log.error(">>> AI 분석 결과가 유효하지 않습니다.");
@@ -69,6 +74,7 @@ public class AiAnalysisService {
 
         if(dLabel.equals("healthy")){
             return AiAnalysisResponseDto.builder()
+                    .imageId(postImage.getId())
                     .status("SUCCESS")
                     .plantLabel(plantDictionary.getLabel())
                     .plantNameKr(plantDictionary.getNameKr())
@@ -99,6 +105,7 @@ public class AiAnalysisService {
 
 
             return AiAnalysisResponseDto.builder()
+                    .imageId(postImage.getId())
                     .status("SUCCESS")
                     .plantLabel(plantDictionary.getLabel())
                     .plantNameKr(plantDictionary.getNameKr())
@@ -112,6 +119,17 @@ public class AiAnalysisService {
                     .dangerLevel(diseaseDictionary.getGuide().getDangerLevel().name())
                     .build();
 
+        }
+    }
+
+    private void printJson(Object target) {
+        try {
+            String json = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(target);
+
+            log.info(">>> AI 분석 결과 json 데이터: {}", json);
+        } catch (JsonProcessingException e) {
+            log.warn(">>> [로그 출력 실패] JSON 변환 중 오류가 발생했습니다: {}", e.getMessage());
         }
     }
 
