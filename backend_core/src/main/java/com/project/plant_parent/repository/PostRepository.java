@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post,Long> {
+public interface PostRepository extends JpaRepository<Post,Long>, PostRepositoryCustom {
 
-    List<Post> findAllByOrderByCreatedAtDesc();
+//    List<Post> findAllByOrderByCreatedAtDesc(); // QueryDsl로 페이징 까지 구현했으므로 안씀
 
     Optional<Post> findPostById(Long postId);
 

@@ -47,7 +47,7 @@ public class Post extends BaseTimeEntity{
     // 좋아요 리스트 (1:N)
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostLike> postLike = new HashSet<>(); // 중복 방지를 위해 Set 사용
+    private Set<PostLike> postLike = new HashSet<>();
 
     @Builder
     public Post(String title, String content, Member member) {
