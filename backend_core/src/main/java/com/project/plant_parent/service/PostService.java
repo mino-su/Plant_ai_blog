@@ -107,7 +107,11 @@ public class PostService {
 
     // 아이디로 조회
     public PostResponseDto getPost(Long postId) {
-        return PostResponseDto.from(findPost(postId));
+
+        Post post = postRepository.findPostWithDetailsById(postId).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 게시글 입니다.")
+        );
+        return PostResponseDto.from(post);
     }
 
     // 수정

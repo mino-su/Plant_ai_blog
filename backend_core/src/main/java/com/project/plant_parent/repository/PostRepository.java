@@ -15,7 +15,16 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
 
 //    List<Post> findAllByOrderByCreatedAtDesc(); // QueryDsl로 페이징 까지 구현했으므로 안씀
 
+    // 단순 조회
     Optional<Post> findPostById(Long postId);
+
+    // 상세 페이지용
+    @Query("select p from Post p "+
+            "join fetch p.member " +
+            "left join fetch p.postImages " +
+            "where p.id = :postId"
+    )
+    Optional<Post> findPostWithDetailsById(@Param("postId") Long postId);
 
 
     @Query(

@@ -61,7 +61,7 @@ public class PostController {
     // 전체 게시글 조회
     @GetMapping("")
     public ResponseEntity<Page<PostResponseDto>> getAllPosts(
-            @PageableDefault(size = 9, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(postService.getPostList(pageable));
     }

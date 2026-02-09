@@ -19,7 +19,7 @@ const PostCard = ({ post }) => {
         try {
             const parsed = JSON.parse(post.content);
             const imgBlock = parsed.blocks.find(b => b.type === 'image');
-            return imgBlock ? imgBlock.data.file.url : null;
+            return imgBlock ? imgBlock.data.file.url : `${BASE_URL}${url}`;
         } catch (e) { return null; }
     };
 
@@ -52,7 +52,7 @@ const PostCard = ({ post }) => {
                 <h4 className="card-title">{post.title}</h4>
                 <p className="card-desc">{getSummary()}</p>
                 <div className="card-footer">
-                    <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                    <span>{post.createdAt ? post.createdAt.split(' ')[0] : ' '}</span>
                     <span className="separator">·</span>
                     <span>{post.writer || '익명'}</span>
                 </div>

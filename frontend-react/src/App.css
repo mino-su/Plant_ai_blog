@@ -643,6 +643,51 @@ body {
     color: var(--text-muted);
 }
 
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 4rem 0 6rem 0;
+}
+
+.page-number-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-number-btn:hover {
+    background: var(--bg-element);
+}
+
+.page-number-btn.active {
+    background: #12b886; /* 알리프 포인트 컬러 */
+    color: white;
+}
+
+.page-nav-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: #12b886;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.page-nav-btn:disabled {
+    color: var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
 /* 프로필 수정 버튼 전용 스타일 */
 .edit-btn {
     /* 1. 크기 축소 */
