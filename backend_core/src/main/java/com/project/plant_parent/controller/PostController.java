@@ -6,6 +6,10 @@ import com.project.plant_parent.service.PostService;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -56,9 +60,10 @@ public class PostController {
 
     // 전체 게시글 조회
     @GetMapping("")
-    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
-
-        return ResponseEntity.ok(postService.getAllPosts());
+    public ResponseEntity<Page<PostResponseDto>> getAllPosts(
+            @PageableDefault(size = 9, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(postService.getPostList(pageable));
     }
 
     // 특정 게시물 조회

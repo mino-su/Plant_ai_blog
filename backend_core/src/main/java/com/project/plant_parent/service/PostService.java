@@ -9,6 +9,8 @@ import com.project.plant_parent.repository.PostImageRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +33,6 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
-    private final FlaskService flaskService;
     private final FileService fileService;
     private final AiAnalysisService aiAnalysisService;
 
@@ -90,11 +91,17 @@ public class PostService {
 
 
     // 전체 조회
-    public List<PostResponseDto> getAllPosts() {
-        // 작성일 기준 최신순 내림차순
-        return postRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(PostResponseDto::from)
-                .collect(Collectors.toList());
+//    public List<PostResponseDto> getAllPosts() {
+//        // 작성일 기준 최신순 내림차순
+//        return postRepository.findAllByOrderByCreatedAtDesc().stream()
+//                .map(PostResponseDto::from)
+//                .collect(Collectors.toList());
+//    }
+
+    // 전체 조회 - 페이징 적용
+    public Page<PostResponseDto> getPostList(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllWithPaging(pageable);
+        return posts.map(PostResponseDto::from);
     }
 
 
