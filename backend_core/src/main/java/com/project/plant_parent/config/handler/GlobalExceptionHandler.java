@@ -1,44 +1,38 @@
 package com.project.plant_parent.config.handler;
 
-import com.project.plant_parent.config.exception.CustomException;
+import com.project.plant_parent.config.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
-import com.project.plant_parent.entity.dto.ErrorResponse;
+import com.project.plant_parent.entity.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice // 프로젝트 전체의 컨트롤레에서 발생하는 예외를 한곳에서 잡음
+@RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    /**
-     * CustomException 처리
-     */
-    @ExceptionHandler(CustomException.class)
-    protected ResponseEntity<ErrorResponse> handleCustomException(CustomException exception) {
-        log.warn("CustomException 발생 :{} = {}", exception.getErrorCode().getCode(),exception.getMessage());
+
+    @ExceptionHandler(BusinessException.class)
+    protected ResponseEntity<ErrorResponseDto> handleCustomException(BusinessException exception) {
+        log.warn(">> [BusinessException] :{} = {}", exception.getErrorCode().getCode(),exception.getMessage());
         ErrorCode errorCode = exception.getErrorCode();
 
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ErrorResponse.of(errorCode));
-
+                .body(ErrorResponseDto.from(errorCode));
 
     }
 
-    /**
-     * 일반적인 예외
-     */
-    @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ErrorResponse> handleException(Exception exception) {
 
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ErrorResponseDto> handleException(Exception exception) {
+        // 반드시 error 레벨로 로그 남기는 것 필수
         log.error("Exception 발생: ", exception);
 
-        // 사용자에게는 보안을 위해 상세 에러를 숨기고 규격화된 메세지만 보냄    
+        ErrorCode errorCode = ErrorCode.GLOBAL_INTERNAL_ERROR;
+
         return ResponseEntity
-                .status(500)
-                .body(new ErrorResponse("SERVER_ERROR", "서버 내부 오류가 발생했습니다."));
+                .status(errorCode.getStatus())
+                .body(ErrorResponseDto.from(errorCode));
     }
 }

@@ -1,6 +1,8 @@
 package com.project.plant_parent.service;
 
 import com.project.plant_parent.config.JwtTokenProvider;
+import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.entity.RefreshToken;
@@ -38,7 +40,7 @@ public class AuthService {
     public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())) {
-            throw new RuntimeException("이미 사용중인 이메일입니다.");
+            throw new BusinessException(ErrorCode.MEMBER_EMAIL_ALREADY_EXISTS);
         }
         Member member = memberRequestDto.toMember(passwordEncoder);
 
@@ -83,7 +85,7 @@ public class AuthService {
     public TokenDto reissue(TokenRequestDto tokenRequestDto) {
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(tokenRequestDto.getRefreshToken())) {
-            throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_INVALID);
         }
         // 2. Access Token 에서 Member Email 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(tokenRequestDto.getAccessToken());
@@ -93,7 +95,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
         // 4. Refresh Token 일치하는지 검사
         if (!refreshToken.getValue().equals(tokenRequestDto.getRefreshToken())) {
-            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.AUTH_TOKEN_MISMATCH);
         }
         // 5. 새로운 토큰 생성
         TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
