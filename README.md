@@ -122,8 +122,20 @@ Fetch Join & Distinct: JPA N+1 문제를 해결하여 대량 데이터 조회 �
         }
 ```
 
+## 🚨 5. 핵심 Error Code
 
-## 🚀 5. Getting Started
+### 👤 사용자 및 소셜
+
+| 에러 코드 명칭 | HTTP 상태코드 | 설명 |
+| --------------------------------- | -------------| --------------------------------------|
+| `MEMBER_NOT_FOUND` | 404  | 존재하지 않는 회원 조회시 |
+| `DUPLICATE_EMAIL`  | 409 | 이미 가입된 이메일로 가입시 |
+| `INVALID_PASSWORD` | 401 | 로그인 시 비밀번호 불일치 |
+| `UNAUTHORIZED_MEMBER` | 401 | 토큰이 없거나 만료된 경우 |
+| `ACCESS_DENIED` | 403 | 본인 글이 아닌데 수정/삭제 시 |
+
+
+## 🚀 6. Getting Started
 
 
 **Prerequisites**
