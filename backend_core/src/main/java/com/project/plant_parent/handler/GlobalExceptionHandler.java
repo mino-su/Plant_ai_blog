@@ -1,6 +1,6 @@
-package com.project.plant_parent.config.handler;
+package com.project.plant_parent.handler;
 
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;

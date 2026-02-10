@@ -1,12 +1,11 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.PostImage;
 import com.project.plant_parent.entity.dto.*;
-import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.PostImageRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

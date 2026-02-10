@@ -1,7 +1,7 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.config.JwtTokenProvider;
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.util.JwtTokenProvider;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Profile;

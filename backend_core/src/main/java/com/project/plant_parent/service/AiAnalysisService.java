@@ -2,7 +2,6 @@ package com.project.plant_parent.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.plant_parent.config.exception.BusinessException;
 import com.project.plant_parent.entity.*;
 import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
@@ -11,7 +10,6 @@ import com.project.plant_parent.repository.PlantDictionaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor

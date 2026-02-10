@@ -1,10 +1,7 @@
 package com.project.plant_parent.config;
 
-import com.project.plant_parent.config.filter.JwtAccessDeniedHandler;
-import com.project.plant_parent.config.filter.JwtAuthenticationEntryPoint;
-import com.project.plant_parent.config.filter.JwtAuthenticationFilter;
-import com.project.plant_parent.service.AuthService;
-import com.project.plant_parent.service.CustomUserDetailService;
+import com.project.plant_parent.filter.JwtAuthenticationFilter;
+import com.project.plant_parent.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

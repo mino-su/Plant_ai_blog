@@ -1,20 +1,17 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.dto.MyPageResponseDto;
-import com.project.plant_parent.entity.dto.PostResponseDto;
 import com.project.plant_parent.repository.FollowRepository;
 import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

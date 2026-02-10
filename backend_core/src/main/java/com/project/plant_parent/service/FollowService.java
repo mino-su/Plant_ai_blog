@@ -1,6 +1,6 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Follow;
 import com.project.plant_parent.entity.Member;

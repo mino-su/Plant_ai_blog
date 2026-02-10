@@ -1,6 +1,6 @@
 package com.project.plant_parent.service;
 
-import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.Comment;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
@@ -12,8 +12,6 @@ import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
