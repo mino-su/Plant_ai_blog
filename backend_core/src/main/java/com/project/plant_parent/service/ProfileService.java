@@ -1,5 +1,7 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.exception.BusinessException;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.entity.dto.ProfileRequestDto;
 import com.project.plant_parent.entity.dto.ProfileResponseDto;
@@ -29,7 +31,7 @@ public class ProfileService {
 
     private Profile getProfileByMemberId(Long memberId) {
         Profile profile = profileRepository.findProfileById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다. : " + memberId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return profile;
     }
 

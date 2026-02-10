@@ -1,4 +1,4 @@
-package com.project.plant_parent.config.filter;
+package com.project.plant_parent.filter;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,30 +1,24 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.exception.BusinessException;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.PostImage;
 import com.project.plant_parent.entity.dto.*;
-import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.PostImageRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -53,9 +47,7 @@ public class PostService {
         // 미리 올린 이미지와 연결
         if (postRequestDto.getImageIds() != null && !postRequestDto.getImageIds().isEmpty()) {
             for (Long imageId : postRequestDto.getImageIds()) {
-                PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
-                        () -> new IllegalArgumentException("존재하지 않는 이미지 Id 입니다." + imageId)
-                );
+                PostImage postImage = getImage(imageId);
 
                 // postImage에 post 매핑, 이제 postId가 null이 아님
                 postImage.mappingPost(savedPost);
@@ -108,8 +100,9 @@ public class PostService {
     // 아이디로 조회
     public PostResponseDto getPost(Long postId) {
 
+        // 상세 조회 버전
         Post post = postRepository.findPostWithDetailsById(postId).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 게시글 입니다.")
+                () -> new BusinessException(ErrorCode.POST_NOT_FOUND)
         );
         return PostResponseDto.from(post);
     }
@@ -146,15 +139,15 @@ public class PostService {
         // 수정 중에 에디터에서 미리 추가한 사진들의 id를 가져와 post를 Mapping
         if (postUpdateRequestDto.getNewImageIds() != null && !postUpdateRequestDto.getNewImageIds().isEmpty()) {
             for (Long imageId : postUpdateRequestDto.getNewImageIds()) {
-                PostImage newImage= postImageRepository.findById(imageId).orElseThrow(
-                        () -> new IllegalArgumentException("이미지가 존재하지 않습니다." + imageId)
-                );
+                PostImage newImage= getImage(imageId);
                 newImage.mappingPost(post);
             }
         }
 
         return PostResponseDto.from(post);
     }
+
+
 
     public void deleteFileByUrl(String imageUrl) {
         String fileName = imageUrl.replace("/images/", "");
@@ -175,26 +168,29 @@ public class PostService {
 
     @Transactional
     public AiAnalysisResponseDto analyzeImage(Long imageId) {
-        PostImage postImage = postImageRepository.findById(imageId).orElseThrow(
-                () -> new IllegalArgumentException("이미지를 찾을 수 없습니다. ID: " + imageId)
-        );
+        PostImage postImage = getImage(imageId);
 
         return aiAnalysisService.getFullAnalysis(postImage);
     }
 
     // [공통 메서드] 게시글 찾기
     public Post findPost(Long postId) {
-        return postRepository.findPostById(postId).orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+        return postRepository.findPostById(postId).orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 
     //[공통 메서드] 작성자 검증
     public void validateWriter(Post post, Member member) {
         if (!post.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("작성자만 수정/삭제 할 수 있습니다.");
+            throw new BusinessException(ErrorCode.POST_NOT_WRITER);
         }
     }
 
-
+    // [공통 메서드] 이미지 찾기
+    private @NonNull PostImage getImage(Long imageId) {
+        return postImageRepository.findById(imageId).orElseThrow(
+                () -> new BusinessException(ErrorCode.IMAGE_NOT_FOUND)
+        );
+    }
 
 
 

@@ -1,6 +1,6 @@
-package com.project.plant_parent.config.filter;
+package com.project.plant_parent.filter;
 
-import com.project.plant_parent.config.JwtTokenProvider;
+import com.project.plant_parent.util.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
