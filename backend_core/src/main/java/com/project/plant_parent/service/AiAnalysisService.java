@@ -2,6 +2,7 @@ package com.project.plant_parent.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.plant_parent.config.exception.BusinessException;
 import com.project.plant_parent.entity.*;
 import com.project.plant_parent.entity.dto.AiAnalysisResponseDto;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;

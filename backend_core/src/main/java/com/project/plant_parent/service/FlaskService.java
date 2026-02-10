@@ -1,5 +1,7 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +52,8 @@ public class FlaskService {
         File file = path.toFile();
 
         if (!file.exists()) {
-            throw new RuntimeException("분석할 파일이 존재하지 않습니다." + customFilename);
+            log.error(">>> 파일명 : {}", customFilename);
+            throw new BusinessException(ErrorCode.GLOBAL_FILE_NOT_FOUND);
         }
 
         body.add("image", new FileSystemResource(file));
@@ -64,7 +67,7 @@ public class FlaskService {
             return restTemplate.postForObject(flaskUrl, requestEntity, FlaskResponseDto.class);
         } catch (Exception e) {
             log.error(">>> Flask 서버와 통신 중 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("AI 서버 분석 실패.", e);
+            throw new BusinessException(ErrorCode.AI_SERVER_ERROR);
         }
 
 

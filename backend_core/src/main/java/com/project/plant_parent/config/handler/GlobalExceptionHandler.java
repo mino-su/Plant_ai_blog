@@ -21,7 +21,6 @@ public class GlobalExceptionHandler {
                 .status(errorCode.getStatus())
                 .body(ErrorResponseDto.from(errorCode));
 
-
     }
 
 
@@ -30,7 +29,7 @@ public class GlobalExceptionHandler {
         // 반드시 error 레벨로 로그 남기는 것 필수
         log.error("Exception 발생: ", exception);
 
-        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        ErrorCode errorCode = ErrorCode.GLOBAL_INTERNAL_ERROR;
 
         return ResponseEntity
                 .status(errorCode.getStatus())

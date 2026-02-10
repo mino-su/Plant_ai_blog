@@ -1,6 +1,8 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.config.exception.BusinessException;
 import com.project.plant_parent.entity.Comment;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.dto.CommentRequestDto;
@@ -24,19 +26,19 @@ public class CommentService {
     public CommentResponseDto createComment(Long postId, CommentRequestDto commentRequestDto, Member member) {
         // 게시글 확인
         Post post = postRepository.findPostById(postId).orElseThrow(
-                () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
+                () -> new BusinessException(ErrorCode.POST_NOT_FOUND)
         );
 
         Comment parent = null;
         // 대댓글인 경우 부모 댓글 확인
         if (commentRequestDto.getParentId() != null) {
             parent = commentRepository.findById(commentRequestDto.getParentId()).orElseThrow(
-                    () -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다.")
+                    () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND)
             );
 
             // 부모 댓글과 같은 게시글인지 확인
             if (!parent.getPost().getId().equals(postId)) {
-                throw new IllegalArgumentException("부모 댓글과 같은 게시글에만 대댓글을 달 수 있습니다.");
+                throw new BusinessException(ErrorCode.COMMENT_NOT_MATCHED);
             }
         }
 
@@ -65,7 +67,7 @@ public class CommentService {
 
     private Comment findComment(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new IllegalArgumentException("댓글이 존재하지 않습니다.")
+                () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND)
         );
     }
 
@@ -80,7 +82,7 @@ public class CommentService {
 
     public void validateWriter(Comment comment, Member member) {
         if (!comment.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("댓글 작성자만 댓글을 수정/삭제 할 수 있습니다.");
+            throw new BusinessException(ErrorCode.COMMENT_NOT_WRITER);
         }
     }
 
