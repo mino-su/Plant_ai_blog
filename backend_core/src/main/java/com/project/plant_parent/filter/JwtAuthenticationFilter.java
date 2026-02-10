@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 정상 토근일 경우 SecurityContext에 인증 정보 저장
                     Authentication authentication = jwtTokenProvider.getAuthentication(jwt);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.info(" >>>[인증 성공] 사용자: {}", authentication.getName());
+                    log.debug(" >>>[인증 성공] 사용자: {}", authentication.getName());
 
                 } else{
                     // 로그아웃된 토큰의 경우

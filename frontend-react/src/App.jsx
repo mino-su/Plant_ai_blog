@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {AuthProvider} from "./components/AuthContext.jsx";
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
@@ -25,37 +26,39 @@ function App() {
     };
 
     return (
-        <Router>
-            {/* 전역 container를 삭제하여 각 페이지가 자신의 레이아웃을 100% 통제하게 합니다.
-         에디터 같은 페이지는 화면 끝까지 넓게 써야 하기 때문입니다.
-      */}
-            <Routes>
-                {/* 인증이 필요 없는 공용 라우트 */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+        <AuthProvider>
+            <Router>
+                {/* 전역 container를 삭제하여 각 페이지가 자신의 레이아웃을 100% 통제하게 합니다.
+             에디터 같은 페이지는 화면 끝까지 넓게 써야 하기 때문입니다.
+          */}
+                <Routes>
+                    {/* 인증이 필요 없는 공용 라우트 */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
 
-                {/* 인증이 필요한 비공개 라우트 */}
-                <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+                    {/* 인증이 필요한 비공개 라우트 */}
+                    <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
 
-                {/* [에디터 개편] 글쓰기 - Editor.js가 로드될 페이지 */}
-                <Route path="/write" element={<PrivateRoute><PostCreate /></PrivateRoute>} />
+                    {/* [에디터 개편] 글쓰기 - Editor.js가 로드될 페이지 */}
+                    <Route path="/write" element={<PrivateRoute><PostCreate /></PrivateRoute>} />
 
-                {/* [구조화] 마이페이지 - 파라미터를 :memberId로 변경하여 가독성 향상 */}
-                <Route path="/members/:memberId/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+                    {/* [구조화] 마이페이지 - 파라미터를 :memberId로 변경하여 가독성 향상 */}
+                    <Route path="/members/:memberId/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
 
-                {/* [구조화] 상세 조회 - 파라미터를 :postId로 변경 */}
-                <Route path="/posts/:postId" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
+                    {/* [구조화] 상세 조회 - 파라미터를 :postId로 변경 */}
+                    <Route path="/posts/:postId" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
 
-                {/* [에디터 개편] 수정하기 - 기존 데이터를 JSON으로 불러올 페이지 */}
-                <Route path="/posts/:postId/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
+                    {/* [에디터 개편] 수정하기 - 기존 데이터를 JSON으로 불러올 페이지 */}
+                    <Route path="/posts/:postId/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
 
-                {/* 설정 및 프로필 수정 */}
-                <Route path="/setting" element={<PrivateRoute><Setting /></PrivateRoute>} />
+                    {/* 설정 및 프로필 수정 */}
+                    <Route path="/setting" element={<PrivateRoute><Setting /></PrivateRoute>} />
 
-                {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
-                <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-        </Router>
+                    {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
 

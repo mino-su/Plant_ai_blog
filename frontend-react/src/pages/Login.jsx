@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import {useAuth} from "../components/AuthContext.jsx";
 import api from '../api';
 import '../App.css'; // 스타일 적용
 
@@ -7,6 +8,7 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const {loginSuccess} = useAuth();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -18,7 +20,8 @@ function Login() {
             localStorage.setItem('refreshToken', response.data.refreshToken);
 
             // 사용자 경험을 위해 바로 이동하기보다 살짝 알림
-            // alert("로그인 성공!"); -> 요즘은 알림 없이 부드럽게 넘어가는 게 추세입니다.
+            alert("로그인 성공!");
+            loginSuccess(response.data.accessToken);
             navigate('/');
         } catch (error) {
             // 에러 메시지가 서버에서 오면 그것을 보여주고, 아니면 기본 메시지
