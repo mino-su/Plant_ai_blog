@@ -1,6 +1,8 @@
 package com.project.plant_parent.service;
 
 import com.project.plant_parent.config.JwtTokenProvider;
+import com.project.plant_parent.config.exception.BusinessException;
+import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.entity.RefreshToken;
@@ -38,7 +40,7 @@ public class AuthService {
     public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
 
         if (memberRepository.existsByEmail(memberRequestDto.getEmail())) {
-            throw new RuntimeException("이미 사용중인 이메일입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
         Member member = memberRequestDto.toMember(passwordEncoder);
 
