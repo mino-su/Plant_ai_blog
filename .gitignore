@@ -15,5 +15,5 @@ ai-serving/.env
 # postgres
 /postgres-data
 
-#local date folder
+#local Data Folder
 /uploads
