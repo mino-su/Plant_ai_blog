@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -23,10 +23,15 @@ function AnalysisImageBlock({ imageInfo }) {
         loading: true // 초기값은 true
     });
 
+    //중복 호출 방지를 위한 useRef(StrictMode 대응)
+    const analysisStarted = useRef(false);
+
     useEffect(() => {
+        if(analysisStarted.current) return;
+
         const runAnalysis = async () => {
             try {
-                // 1. 여기서 setResult를 사용하여 로딩 시작을 알립니다.
+                analysisStarted.current = true;
                 setResult(prev => ({ ...prev, loading: true }));
 
                 const res = await api.get(`/api/posts/images/${imageInfo.id}/analyze`);
