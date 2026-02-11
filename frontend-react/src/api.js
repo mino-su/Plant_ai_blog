@@ -5,6 +5,9 @@ import axios from 'axios';
  */
 const api = axios.create({
     baseURL: 'http://localhost:8080',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     withCredentials: true
 });
 
@@ -17,11 +20,6 @@ api.interceptors.request.use(
         const token = localStorage.getItem('accessToken');
 
         if (token) {
-            /**
-             * [따옴표 제거 로직]
-             * Header.jsx에서 로그인 처리를 할 때 따옴표가 포함되어 저장될 수 있습니다.
-             * 여기서 정제해 주면 Header.jsx는 복잡한 처리 없이 데이터를 그냥 저장만 해도 됩니다.
-             */
             const cleanToken = token.replace(/^"(.*)"$/, '$1');
             config.headers.Authorization = `Bearer ${cleanToken}`;
         }
@@ -36,23 +34,44 @@ api.interceptors.request.use(
  */
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const originalRequest = error.config;
+
         // 401 Unauthorized: 토큰 만료 시
-        if (error.response && error.response.status === 401) {
+        if (error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true; // 무한 루프 방지용
 
-            /**
-             * [Header.jsx와 데이터 동기화]
-             * 사용자님의 Header.jsx에서 사용하는 모든 키값을 여기서 한꺼번에 지워줍니다.
-             * 그래야 401 에러가 났을 때 헤더의 '로그인 상태'도 즉시 풀리게 됩니다.
-             */
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken'); // Header에서 지우는 키 추가
-            localStorage.removeItem('userId');       // Header에서 저장하는 키 추가
+            try {
+                const accessToken = localStorage.getItem('accessToken');
+                const refreshToken = localStorage.getItem('refreshToken');
 
-            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+                // backend의 /auth/reissue 호출
+                const res = await axios.post('http://localhost:8080/auth/reissue', {
+                    accessToken: accessToken,
+                    refreshToken: refreshToken
+                });
 
-            // 로그인 페이지로 이동 (Header의 navigate('/') 보다 401 상황에선 /login이 더 정석적입니다.)
-            window.location.href = '/login';
+                if(res.status == 200){
+                    const {accessToken: newAccessToken, refreshToken: newRefreshToken} = res.data;
+
+                    // 새 토큰 저장
+                    localStorage.setItem('accessToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    // 원래 실패 했던 요청에 새 토큰을 넣어 재시도
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                    return axios(originalRequest);
+                }
+
+            } catch (reissueError) {
+                // 재발급 마저 실패할 경우(refreshToken 만료 등) 로그아웃 처리
+                console.error("토큰 재발급 실패. 다시 로그인 해야 합니다.");
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/login';
+                return Promise.reject(reissueError);
+
+            }
         }
         return Promise.reject(error);
     }
