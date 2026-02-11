@@ -1,6 +1,7 @@
 package com.project.plant_parent.entity.dto;
 
 import com.project.plant_parent.entity.Profile;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +12,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ProfileRequestDto {
+
+    @NotBlank
+    private String username;
+
     private String bio;
 
     private String websiteUrl;
 
-    public static ProfileRequestDto of(String bio, String websiteUrl) {
+    public static ProfileRequestDto of(String username,String bio, String websiteUrl) {
         return ProfileRequestDto.builder()
+                .username(username)
                 .bio(bio)
                 .websiteUrl(websiteUrl)
                 .build();

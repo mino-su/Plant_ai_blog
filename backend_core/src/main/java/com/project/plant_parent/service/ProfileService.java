@@ -1,13 +1,16 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Profile;
 import com.project.plant_parent.entity.dto.ProfileRequestDto;
 import com.project.plant_parent.entity.dto.ProfileResponseDto;
+import com.project.plant_parent.repository.MemberRepository;
 import com.project.plant_parent.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,11 +24,13 @@ import java.io.IOException;
 public class ProfileService {
     private final ProfileRepository profileRepository;
     private final FileService fileService;
+    private final MemberRepository memberRepository;
 
 
     public ProfileResponseDto getProfile(Long memberId) {
         Profile profile = getProfileByMemberId(memberId);
-        return ProfileResponseDto.from(profile);
+        Member member = getMemberByMemberId(memberId);
+        return ProfileResponseDto.from(profile,member);
 
     }
 
@@ -52,9 +57,17 @@ public class ProfileService {
             profileImageUrl = "/images/" + newFileName;
         }
 
+        Member member = getMemberByMemberId(memberId);
         profile.updateProfile(profileRequestDto.getBio(), profileImageUrl, profileRequestDto.getWebsiteUrl());
-        return ProfileResponseDto.from(profile);
+        member.updateUsername(profileRequestDto.getUsername());
+        return ProfileResponseDto.from(profile, member);
 
+    }
+
+    private @NonNull Member getMemberByMemberId(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(
+                () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
+        );
     }
 
 

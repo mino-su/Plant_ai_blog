@@ -41,6 +41,8 @@ public class AiAnalysisService {
         }
 
 
+
+
         String pLabel;
 
         if (flaskResult.getResults().getPlant_detection() != null &&
@@ -59,6 +61,9 @@ public class AiAnalysisService {
         } else {
             dLabel = "Unknown";
         }
+
+        // DB에 postImage 정보 update
+        postImage.updateAiResult(pLabel,dLabel,dConfidence);
 
         // plant dictionary 조회
         PlantDictionary plantDictionary = plantDictionaryRepository.findByLabel(pLabel).orElseGet(
