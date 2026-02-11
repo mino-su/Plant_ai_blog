@@ -11,3 +11,9 @@ ai-serving/.env
 .DS_Store
 *.class
 *.jar
+
+# postgres
+/postgres-data
+
+#local date folder
+/uploads
