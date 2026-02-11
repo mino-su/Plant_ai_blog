@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
             const res = await api.get('/api/members/me');
             setUser(res.data);
             setIsLoggedIn(true);
-            localStorage.setItem('userId', res.data.memberId);
+            localStorage.setItem('userId', res.data);
         } catch (err) {
             console.error("인증 실패", err)
             handleLogout();
