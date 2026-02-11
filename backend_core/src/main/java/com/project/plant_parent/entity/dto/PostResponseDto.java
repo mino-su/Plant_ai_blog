@@ -21,6 +21,7 @@ public class PostResponseDto {
     private String title;
     private String content;
     private String writer; // Member 전체가 아니라 username만 전달
+    private Long memberId;
     private List<CommentResponseDto> comments;
 
 
@@ -39,6 +40,7 @@ public class PostResponseDto {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .memberId(post.getMember().getId())
                 .writer(post.getMember().getUsername())
                 .comments(
                         post.getComments().stream()

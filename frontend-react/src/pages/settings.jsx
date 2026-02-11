@@ -13,6 +13,7 @@ import '../App.css';
 const Setting = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState({
+        username: "",
         bio: "",
         websiteUrl: "",
         profileImageUrl: ""
@@ -32,6 +33,7 @@ const Setting = () => {
             const res = await api.get(`/api/members/${myId}/profile`);
 
             setProfile({
+                username:res.data.username ?? "",
                 bio: res.data.bio ?? "",
                 websiteUrl: res.data.websiteUrl ?? "",
                 profileImageUrl: res.data.profileImageUrl ?? ""
@@ -56,6 +58,7 @@ const Setting = () => {
 
         // 1. 프로필 텍스트 정보 (JSON Blob 처리)
         const requestDto = {
+            username: profile.username,
             bio: profile.bio,
             websiteUrl: profile.websiteUrl
         };
@@ -131,6 +134,18 @@ const Setting = () => {
                             />
                         </div>
                         {/* ----------------------------- */}
+
+                        <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>닉네임</label>
+                            <textarea
+                                className="styled-input"
+                                style={{ height: '50px', padding: '12px', resize: 'none' }}
+                                value={profile.username}
+                                onChange={(e) => setProfile({...profile, username: e.target.value})}
+                                placeholder="닉네임을 작성해주세요."
+                            />
+                        </div>
+
 
                         <div className="input-group" style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>한 줄 소개</label>

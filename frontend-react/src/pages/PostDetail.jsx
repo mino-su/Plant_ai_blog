@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import api from '../api'; // 공통 API 모듈
 import Header from "../components/Header";
 import '../App.css';
+import {useAuth} from "../components/AuthContext.jsx";
 
 const BASE_URL = "http://localhost:8080";
-
-
-
 
 function AnalysisImageBlock({ imageInfo }) {
     const [result, setResult] = useState({
@@ -25,15 +23,18 @@ function AnalysisImageBlock({ imageInfo }) {
         loading: true // 초기값은 true
     });
 
+    //중복 호출 방지를 위한 useRef(StrictMode 대응)
+    const analysisStarted = useRef(false);
+
     useEffect(() => {
+        if(analysisStarted.current) return;
+
         const runAnalysis = async () => {
             try {
-                // 1. 여기서 setResult를 사용하여 로딩 시작을 알립니다.
+                analysisStarted.current = true;
                 setResult(prev => ({ ...prev, loading: true }));
 
                 const res = await api.get(`/api/posts/images/${imageInfo.id}/analyze`);
-
-                console.log("AI 분석 결과 JSON:", res.data);
 
                 // 2. 백엔드 DTO와 필드명을 1:1로 맞춥니다.
                 setResult({
@@ -157,10 +158,13 @@ export default function PostDetail() {
     const {postId} = useParams();
     const navigate = useNavigate();
 
+    const {user: currentUser} = useAuth();
+
     const [post, setPost] = useState(null);
     const [contentBlocks, setContentBlocks] = useState([]);
     const [isOldText, setIsOldText] = useState(false);
     const [commentContent, setCommentContent] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!postId) return;
@@ -189,6 +193,8 @@ export default function PostDetail() {
         } catch (err) {
             alert("게시글을 불러올 수 없습니다.");
             navigate('/');
+        }finally {
+            setLoading(false)
         }
     };
 
@@ -203,6 +209,7 @@ export default function PostDetail() {
             alert("삭제 권한이 없습니다.");
         }
     };
+
 
     // [기존 기능] 댓글 등록
     const submitComment = async () => {
@@ -251,7 +258,13 @@ export default function PostDetail() {
         }
     };
 
-    if (!post) return <Header/>;
+
+    if (loading || !post) {
+        return <div className="loading">게시글을 불러오는 중입니다... 🌱</div>;
+    }
+
+    // 현재 작성자가 지금 로그인 한 사람이 맞는지
+    const isAuthor = currentUser && Number(post.memberId) === Number(currentUser.memberId);
 
     return (
         <>
@@ -266,10 +279,12 @@ export default function PostDetail() {
                             <span style={{margin: '0 0.5rem'}}>·</span>
                             <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
-                        <div className="post-actions">
-                            <button onClick={() => navigate(`/posts/${postId}/edit`)}>수정</button>
-                            <button onClick={handleDelete} style={{color: '#fa5252'}}>삭제</button>
-                        </div>
+                        {isAuthor && (
+                            <div className="post-actions">
+                                <button onClick={() => navigate(`/posts/${postId}/edit`)}>수정</button>
+                                <button onClick={handleDelete} style={{color: '#fa5252'}}>삭제</button>
+                            </div>
+                            )}
                     </div>
                 </div>
 
