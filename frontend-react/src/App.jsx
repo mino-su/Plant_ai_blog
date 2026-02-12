@@ -8,6 +8,7 @@ import PostDetail from './pages/PostDetail';
 import PostEdit from './pages/PostEdit';
 import MyPage from "./pages/MyPage";
 import Setting from "./pages/settings";
+import Search from './pages/Search';
 import './App.css';
 
 /**
@@ -53,6 +54,9 @@ function App() {
 
                     {/* 설정 및 프로필 수정 */}
                     <Route path="/setting" element={<PrivateRoute><Setting /></PrivateRoute>} />
+
+                    {/* 검색 페이지 */}
+                    <Route path="/search" element={<Search />} />
 
                     {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
                     <Route path="*" element={<Navigate to="/" />} />
