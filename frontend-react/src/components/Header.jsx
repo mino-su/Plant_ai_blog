@@ -30,7 +30,11 @@ const Header = () => {
 
             {/* 우측 메뉴 영역 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
-                <BsSearch size={24} style={{ cursor: 'pointer' }} />
+                <BsSearch
+                    size={24}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate('/search')} // 클릭 시 검색 페이지로 이동
+                />
 
                 {isLoggedIn ? (
                     // --- 로그인 상태일 때 ---
@@ -42,7 +46,7 @@ const Header = () => {
 
                         {/* 프로필 이미지 버튼 */}
                         <button className="profile-button" onClick={toggleMenu}>
-                            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eee', overflow: 'hidden', justifyContent:'center'}}>
+                            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#eee', overflow: 'hidden', justifyContent:'center'}}>
                                 { user?.profileImageUrl ? (
                                     <img src = {`http://localhost:8080${user.profileImageUrl}`} />
                                 ) : "👤"}
