@@ -39,6 +39,9 @@ public enum ErrorCode {
     FOLLOW_ALREADY_EXIST(HttpStatus.CONFLICT,"FOLLOW_002","이미 팔로우 한 회원 입니다."),
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND,"FOLLOW_003","팔로우가 되어있지 않은 회원입니다."),
 
+    // 검색 관련 에러
+    SEARCH_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "SEARCH_001","존재하지 않는 검색 타입 입니다."),
+
     // 공통 에러
     GLOBAL_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "GLOBAL_001","파일이 존재하지 않습니다."),
     GLOBAL_INVALID_INPUT(HttpStatus.BAD_REQUEST,"GLOBAL_002","잘못된 요청 양식입니다."),
