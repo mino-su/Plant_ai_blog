@@ -74,10 +74,10 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .fetch();
 
         Long total = queryFactory
-                .select(post.count())
+                .select(post.countDistinct())
                 .from(post)
-                .join(post.member, member).fetchJoin()
-                .leftJoin(post.postImages, postImage).fetchJoin()
+                .join(post.member, member)
+                .leftJoin(post.postImages, postImage)
                 .leftJoin(plantDictionary).on(postImage.plant.eq(plantDictionary.label))
                 .leftJoin(diseaseDictionary).on(postImage.disease.eq(diseaseDictionary.label))
                 .where(
