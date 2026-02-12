@@ -30,7 +30,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         List<Post> content = queryFactory
                 .selectFrom(post)
                 .join(post.member, member).fetchJoin()
-                .leftJoin(post.postImages)
+                .leftJoin(post.postImages).fetchJoin()
                 .orderBy(post.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -62,7 +62,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         List<Post> content = queryFactory
                 .selectFrom(post)
                 .join(post.member, member).fetchJoin()
-                .leftJoin(post.postImages, postImage)
+                .leftJoin(post.postImages, postImage).fetchJoin()
                 .leftJoin(plantDictionary).on(postImage.plant.eq(plantDictionary.label))
                 .leftJoin(diseaseDictionary).on(postImage.disease.eq(diseaseDictionary.label))
                 .where(
@@ -76,6 +76,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         Long total = queryFactory
                 .select(post.count())
                 .from(post)
+                .leftJoin(plantDictionary).on(postImage.plant.eq(plantDictionary.label))
+                .leftJoin(diseaseDictionary).on(postImage.disease.eq(diseaseDictionary.label))
                 .where(
                         allSearchCond(type, keyword,plantDictionary,diseaseDictionary)
                 )
