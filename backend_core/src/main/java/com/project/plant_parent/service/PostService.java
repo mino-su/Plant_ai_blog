@@ -90,11 +90,6 @@ public class PostService {
 //                .collect(Collectors.toList());
 //    }
 
-    // 전체 조회 - 페이징 적용
-    public Page<PostResponseDto> getPostList(Pageable pageable) {
-        Page<Post> posts = postRepository.findAllWithPaging(pageable);
-        return posts.map(PostResponseDto::from);
-    }
 
 
     // 아이디로 조회
@@ -171,6 +166,19 @@ public class PostService {
         PostImage postImage = getImage(imageId);
 
         return aiAnalysisService.getFullAnalysis(postImage);
+    }
+
+
+    // 전체 조회 - 페이징 적용
+    public Page<PostResponseDto> getPostList(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllWithPaging(pageable);
+        return posts.map(PostResponseDto::from);
+    }
+
+    // 검색 기능
+    public Page<PostResponseDto> search(PostSearchConditionDto searchCondition, Pageable pageable) {
+        Page<Post> searchPosts = postRepository.search(searchCondition, pageable);
+        return searchPosts.map(PostResponseDto::from);
     }
 
     // [공통 메서드] 게시글 찾기

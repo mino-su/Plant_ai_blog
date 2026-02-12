@@ -3,6 +3,7 @@ package com.project.plant_parent.controller;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class PostController {
     // 게시글 이미지 업로드
     @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostImageDto> uploadPostImages(
-            @RequestPart(value="image") MultipartFile image
+            @RequestPart(value = "image") MultipartFile image
     ) throws IOException {
         // 에디터는 파일을 한장식 보냄.
         PostImageDto postImageDtos = postService.saveImage(image);
@@ -81,15 +82,22 @@ public class PostController {
     }
 
     // 게시글 수정
-    @PutMapping(value="/{postId}")
+    @PutMapping(value = "/{postId}")
     public ResponseEntity<PostResponseDto> updatePost(
             @PathVariable Long postId,
             @RequestBody PostUpdateRequestDto postupdateRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) throws IOException{
+    ) throws IOException {
         return ResponseEntity.ok(postService.update(postId, postupdateRequestDto, userDetails.getMember()));
     }
 
-
-
+    // 검색기능
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponseDto>> searchPost(
+            @ModelAttribute PostSearchConditionDto searchCondition,
+            @PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<PostResponseDto> search = postService.search(searchCondition, pageable);
+        return ResponseEntity.ok(search);
+    }
 }
