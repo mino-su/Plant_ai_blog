@@ -35,7 +35,7 @@ public class Comment extends BaseTimeEntity {
 
 
     // [자식 대댓글 리스트] - 부모 댓글 삭제시 자식 댓글도 삭제(Cascade)
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> children = new ArrayList<>();
 
     // 삭제 여부(대댓글이 있는 상태에서 삭제될 경우 '삭제된 댓글입니다. 표시')
