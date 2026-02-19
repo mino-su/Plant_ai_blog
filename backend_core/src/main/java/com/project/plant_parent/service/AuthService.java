@@ -15,8 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,16 +71,20 @@ public class AuthService {
         // 1. login ID/PW 를 기반으로 AuthenticationToken 생성 (아직 인증전)
         UsernamePasswordAuthenticationToken authenticationToken = loginRequestDto.toAuthentication();
         // 2. 실제로 검증 (사용자 비밀번호 체크) 이 이루어지는 부분
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        // 3. 인증 정보를 기반으로 JWT 토큰 생성
-        TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
-        // 4. RefreshToken 저장
-       RefreshToken refreshToken = RefreshToken.builder()
-               .key(authentication.getName())
-               .value(tokenDto.getRefreshToken())
-               .build();
-        refreshTokenRepository.save(refreshToken);
-        return tokenDto;
+        try{
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            // 3. 인증 정보를 기반으로 JWT 토큰 생성
+            TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
+            // 4. RefreshToken 저장
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .key(authentication.getName())
+                    .value(tokenDto.getRefreshToken())
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+            return tokenDto;
+        } catch (BadCredentialsException | UsernameNotFoundException e) {
+            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+        }
     }
 
     @Transactional
