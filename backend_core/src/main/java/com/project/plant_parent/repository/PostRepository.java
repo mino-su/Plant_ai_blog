@@ -27,6 +27,7 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
     Optional<Post> findPostWithDetailsById(@Param("postId") Long postId);
 
 
+    // queryDsl 페이징 용
     @Query(
             "select distinct p from Post p " +
                     "left join fetch p.postImages "+

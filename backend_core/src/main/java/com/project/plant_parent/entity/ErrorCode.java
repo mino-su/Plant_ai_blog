@@ -17,6 +17,7 @@ public enum ErrorCode {
     AUTH_FORBIDDEN(HttpStatus.FORBIDDEN,"AUTH_002","해당 작업에 대한 권한이 없습니다."),
     AUTH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "AUTH_003","유효하지 않은 토큰입니다."),
     AUTH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED,"AUTH_004","토큰의 정보가 일치하지 않습니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_005", "아이디 또는 비밀번호가 일치하지 않습니다."),
 
     // 게시글 관련 에러
     POST_NOT_FOUND(HttpStatus.NOT_FOUND,"POST_001","게시글이 존재하지 않습니다."),
