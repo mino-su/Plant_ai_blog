@@ -795,6 +795,101 @@ body {
     border-color: var(--text-muted) !important;
     background: var(--bg-element);
 }
+/* 댓글 섹션 전체 컨테이너 */
+.comment-section {
+    background: #ffffff;
+    border-top: 1px solid #f1f3f5;
+    padding-top: 2rem;
+}
+
+/* 댓글 아이템 공통 */
+.comment-item {
+    padding: 1.5rem 0;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 부모 댓글과 대댓글을 감싸는 쓰레드 */
+.comment-thread {
+    border-bottom: 1px solid #f8f9fa;
+}
+
+/* 대댓글 컨테이너 (들여쓰기 및 커넥터 라인) */
+.comment-replies {
+    margin-left: 1.5rem;
+    padding-left: 1.5rem;
+    border-left: 2px solid #e9ecef; /* 부모와 자식을 잇는 수직선 */
+    background: #fdfdfd;
+    border-radius: 0 0 0 12px;
+}
+
+/* 작성자 뱃지 및 정보 */
+.comment-author {
+    font-weight: 700;
+    color: #212529;
+    font-size: 1rem;
+}
+
+.comment-date {
+    font-size: 0.85rem;
+    color: #adb5bd;
+}
+
+/* 수정/삭제/답글 버튼 공통 */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    color: #868e96;
+    transition: color 0.2s;
+}
+
+.action-btn:hover {
+    color: #212529;
+}
+
+.btn-reply {
+    color: #12b886; /* 알리프 포인트 컬러 */
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.btn-delete {
+    color: #ff6b6b !important;
+}
+
+/* 입력창 스타일 (수정/답글 공통) */
+.comment-edit-area, .reply-input-area {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    margin-top: 1rem;
+}
+
+.comment-textarea-styled {
+    width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    min-height: 80px;
+    font-size: 0.95rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comment-textarea-styled:focus {
+    border-color: #12b886;
+}
+
+.button-group-right {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
 
 /* 반응형 */
 @media (max-width: 768px) {
