@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Table(name = "comments")
+@SQLDelete(sql = "UPDATE comments SET is_deleted = true WHERE id = ?")
 public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +36,7 @@ public class Comment extends BaseTimeEntity {
     private Comment parent;
 
 
-    // [자식 대댓글 리스트] - 부모 댓글 삭제시 자식 댓글도 삭제(Cascade)
+    // [자식 대댓글 리스트]
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> children = new ArrayList<>();
 
