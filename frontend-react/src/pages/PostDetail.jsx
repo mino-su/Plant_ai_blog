@@ -160,6 +160,13 @@ export default function PostDetail() {
 
     const {user: currentUser} = useAuth();
 
+    const [activeReplyId, setActiveReplyId] = useState(null);
+    const [replyContent, setReplyContent] = useState("");
+
+    const [editingCommentId, setEditingCommentId] = useState(null); // 현재 수정 중인 댓글 ID
+    const [editContent, setEditContent] = useState("");
+
+
     const [post, setPost] = useState(null);
     const [contentBlocks, setContentBlocks] = useState([]);
     const [isOldText, setIsOldText] = useState(false);
@@ -210,18 +217,106 @@ export default function PostDetail() {
         }
     };
 
-
-    // [기존 기능] 댓글 등록
-    const submitComment = async () => {
-        if (!commentContent.trim()) return;
+    // [댓글 수정 함수]
+    const handleCommentUpdate = async (commentId) => {
+        if (!editContent.trim()) return;
         try {
-            await api.post(`/api/posts/${postId}/comments`, {content: commentContent});
-            setCommentContent('');
-            fetchPost(); // 댓글 목록 갱신을 위해 재호출
+            await api.put(`/api/comments/${commentId}`, { content: editContent });
+            alert("댓글이 수정되었습니다.");
+            setEditingCommentId(null);
+            fetchPost();
         } catch (err) {
-            alert("댓글을 등록할 수 없습니다. 로그인을 확인해 주세요.");
+            alert("수정 실패: 권한이 없습니다.");
         }
     };
+
+    // [댓글 삭제 함수]
+    const handleCommentDelete = async (commentId) => {
+        if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
+        try {
+            await api.delete(`/api/comments/${commentId}`); // 컨트롤러 경로에 맞게 수정
+            alert("댓글이 삭제되었습니다.");
+            fetchPost();
+        } catch (err) {
+            alert("삭제 권한이 없습니다.");
+        }
+    };
+
+    // 액션 버튼 렌더러 (수정 로직 연결)
+    const renderCommentActions = (comment) => {
+        const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
+        if (!isCommentAuthor || comment.isDeleted) return null;
+
+        return (
+            <div className="comment-actions" style={{ fontSize: '0.8rem', display: 'flex', gap: '8px' }}>
+                <button
+                    onClick={() => {
+                        setEditingCommentId(comment.id);
+                        setEditContent(comment.content);
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer' }}
+                >수정</button>
+                <button
+                    onClick={() => handleCommentDelete(comment.id)}
+                    style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer' }}
+                >삭제</button>
+            </div>
+        );
+    };
+
+
+
+
+    // [기존 기능] 댑글 달기 버튼 클릭 핸들러
+    const handleReplyClick = (commentId) => {
+        if (activeReplyId === commentId) {
+            setActiveReplyId(null); // 이미 열려있으면 닫기
+            setReplyContent("");
+        } else {
+            setActiveReplyId(commentId); // 해당 댓글에 답글창 열기
+            setReplyContent("");
+        }
+    };
+
+    const handleCommentSubmit = async (parentId = null) => {
+        // 1. 입력값 결정: 대댓글(parentId 있음)이면 replyContent를, 원댓글(parentId 없음)이면 commentContent
+        const contentToSubmit = parentId ? replyContent : commentContent;
+
+
+        if (!contentToSubmit.trim()) return;
+
+        try {
+
+            const payload = {
+                content: contentToSubmit,
+                parentId: parentId // 원댓글일 경우 여기가 null
+            };
+
+            // 4. API 요청
+            await api.post(`/api/posts/${postId}/comments`, payload);
+
+            // 5. 성공 시 입력창 초기화
+            if (parentId) {
+                // 대댓글을 달았다면 답글창 내용만 지우고 창을 닫음
+                setReplyContent('');
+                setActiveReplyId(null);
+            } else {
+                // 원댓글을 달았다면 메인 댓글창만 지워줘.
+                setCommentContent('');
+            }
+
+            // 6. 최신 데이터 불러오기: 방금 단 댓글이 화면에 보이도록 게시글을 다시 조회
+            fetchPost();
+            alert(parentId ? "답글이 등록되었습니다." : "댓글이 등록되었습니다.");
+
+        } catch (err) {
+            console.error(err);
+            alert("등록에 실패했습니다.");
+        }
+    };
+
+
+
 
     // [블록형 렌더러] JSON 데이터를 HTML로 변환
     const renderBlock = (block, index) => {
@@ -299,34 +394,104 @@ export default function PostDetail() {
                     )}
                 </div>
 
-                {/* 3. 댓글 영역 (기존 기능 100% 복구) */}
-                <div className="comment-section">
-                    <h4>{post.comments?.length || 0}개의 댓글</h4>
-                    <div className="comment-input-wrapper">
-                        <textarea
-                            className="comment-textarea"
-                            placeholder="댓글을 작성하세요..."
-                            value={commentContent}
-                            onChange={(e) => setCommentContent(e.target.value)}
-                        />
-                        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                            <button className="btn-primary" onClick={submitComment}>댓글 등록</button>
-                        </div>
-                    </div>
-                    <div className="comment-list">
-                        {post.comments?.map(comment => (
-                            <div key={comment.id} className="comment-item">
-                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
-                                    <span style={{fontWeight: 'bold'}}>{comment.writer}</span>
-                                    <span style={{
-                                        fontSize: '0.875rem',
-                                        color: '#868e96'
-                                    }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                {/* 3. 댓글 영역 */}
+                <div className="comment-list">
+                    {post.comments?.map(comment => {
+                        const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
+
+                        return (
+                            <div key={comment.id} className="comment-thread">
+                                {/* [1] 부모 댓글 */}
+                                <div className="comment-item">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span className="comment-author">{comment.writer}</span>
+                                            <span className="comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
+
+                                            {/* 수정/삭제 버튼 */}
+                                            {isCommentAuthor && !comment.isDeleted && (
+                                                <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
+                                                    <button className="action-btn" onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); }}>수정</button>
+                                                    <button className="action-btn btn-delete" onClick={() => handleCommentDelete(comment.id)}>삭제</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* 본문/수정창 분기 */}
+                                    {editingCommentId === comment.id ? (
+                                        <div className="comment-edit-area">
+                                            <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                                            <div className="button-group-right">
+                                                <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
+                                                <button className="action-btn" style={{ color: '#12b886', fontWeight: 'bold' }} onClick={() => handleCommentUpdate(comment.id)}>수정완료</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p style={{ color: comment.isDeleted ? '#adb5bd' : '#495057', margin: '0.8rem 0', lineHeight: '1.6' }}>
+                                            {comment.isDeleted ? "🗑️ 삭제된 댓글입니다." : comment.content}
+                                        </p>
+                                    )}
+
+                                    {/* 답글 버튼 */}
+                                    {!comment.isDeleted && (
+                                        <button className="action-btn btn-reply" onClick={() => handleReplyClick(comment.id)}>
+                                            {activeReplyId === comment.id ? "✕ 취소" : "💬 답글 달기"}
+                                        </button>
+                                    )}
+
+                                    {/* 대댓글 입력창 */}
+                                    {activeReplyId === comment.id && (
+                                        <div className="reply-input-area">
+                                            <textarea className="comment-textarea-styled" placeholder={`@${comment.writer}님에게 답글 남기기...`} value={replyContent} onChange={(e) => setReplyContent(e.target.value)} />
+                                            <div className="button-group-right">
+                                                <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }} onClick={() => handleCommentSubmit(comment.id)}>등록</button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <p style={{color: '#495057'}}>{comment.content}</p>
+
+                                {/* [2] 대댓글 리스트 */}
+                                {comment.children && comment.children.length > 0 && (
+                                    <div className="comment-replies">
+                                        {comment.children.map(child => {
+                                            const isReplyAuthor = currentUser && Number(child.memberId) === Number(currentUser.memberId);
+                                            return (
+                                                <div key={child.id} className="comment-item" style={{ padding: '1rem 0' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <span className="comment-author" style={{ fontSize: '0.9rem' }}>↳ {child.writer}</span>
+                                                            <span className="comment-date" style={{ fontSize: '0.75rem' }}>{new Date(child.createdAt).toLocaleDateString()}</span>
+                                                            {isReplyAuthor && !child.isDeleted && (
+                                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                                    <button className="action-btn" style={{ fontSize: '0.75rem' }} onClick={() => { setEditingCommentId(child.id); setEditContent(child.content); }}>수정</button>
+                                                                    <button className="action-btn btn-delete" style={{ fontSize: '0.75rem' }} onClick={() => handleCommentDelete(child.id)}>삭제</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {editingCommentId === child.id ? (
+                                                        <div className="comment-edit-area">
+                                                            <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                                                            <div className="button-group-right">
+                                                                <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
+                                                                <button className="action-btn" style={{ color: '#12b886' }} onClick={() => handleCommentUpdate(child.id)}>수정완료</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <p style={{ color: child.isDeleted ? '#adb5bd' : '#495057', fontSize: '0.95rem', margin: '0.4rem 0 0 1.2rem' }}>
+                                                            {child.isDeleted ? "🗑️ 삭제된 답글입니다." : child.content}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
             </main>
         </>
