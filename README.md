@@ -34,18 +34,19 @@ graph TD
 ```
 
 ## 2.⚒️ Tech Stack
-### 🔵 BackEnd & Security
+### 🔵 BackEnd & DB
 -  JAVA 17 / Spring Boot 3.x
 -  Spring Data JPA : Hibernate 기반 데이터 영속성 관리 및 Fetch Join을 통한 성능 최적화
 -  Spring Security & JWT : Stateless 인증 체계 구축
 -  Redis : JWT 블랙리스트 관리를 통한 보안 강화
+-  PostgreSQL 15
 
 ### 🟣 AI/ ML Inference
 - Python / Flask : 경량 추론 서버 운영
 - YOLO v8/v11 : 식물 종류 및 병해 실시간 객체 탐지 모델 탑재
 
 ### 🟢 Frontend
- - React 18 : 컴포넌트 기반 UI 설계
+ - React 19 / vite : 컴포넌트 기반 UI 설계
  - Editor.js : 블록형 에디터를 통한 구조화된 콘텐츠 관리 및 이미지/글 자유 배치
  - Axios : 인터셉터를 활용한 JWT 자동 인증 및 전역 에러 핸들링
 
