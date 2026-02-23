@@ -14,7 +14,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 팔로우 여부 확인
     // select count(*) from follows where from_member_id = ? and to_member_id = ?
-
     boolean existsByFromMemberAndToMember(Member fromMember, Member toMember);
     // 언팔로우(삭제)
     // delete from follows where from_member_id = ? and to_member_id = ?

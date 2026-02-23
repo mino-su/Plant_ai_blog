@@ -45,7 +45,7 @@ export default function MyPage() {
                 try {
                     const meRes = await api.get('/api/members/me');
                     // 서버 응답이 ID 숫자 하나라면 meRes.data, 객체라면 meRes.data.id 등으로 맞추세요.
-                    setMyId(meRes.data);
+                    setMyId(meRes.data.memberId);
                 } catch (e) {
                     console.log("비로그인 또는 만료된 세션입니다.");
                     setMyId(null);
@@ -61,9 +61,13 @@ export default function MyPage() {
                 api.get(`/api/members/${memberId}/profile`)
             ]);
 
-            setData(mypageRes.data);
+            const myPageData = mypageRes.data;
+
+            setData(myPageData);
             setProfile(profileRes.data);
-            setIsFollowing(mypageRes.data.isFollowing || false);
+
+
+            setIsFollowing(myPageData.isFollowing);
 
             document.title = `${mypageRes.data.username}님의 정원 | Alleaf`;
 
