@@ -37,40 +37,39 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // 401 Unauthorized: 토큰 만료 시
-        if (error.response.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/login')) {
-            originalRequest._retry = true; // 무한 루프 방지용
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+
+            // 1. 리프레시 토큰이 없으면(비로그인) 재발급 시도 안 함
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (!refreshToken) {
+                return Promise.reject(error);
+            }
+
+            originalRequest._retry = true;
 
             try {
                 const accessToken = localStorage.getItem('accessToken');
-                const refreshToken = localStorage.getItem('refreshToken');
-
-                // backend의 /auth/reissue 호출
                 const res = await axios.post('http://localhost:8080/auth/reissue', {
-                    accessToken: accessToken,
-                    refreshToken: refreshToken
+                    accessToken,
+                    refreshToken
                 });
 
-                if(res.status == 200){
-                    const {accessToken: newAccessToken, refreshToken: newRefreshToken} = res.data;
-
-                    // 새 토큰 저장
+                if (res.status === 200) {
+                    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
                     localStorage.setItem('accessToken', newAccessToken);
                     localStorage.setItem('refreshToken', newRefreshToken);
-
-                    // 원래 실패 했던 요청에 새 토큰을 넣어 재시도
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     return axios(originalRequest);
                 }
-
             } catch (reissueError) {
-                // 재발급 마저 실패할 경우(refreshToken 만료 등) 로그아웃 처리
-                console.error("토큰 재발급 실패. 다시 로그인 해야 합니다.");
+                // 2. 재발급 실패 시, '내 정보 조회' API가 아닐 때만 로그인으로 보냄
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
-                return Promise.reject(reissueError);
 
+                if (!originalRequest.url.includes('/api/members/me')) {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(reissueError);
             }
         }
         return Promise.reject(error);

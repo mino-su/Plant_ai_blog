@@ -910,3 +910,13 @@ body {
         justify-content: center;
     }
 }
+.nickname-link, .card-writer, .comment-author {
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.nickname-link:hover, .card-writer:hover, .comment-author:hover {
+    color: #12b886; /* 알리프 포인트 컬러 */
+    text-decoration: underline;
+}

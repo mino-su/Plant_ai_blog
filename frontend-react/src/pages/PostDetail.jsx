@@ -56,6 +56,7 @@ function AnalysisImageBlock({ imageInfo }) {
         }
     }, [imageInfo.id]);
 
+
     const imageUrl = imageInfo.imageUrl.startsWith('http')
         ? imageInfo.imageUrl
         : `${BASE_URL}${imageInfo.imageUrl}`;
@@ -69,6 +70,7 @@ function AnalysisImageBlock({ imageInfo }) {
             default: return '#adb5bd';
         }
     };
+
 
     return (
         <div className="analysis-box" style={{ flexDirection: 'column', marginBottom: '3rem' }}>
@@ -242,29 +244,11 @@ export default function PostDetail() {
         }
     };
 
-    // 액션 버튼 렌더러 (수정 로직 연결)
-    const renderCommentActions = (comment) => {
-        const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
-        if (!isCommentAuthor || comment.isDeleted) return null;
-
-        return (
-            <div className="comment-actions" style={{ fontSize: '0.8rem', display: 'flex', gap: '8px' }}>
-                <button
-                    onClick={() => {
-                        setEditingCommentId(comment.id);
-                        setEditContent(comment.content);
-                    }}
-                    style={{ background: 'none', border: 'none', color: '#868e96', cursor: 'pointer' }}
-                >수정</button>
-                <button
-                    onClick={() => handleCommentDelete(comment.id)}
-                    style={{ background: 'none', border: 'none', color: '#fa5252', cursor: 'pointer' }}
-                >삭제</button>
-            </div>
-        );
+    // 닉네임 클릭 핸들러
+    const handleNicknameClick = (memberId) => {
+        if (!memberId) return;
+        navigate(`/members/${memberId}/mypage`);
     };
-
-
 
 
     // [기존 기능] 댑글 달기 버튼 클릭 핸들러
@@ -370,7 +354,9 @@ export default function PostDetail() {
                     <h1 className="post-title">{post.title}</h1>
                     <div className="post-info">
                         <div>
-                            <span style={{fontWeight: 'bold', color: '#343a40'}}>{post.writer}</span>
+                            <span className="nickname-link"
+                                onClick={() => handleNicknameClick(post.memberId)}
+                                style={{fontWeight: 'bold', color: '#343a40'}}>{post.writer}</span>
                             <span style={{margin: '0 0.5rem'}}>·</span>
                             <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
@@ -405,7 +391,9 @@ export default function PostDetail() {
                                 <div className="comment-item">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <span className="comment-author">{comment.writer}</span>
+                                            <span className="comment-author"
+                                                  onClick={() => handleNicknameClick(comment.memberId)}
+                                            >{comment.writer}</span>
                                             <span className="comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
 
                                             {/* 수정/삭제 버튼 */}
@@ -460,7 +448,7 @@ export default function PostDetail() {
                                                 <div key={child.id} className="comment-item" style={{ padding: '1rem 0' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                            <span className="comment-author" style={{ fontSize: '0.9rem' }}>↳ {child.writer}</span>
+                                                            <span className="comment-author" onClick={() => handleNicknameClick(child.memberId)} style={{ fontSize: '0.9rem' }}>↳ {child.writer}</span>
                                                             <span className="comment-date" style={{ fontSize: '0.75rem' }}>{new Date(child.createdAt).toLocaleDateString()}</span>
                                                             {isReplyAuthor && !child.isDeleted && (
                                                                 <div style={{ display: 'flex', gap: '8px' }}>

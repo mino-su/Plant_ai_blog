@@ -29,9 +29,13 @@ public class MyPageService {
 
         long followers = followRepository.countByToMember(member); // 나를 팔로우 하는 수
 
-        boolean isFollowing = followRepository.existsByFromMemberAndToMember(currentMember, member);
+        boolean isFollowing = false;
+        boolean isFollower = false;
+        if (currentMember != null) {
+            isFollowing = followRepository.existsByFromMemberAndToMember(currentMember, member);
+            isFollower = followRepository.existsByFromMemberAndToMember(member, currentMember);
+        }
 
-        boolean isFollower = followRepository.existsByFromMemberAndToMember(member, currentMember);
 
         List<Post> posts = postRepository.findAllByMemberOrderByCreatedAtDesc(member);
 

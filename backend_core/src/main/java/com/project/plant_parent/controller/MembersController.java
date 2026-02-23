@@ -65,16 +65,20 @@ public class MembersController {
             @PathVariable Long memberId,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        Member currentMember = userDetails.getMember();
-        MyPageResponseDto myPageInfo = myPageService.getMyPageInfo(memberId, currentMember);
-        return ResponseEntity.ok(myPageInfo);
+        Member currentMember = (userDetails != null) ? userDetails.getMember() : null;
+        return ResponseEntity.ok(myPageService.getMyPageInfo(memberId, currentMember));
     }
 
     @GetMapping("/me")
     public ResponseEntity<MemberIdResponseDto> getMyInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        MemberIdResponseDto memberId = MemberIdResponseDto.from(userDetails.getMember().getId());
-        return ResponseEntity.ok(memberId);
+        if (userDetails == null) {
+            // 프론트엔드 MyPage.jsx의 catch 문으로 보내기 위해 401을 반환하거나,
+            // 혹은 null을 포함한 DTO를 반환해서 "비로그인"임을 알려야 합니다.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Member currentMember =  userDetails.getMember();
+        return ResponseEntity.ok(MemberIdResponseDto.from(currentMember.getId()));
     }
 }
