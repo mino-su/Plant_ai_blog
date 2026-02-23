@@ -33,6 +33,7 @@ public enum ErrorCode {
 
     // AI 서버 관련 에러
     AI_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"AI_001", "AI 서버와의 통신 중 오류가 발생했습니다."),
+    AI_SERVER_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"AI_002", "AI 서버에 연결할 수 없습니다."),
 
 
     //팔로우 관련 에러
