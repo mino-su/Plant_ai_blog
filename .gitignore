@@ -16,5 +16,5 @@ ai-serving/.env
 /postgres-data
 
 #local Data Folder
-/uploads
+/uploads/*
 !/uploads/default_profile.jpg
