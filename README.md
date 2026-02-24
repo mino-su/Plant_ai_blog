@@ -99,8 +99,8 @@ Fetch Join & Distinct: JPA N+1 문제를 해결하여 대량 데이터 조회 �
 | **팔로우** | `POST`| `/api/members/{member_id}/follow`| 다른 사용자를 팔로우 | ✅ |
 | **내 정보 확인** | `GET`| `/api/members/me/profile` | 내 정보를 확인 | ✅ |
 | **내 정보 설정** | `PUT`| `/api/members/me/profile` | 내 정보를 수정 | ✅ |
-| **팔로우 목록** | `GET` | `api/members/{member_id}/follower | ✅ |
-| **팔로잉 목록** | `GET` | `api/members/{member_id}/following | ✅ |
+| **팔로우 목록** | `GET` | `api/members/{member_id}/follower | {member_id}의 팔로워 목록 조회 | ✅ |
+| **팔로잉 목록** | `GET` | `api/members/{member_id}/following | {member_id}의 팔로잉 목록 조회 | ✅ |
 
 
 ### 🟣 AI Inference API (Flask)
