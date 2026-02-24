@@ -25,13 +25,19 @@ public class MyPageService {
                 () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
         );
 
+
         long followings = followRepository.countByFromMember(member); // 내가 한 팔로우 수
 
         long followers = followRepository.countByToMember(member); // 나를 팔로우 하는 수
 
-        boolean isFollowing = followRepository.existsByFromMemberAndToMember(currentMember, member);
+        boolean isFollowing = false;
+        boolean isFollower = false;
 
-        boolean isFollower = followRepository.existsByFromMemberAndToMember(member, currentMember);
+        if (currentMember != null) {
+            isFollowing = followRepository.existsByFromMemberAndToMember(currentMember, member);
+            isFollower = followRepository.existsByFromMemberAndToMember(member, currentMember);
+        }
+
 
         List<Post> posts = postRepository.findAllByMemberOrderByCreatedAtDesc(member);
 

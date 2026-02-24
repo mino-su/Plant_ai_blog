@@ -10,6 +10,7 @@ import MyPage from "./pages/MyPage";
 import Setting from "./pages/settings";
 import Search from './pages/Search';
 import './App.css';
+import FollowListPage from "./pages/FollowListPage.jsx";
 
 /**
  * [작동 원리 및 수정 포인트]
@@ -36,18 +37,16 @@ function App() {
                     {/* 인증이 필요 없는 공용 라우트 */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-
-                    {/* 인증이 필요한 비공개 라우트 */}
-                    <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+                    <Route path="/" element={<Home />} />
 
                     {/* [에디터 개편] 글쓰기 - Editor.js가 로드될 페이지 */}
                     <Route path="/write" element={<PrivateRoute><PostCreate /></PrivateRoute>} />
 
                     {/* [구조화] 마이페이지 - 파라미터를 :memberId로 변경하여 가독성 향상 */}
-                    <Route path="/members/:memberId/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+                    <Route path="/members/:memberId/mypage" element={<MyPage />} />
 
                     {/* [구조화] 상세 조회 - 파라미터를 :postId로 변경 */}
-                    <Route path="/posts/:postId" element={<PrivateRoute><PostDetail /></PrivateRoute>} />
+                    <Route path="/posts/:postId" element={<PostDetail />} />
 
                     {/* [에디터 개편] 수정하기 - 기존 데이터를 JSON으로 불러올 페이지 */}
                     <Route path="/posts/:postId/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
@@ -60,6 +59,9 @@ function App() {
 
                     {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
                     <Route path="*" element={<Navigate to="/" />} />
+
+                    {/* 팔로우/팔로잉 목록 페이지 */}
+                    <Route path="/members/:memberId/:type" element={<PrivateRoute><FollowListPage /></PrivateRoute>} />
                 </Routes>
             </Router>
         </AuthProvider>

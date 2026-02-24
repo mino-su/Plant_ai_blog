@@ -35,7 +35,7 @@ public class ProfileService {
     }
 
     private Profile getProfileByMemberId(Long memberId) {
-        Profile profile = profileRepository.findProfileById(memberId)
+        Profile profile = profileRepository.findWithMemberById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return profile;
     }

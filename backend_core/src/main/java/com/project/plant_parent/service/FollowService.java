@@ -1,5 +1,7 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.Profile;
+import com.project.plant_parent.entity.dto.FollowListResponseDto;
 import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.Follow;
@@ -7,6 +9,7 @@ import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.dto.FollowResponseDto;
 import com.project.plant_parent.repository.FollowRepository;
 import com.project.plant_parent.repository.MemberRepository;
+import com.project.plant_parent.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
+    private final ProfileRepository profileRepository;
 
 
     @Transactional
@@ -87,6 +92,60 @@ public class FollowService {
         return followRepository.findAllByFromMember(member).stream()
                 .map(FollowResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    // 타겟의 팔로잉 한 사람들 목록 조회 (현재 사용자가 팔로잉 한 사람들이 있는지도 체크)
+    public List<FollowListResponseDto> getFollowings(Long targetId, Member currentMember) {
+        // 타겟
+        Member targetMember = getMember(targetId);
+
+        // 타겟의 팔로잉 리스트
+        List<Follow> targetFollowingList = followRepository.findAllByFromMember(targetMember);
+
+        // 현재 로그인 멤버의 팔로잉 멤버 ID 리스트
+        Set<Long> currentMemberFollowingIdList = followRepository.findAllToMemberIdsByFromMember(currentMember);
+
+        // 대조해서 DTO 조립
+        return targetFollowingList.stream()
+                .map(
+                        follow -> {
+                            Member toMember = follow.getToMember();
+                            boolean isFollowing = currentMemberFollowingIdList.contains(toMember.getId());
+                            Profile profile = getProfile(toMember);
+                            return FollowListResponseDto.of(toMember, profile, isFollowing);
+                        }
+                ).collect(Collectors.toList());
+
+    }
+
+    // 타겟의 팔로우 한 사람들 목록 조회 (현재 사용자가 팔로잉 한 사람들이 있는지도 체크)
+    public List<FollowListResponseDto> getFollowers(Long targetId, Member currentMember) {
+        // 타겟
+        Member targetMember = getMember(targetId);
+        
+        // 타겟의 팔로우 리스트
+        List<Follow> targetFollowerList = followRepository.findAllByToMember(targetMember);
+        
+        // 현재 로그인 한 멤버의 팔로잉 Id List
+        Set<Long> currentMemberFollowingIdList = followRepository.findAllToMemberIdsByFromMember(currentMember);
+        
+        // 대조해서 DTO 조립
+        return targetFollowerList.stream()
+                .map(
+                        follow -> {
+                            Member fromMember = follow.getFromMember();
+                            boolean isFollowing = currentMemberFollowingIdList.contains(fromMember.getId());
+                            Profile profile = getProfile(fromMember);
+                            return FollowListResponseDto.of(fromMember, profile, isFollowing);
+                        }
+                ).collect(Collectors.toList());
+
+    }
+
+    private Profile getProfile(Member fromMember) {
+        return profileRepository.findWithMemberById(fromMember.getId()).orElseThrow(
+                () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
+        );
     }
 
     private @NonNull Member getMember(Long memberId) {

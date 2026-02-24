@@ -54,15 +54,6 @@ public class AuthService {
         member.setProfile(profile);
 
         Member savedMember = memberRepository.saveAndFlush(member);
-
-        // [★ 디버깅 코드 추가]
-        System.out.println("=========================================");
-        System.out.println(">>> 저장 성공 여부 확인");
-        System.out.println(">>> 저장된 ID: " + savedMember.getId());
-        System.out.println(">>> 저장된 Email: " + savedMember.getEmail());
-        System.out.println("=========================================");
-
-
         return MemberResponseDto.from(savedMember);
     }
 

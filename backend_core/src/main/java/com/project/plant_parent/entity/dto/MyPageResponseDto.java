@@ -1,5 +1,6 @@
 package com.project.plant_parent.entity.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.plant_parent.entity.Follow;
 import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.Post;
@@ -21,7 +22,11 @@ public class MyPageResponseDto {
     private long postCount;
     private long followerCount;
     private long followingCount;
+
+    @JsonProperty("isFollowing")
     private boolean isFollowing;
+
+    @JsonProperty("isFollower")
     private boolean isFollower;
 
     private List<PostResponseDto> posts;

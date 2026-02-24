@@ -62,6 +62,9 @@ public class SecurityConfig {
                         authorize
                                 .requestMatchers(HttpMethod.GET,"/images/**").permitAll()
                                 .requestMatchers("/", "/auth/**","/v3/api-docs/**", "/swagger-ui/**","/swagger-ui.html").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/*/mypage", "/api/posts", "/api/posts/*","/api/posts/search").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/posts/images/*/analyze").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/me", "/api/members/*/profile").permitAll()
                                 .anyRequest().authenticated()
                 )
                 // UsenamePasswordAuthenticationFilter 전에 JWT 인증 필터 적용
