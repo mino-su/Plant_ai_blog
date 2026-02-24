@@ -17,3 +17,4 @@ ai-serving/.env
 
 #local Data Folder
 /uploads
+!/uploads/default_profile.jpg

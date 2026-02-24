@@ -1,10 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import {useParams, useNavigate} from 'react-router-dom';
 import api from '../api'; // 커스텀 Axios 인스턴스
 import Header from "../components/Header";
 import PostCard from "../components/PostCard";
 import '../App.css';
+import FollowListPage from "./FollowListPage";
 
 export default function MyPage() {
     // 1. URL 파라미터 및 네비게이션 설정
@@ -18,9 +19,14 @@ export default function MyPage() {
         websiteUrl: "",
         profileImageUrl: ""
     }); // 프로필 상세 데이터
+
     const [loading, setLoading] = useState(true);
     const [isFollowing, setIsFollowing] = useState(false);
     const [myId, setMyId] = useState(null); // 현재 로그인한 사람의 ID
+
+    const [showModal, setShowModal] = useState(false); // 모달 열림 여부
+    const [modalType, setModalType] = useState('follower'); // 'follower' 또는 'following'
+    const [modalUserList, setModalUserList] = useState([]); // 모달에 띄울 유저 목록
 
     const BASE_URL = "http://localhost:8080";
 
@@ -100,6 +106,42 @@ export default function MyPage() {
             setIsFollowing(!isFollowing);
         } catch (err) {
             alert("요청 처리에 실패했습니다. 다시 시도해 주세요.");
+        }
+    };
+
+    const openFollowModal = async (type) => {
+        setModalType(type);
+        try {
+            const endpoint = type === 'follower' ? 'followers' : 'followings';
+            const res = await api.get(`/api/members/${memberId}/${endpoint}`);
+            setModalUserList(res.data); // 서버에서 받은 FollowListResponseDto 리스트 저장
+            setShowModal(true);
+        } catch (err) {
+            console.error("목록을 불러오는데 실패했습니다.", err);
+        }
+    };
+
+    // 모달 안에서 팔로우 버튼을 눌렀을 때 처리
+    const handleFollowToggleInModal = async (targetMemberId, currentIsFollowing) => {
+        if (!isLoggedIn) {
+            alert("로그인이 필요합니다.");
+            navigate('/login');
+            return;
+        }
+
+        try {
+            if (currentIsFollowing) {
+                await api.delete(`/api/members/${targetMemberId}/follow`);
+            } else {
+                await api.post(`/api/members/${targetMemberId}/follow`);
+            }
+
+            // 리스트 상태 업데이트: 해당 유저의 isFollowing 값만 반전시킴
+            setModalUserList(prev => prev.map(user =>
+                user.memberId === targetMemberId ? { ...user, isFollowing: !currentIsFollowing } : user
+            ));
+        } catch (err) {
+            alert("처리 중 오류가 발생했습니다.");
         }
     };
 
@@ -197,12 +239,34 @@ export default function MyPage() {
                             </div>
                         )}
 
-                        <div className="mypage-stats" style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem' }}>
-                            <div className="stat-item"><span>팔로워</span> <b style={{ marginLeft: '5px' }}>{data.followerCount}</b></div>
-                            <div className="stat-item"><span>팔로잉</span> <b style={{ marginLeft: '5px' }}>{data.followingCount}</b></div>
+                        <div className="mypage-stats">
+                            {/* [수정 포인트] Link를 div/span으로 바꾸고 onClick 연결 */}
+                            <div
+                                onClick={() => openFollowModal('follower')}
+                                className="stat-item"
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <span>팔로워</span> <b>{data.followerCount}</b>
+                            </div>
+                            <div
+                                onClick={() => openFollowModal('following')}
+                                className="stat-item"
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <span>팔로잉</span> <b>{data.followingCount}</b>
+                            </div>
                         </div>
                     </div>
                 </section>
+
+                <FollowListPage
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                    userList={modalUserList}
+                    type={modalType}
+                    isLoggedIn={isLoggedIn}
+                    onFollowToggle={handleFollowToggleInModal}
+                />
 
                 {/* 탭 바 */}
                 <div className="mypage-tab-bar" style={{ marginTop: '3rem', borderBottom: '1px solid #dee2e6' }}>

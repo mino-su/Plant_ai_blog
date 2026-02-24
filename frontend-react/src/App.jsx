@@ -10,6 +10,7 @@ import MyPage from "./pages/MyPage";
 import Setting from "./pages/settings";
 import Search from './pages/Search';
 import './App.css';
+import FollowListPage from "./pages/FollowListPage.jsx";
 
 /**
  * [작동 원리 및 수정 포인트]
@@ -58,6 +59,9 @@ function App() {
 
                     {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
                     <Route path="*" element={<Navigate to="/" />} />
+
+                    {/* 팔로우/팔로잉 목록 페이지 */}
+                    <Route path="/members/:memberId/:type" element={<PrivateRoute><FollowListPage /></PrivateRoute>} />
                 </Routes>
             </Router>
         </AuthProvider>
