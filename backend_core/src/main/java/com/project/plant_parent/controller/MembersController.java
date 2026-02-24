@@ -1,10 +1,7 @@
 package com.project.plant_parent.controller;
 
 import com.project.plant_parent.entity.Member;
-import com.project.plant_parent.entity.dto.FollowResponseDto;
-import com.project.plant_parent.entity.dto.MemberIdResponseDto;
-import com.project.plant_parent.entity.dto.MemberResponseDto;
-import com.project.plant_parent.entity.dto.MyPageResponseDto;
+import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.FollowService;
 import com.project.plant_parent.service.MyPageService;
@@ -44,19 +41,40 @@ public class MembersController {
         return ResponseEntity.ok("팔로우가 취소되었습니다.");
     }
 
+//    @GetMapping("/{memberId}/followers")
+//    public ResponseEntity<List<FollowResponseDto>> getFollowers(
+//            @PathVariable Long memberId
+//    ) {
+//        List<FollowResponseDto> followers = followService.getFollowers(memberId);
+//        return ResponseEntity.ok(followers);
+//    }
+//
+//    @GetMapping("/{memberId}/followings")
+//    public ResponseEntity<List<FollowResponseDto>> getFollowings(
+//            @PathVariable Long memberId
+//    ) {
+//        List<FollowResponseDto> followings = followService.getFollowings(memberId);
+//        return ResponseEntity.ok(followings);
+//    }
+
     @GetMapping("/{memberId}/followers")
-    public ResponseEntity<List<FollowResponseDto>> getFollowers(
-            @PathVariable Long memberId
-    ) {
-        List<FollowResponseDto> followers = followService.getFollowers(memberId);
+    public ResponseEntity<List<FollowListResponseDto>> getFollowers(
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+            ) {
+
+        Member currentMember = userDetails.getMember();
+        List<FollowListResponseDto> followers = followService.getFollowers(memberId, currentMember);
         return ResponseEntity.ok(followers);
     }
 
     @GetMapping("/{memberId}/followings")
-    public ResponseEntity<List<FollowResponseDto>> getFollowings(
-            @PathVariable Long memberId
+    public ResponseEntity<List<FollowListResponseDto>> getFollowings(
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        List<FollowResponseDto> followings = followService.getFollowings(memberId);
+        Member currentMember = userDetails.getMember();
+        List<FollowListResponseDto> followings = followService.getFollowings(memberId, currentMember);
         return ResponseEntity.ok(followings);
     }
 
