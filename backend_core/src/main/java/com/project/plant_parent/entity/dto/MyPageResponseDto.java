@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
@@ -41,7 +42,9 @@ public class MyPageResponseDto {
                 .followingCount(followingCount)
                 .isFollowing(isFollowing)
                 .isFollower(isFollower)
-                .posts(posts.stream().map(PostResponseDto::from).collect(Collectors.toList()))
+                .posts(posts.stream().map(
+                        PostResponseDto::from
+                        ).collect(Collectors.toList()))
                 .build();
     }
 }

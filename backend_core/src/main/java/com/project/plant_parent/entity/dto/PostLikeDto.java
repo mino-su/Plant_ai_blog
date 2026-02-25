@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostLikeDto {
     private Long postId;
-    private boolean isLiked;
     private long totalLikeCount;
+    private boolean isLiked;
 
     public static PostLikeDto of(Long postId, boolean isLiked, long totalLikeCount) {
         return PostLikeDto.builder()

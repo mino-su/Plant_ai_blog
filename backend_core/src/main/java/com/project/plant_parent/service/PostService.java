@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -54,6 +55,7 @@ public class PostService {
             }
         }
 
+
         return PostResponseDto.from(savedPost);
     }
 
@@ -82,16 +84,6 @@ public class PostService {
     }
 
 
-    // 전체 조회
-//    public List<PostResponseDto> getAllPosts() {
-//        // 작성일 기준 최신순 내림차순
-//        return postRepository.findAllByOrderByCreatedAtDesc().stream()
-//                .map(PostResponseDto::from)
-//                .collect(Collectors.toList());
-//    }
-
-
-
     // 아이디로 조회
     public PostResponseDto getPost(Long postId) {
 
@@ -99,6 +91,7 @@ public class PostService {
         Post post = postRepository.findPostWithDetailsById(postId).orElseThrow(
                 () -> new BusinessException(ErrorCode.POST_NOT_FOUND)
         );
+
         return PostResponseDto.from(post);
     }
 
@@ -164,17 +157,18 @@ public class PostService {
 
     @Transactional
     public PostLikeDto createPostLike(Long postId, Member currentMember) {
-        // 1. 게시글이 존재하는지 확인
+        //  게시글이 존재하는지 확인
         Post post = findPost(postId);
-        // 2. 현재 멤버가 게시글의 작성자 인지 확인(자기 자신은 게시글 좋아요 금지)
+
+        //  현재 멤버가 게시글의 작성자 인지 확인(자기 자신은 게시글 좋아요 금지)
         if (post.getMember().getId().equals(currentMember.getId())) {
             throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
         }
-        // 3. 이미 좋아요가 있는 경우 금지
+        //  이미 좋아요가 있는 경우 금지
         if (postLikeRepository.existsByPostAndMember(post, currentMember)) {
             throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
         }
-        // 4. postlikeRepository에 저장
+        //  postlikeRepository에 저장
         PostLike postlike = PostLike.builder()
                 .member(currentMember)
                 .post(post)
@@ -206,8 +200,24 @@ public class PostService {
         postLikeRepository.deleteByPostAndMember(post, currentMember);
 
         long totalCount = postLikeRepository.countPostLikesByPost(post);
-        return PostLikeDto.of(postId, false, totalCount);
+        return PostLikeDto.of(post.getId(), false, totalCount);
 
+    }
+
+
+    public PostLikeDto getPostLike(Long postId, Member currentMember) {
+        // 게시글이 있는지 확인
+        Post post = findPost(postId);
+
+        boolean isLiked = false;
+
+        // 현재 로그인 된 사용자의 경우 좋아요가 되어있는지 확인
+        if (currentMember != null) {
+            Set<Long> likePostIds = postLikeRepository.findPostIdsByMember(currentMember);
+            isLiked = likePostIds.contains(post.getId());
+        }
+        long totalCount = postLikeRepository.countPostLikesByPost(post);
+        return PostLikeDto.of(post.getId(), isLiked, totalCount);
     }
 
     // 이미지 삭제
