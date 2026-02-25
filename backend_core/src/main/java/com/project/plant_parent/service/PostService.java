@@ -1,16 +1,15 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.*;
 import com.project.plant_parent.exception.BusinessException;
-import com.project.plant_parent.entity.ErrorCode;
-import com.project.plant_parent.entity.Member;
-import com.project.plant_parent.entity.Post;
-import com.project.plant_parent.entity.PostImage;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.repository.PostImageRepository;
+import com.project.plant_parent.repository.PostLikeRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +28,7 @@ public class PostService {
     private final PostImageRepository postImageRepository;
     private final FileService fileService;
     private final AiAnalysisService aiAnalysisService;
+    private final PostLikeRepository postLikeRepository;
 
 
     // Refactor: 리액트에서 보낸 json 본문을 그대로 저장
@@ -144,12 +144,6 @@ public class PostService {
 
 
 
-    public void deleteFileByUrl(String imageUrl) {
-        String fileName = imageUrl.replace("/images/", "");
-
-        fileService.deleteFile(fileName);
-    }
-
     //삭제
     @Transactional
     public void deletePost(Long postId, Member member) {
@@ -168,6 +162,60 @@ public class PostService {
         return aiAnalysisService.getFullAnalysis(postImage);
     }
 
+    @Transactional
+    public PostLikeDto createPostLike(Long postId, Member currentMember) {
+        // 1. 게시글이 존재하는지 확인
+        Post post = findPost(postId);
+        // 2. 현재 멤버가 게시글의 작성자 인지 확인(자기 자신은 게시글 좋아요 금지)
+        if (post.getMember().getId().equals(currentMember.getId())) {
+            throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
+        }
+        // 3. 이미 좋아요가 있는 경우 금지
+        if (postLikeRepository.existsByPostAndMember(post, currentMember)) {
+            throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
+        }
+        // 4. postlikeRepository에 저장
+        PostLike postlike = PostLike.builder()
+                .member(currentMember)
+                .post(post)
+                .build();
+
+        try {
+            PostLike save = postLikeRepository.save(postlike);
+
+            long totalCount = postLikeRepository.countPostLikesByPost(post);
+
+            return PostLikeDto.of(save.getPost().getId(), true, totalCount);
+        } catch (DataIntegrityViolationException e) {
+            // 찰나의 순간에 동시에 요청이 와서 유니크 제약조건을 건드릴 경우 예외
+            log.warn("[동시성 차단] memberId = {}, postId= {}", currentMember.getId(), post.getId());
+            throw new BusinessException(ErrorCode.POST_LIKE_ALREADY_EXISTS);
+        }
+    }
+
+
+    @Transactional
+    public PostLikeDto deletePostLike(Long postId, Member currentMember) {
+        // 1. 게시글이 있는지 확인
+        Post post = findPost(postId);
+        // 2. 좋아요가 있는지 확인
+        if (!postLikeRepository.existsByPostAndMember(post, currentMember)) {
+            throw new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND);
+        }
+        // 3. 좋아요 삭제
+        postLikeRepository.deleteByPostAndMember(post, currentMember);
+
+        long totalCount = postLikeRepository.countPostLikesByPost(post);
+        return PostLikeDto.of(postId, false, totalCount);
+
+    }
+
+    // 이미지 삭제
+    public void deleteFileByUrl(String imageUrl) {
+        String fileName = imageUrl.replace("/images/", "");
+
+        fileService.deleteFile(fileName);
+    }
 
     // 전체 조회 - 페이징 적용
     public Page<PostResponseDto> getPostList(Pageable pageable) {

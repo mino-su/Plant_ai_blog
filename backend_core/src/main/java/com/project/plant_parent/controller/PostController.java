@@ -1,5 +1,6 @@
 package com.project.plant_parent.controller;
 
+import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
@@ -99,5 +100,27 @@ public class PostController {
     ) {
         Page<PostResponseDto> search = postService.search(searchCondition, pageable);
         return ResponseEntity.ok(search);
+    }
+
+    // 게시글 좋아요
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<PostLikeDto> createPostLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = userDetails.getMember();
+        PostLikeDto postLike = postService.createPostLike(postId, currentMember);
+        return ResponseEntity.status(HttpStatus.CREATED).body(postLike);
+    }
+
+    // 게시글 좋아요 삭제
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<String> deletePostLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = userDetails.getMember();
+        postService.deletePostLike(postId, currentMember);
+        return ResponseEntity.ok("게시글 좋아요가 취소 되었습니다.");
     }
 }
