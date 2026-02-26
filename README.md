@@ -89,6 +89,8 @@ Fetch Join & Distinct: JPA N+1 문제를 해결하여 대량 데이터 조회 �
 | **전체 피드 조회** | `GET` | `/api/posts`| 모든 사용자의 게시글을 최신 순으로 조회 | ❌ |
 | **게시글 작성** | `POST`| `/api/posts`| Editor.js의 구조화 된 본문을 포함하여 게시글 저장 | ✅ |
 | **게시글 상세** | `GET`| `/api/posts/{post_id}`| 특정 게시글의 분문과 분석된 이미지 정보를 조회 | ❌ |
+| **게시글 좋아요** | `POST` | `api/posts/{post_id}/like` | 특정 게시글 좋아요, 해당 게시글의 좋아요 상태 반영 | ✅ |
+
 
 #### 👤 사용자 및 소셜
 
@@ -99,8 +101,9 @@ Fetch Join & Distinct: JPA N+1 문제를 해결하여 대량 데이터 조회 �
 | **팔로우** | `POST`| `/api/members/{member_id}/follow`| 다른 사용자를 팔로우 | ✅ |
 | **내 정보 확인** | `GET`| `/api/members/me/profile` | 내 정보를 확인 | ✅ |
 | **내 정보 설정** | `PUT`| `/api/members/me/profile` | 내 정보를 수정 | ✅ |
-| **팔로우 목록** | `GET` | `api/members/{member_id}/follower | 팔로워 목록 조회, 로그인한 유저의 팔로우 여부 반영 | ✅ |
-| **팔로잉 목록** | `GET` | `api/members/{member_id}/following | 팔로잉 목록 조회, 로그인한 유저의 팔로우 여부 반영 | ✅ |
+| **팔로우 목록** | `GET` | `api/members/{member_id}/follower` | 팔로워 목록 조회, 로그인한 유저의 팔로우 여부 반영 | ✅ |
+| **팔로잉 목록** | `GET` | `api/members/{member_id}/following` | 팔로잉 목록 조회, 로그인한 유저의 팔로우 여부 반영 | ✅ |
+
 
 
 ### 🟣 AI Inference API (Flask)
