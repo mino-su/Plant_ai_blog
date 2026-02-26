@@ -509,16 +509,41 @@ export default function PostDetail() {
                     {post.comments?.map(comment => {
                         const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
 
+                        const getSafeImageUrl = (url) => {
+                            if (!url) return '/default_profile.jpg';
+                            return url.startsWith('http') ? url : `${BASE_URL}${url}`;
+                        };
+
                         return (
                             <div key={comment.id} className="comment-thread">
                                 {/* [1] 부모 댓글 */}
                                 <div className="comment-item">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <span className="comment-author"
-                                                  onClick={() => handleNicknameClick(comment.memberId)}
-                                            >{comment.writer}</span>
-                                            <span className="comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <img
+                                                src={getSafeImageUrl(comment.profileImageUrl)}
+                                                alt="프로필"
+                                                style={{
+                                                    width: '40px', height: '40px', borderRadius: '50%',
+                                                    objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
+                                                }}
+                                                onClick={() => handleNicknameClick(comment.memberId)}
+                                                crossOrigin="anonymous"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
+                                            />
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span
+                                                    className="comment-author"
+                                                    onClick={() => handleNicknameClick(comment.memberId)}
+                                                    style={{ fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
+                                                >
+                                                    {comment.writer}
+                                                </span>
+                                                <span className="comment-date" style={{ fontSize: '0.8rem', color: '#adb5bd' }}>
+                                                    {new Date(comment.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+
 
                                             {/* 수정/삭제 버튼 */}
                                             {isCommentAuthor && !comment.isDeleted && (
@@ -565,37 +590,60 @@ export default function PostDetail() {
 
                                 {/* [2] 대댓글 리스트 */}
                                 {comment.children && comment.children.length > 0 && (
-                                    <div className="comment-replies">
+                                    <div className="comment-replies" style={{ paddingLeft: '52px', marginTop: '1rem' }}>
                                         {comment.children.map(child => {
                                             const isReplyAuthor = currentUser && Number(child.memberId) === Number(currentUser.memberId);
                                             return (
-                                                <div key={child.id} className="comment-item" style={{ padding: '1rem 0' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                            <span className="comment-author" onClick={() => handleNicknameClick(child.memberId)} style={{ fontSize: '0.9rem' }}>↳ {child.writer}</span>
-                                                            <span className="comment-date" style={{ fontSize: '0.75rem' }}>{new Date(child.createdAt).toLocaleDateString()}</span>
-                                                            {isReplyAuthor && !child.isDeleted && (
-                                                                <div style={{ display: 'flex', gap: '8px' }}>
-                                                                    <button className="action-btn" style={{ fontSize: '0.75rem' }} onClick={() => { setEditingCommentId(child.id); setEditContent(child.content); }}>수정</button>
-                                                                    <button className="action-btn btn-delete" style={{ fontSize: '0.75rem' }} onClick={() => handleCommentDelete(child.id)}>삭제</button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                <div key={child.id} className="comment-item" style={{ padding: '1rem 0', borderTop: '1px dashed #e9ecef' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 
-                                                    {editingCommentId === child.id ? (
-                                                        <div className="comment-edit-area">
-                                                            <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
-                                                            <div className="button-group-right">
-                                                                <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
-                                                                <button className="action-btn" style={{ color: '#12b886' }} onClick={() => handleCommentUpdate(child.id)}>수정완료</button>
+                                                        {/* 👇👇👇 대댓글 프로필 이미지 + 작성자 정보 👇👇👇 */}
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <img
+                                                                src={getSafeImageUrl(child.profileImageUrl)}
+                                                                alt="프로필"
+                                                                style={{
+                                                                    width: '32px', height: '32px', borderRadius: '50%', // 대댓글은 이미지를 살짝 작게
+                                                                    objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
+                                                                }}
+                                                                onClick={() => handleNicknameClick(child.memberId)}
+                                                                crossOrigin="anonymous"
+                                                                onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
+                                                            />
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <span className="comment-author" onClick={() => handleNicknameClick(child.memberId)} style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                                    {child.writer}
+                                                                </span>
+                                                                <span className="comment-date" style={{ fontSize: '0.75rem', color: '#adb5bd' }}>
+                                                                    {new Date(child.createdAt).toLocaleDateString()}
+                                                                </span>
                                                             </div>
                                                         </div>
-                                                    ) : (
-                                                        <p style={{ color: child.isDeleted ? '#adb5bd' : '#495057', fontSize: '0.95rem', margin: '0.4rem 0 0 1.2rem' }}>
-                                                            {child.isDeleted ? "🗑️ 삭제된 답글입니다." : child.content}
-                                                        </p>
-                                                    )}
+                                                        {/* 👆👆👆 대댓글 프로필 영역 끝 👆👆👆 */}
+
+                                                        {isReplyAuthor && !child.isDeleted && (
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <button className="action-btn" style={{ fontSize: '0.75rem' }} onClick={() => { setEditingCommentId(child.id); setEditContent(child.content); }}>수정</button>
+                                                                <button className="action-btn btn-delete" style={{ fontSize: '0.75rem' }} onClick={() => handleCommentDelete(child.id)}>삭제</button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div style={{ paddingLeft: '42px' }}> {/* 대댓글 프로필 넓이만큼 여백 주기 */}
+                                                        {editingCommentId === child.id ? (
+                                                            <div className="comment-edit-area" style={{ marginTop: '10px' }}>
+                                                                <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                                                                <div className="button-group-right">
+                                                                    <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
+                                                                    <button className="action-btn" style={{ color: '#12b886' }} onClick={() => handleCommentUpdate(child.id)}>수정완료</button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <p style={{ color: child.isDeleted ? '#adb5bd' : '#495057', fontSize: '0.9rem', margin: '0.4rem 0 0 0', lineHeight: '1.5' }}>
+                                                                {child.isDeleted ? "🗑️ 삭제된 답글입니다." : child.content}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}
