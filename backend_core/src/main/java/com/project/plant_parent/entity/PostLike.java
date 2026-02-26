@@ -1,12 +1,18 @@
 package com.project.plant_parent.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
 @Table(name="post_like",
         uniqueConstraints = {
@@ -27,10 +33,10 @@ public class PostLike {
     @JoinColumn(name="post_id", nullable = false)
     private Post post;
 
-    @Builder
-    public PostLike(Member member, Post post) {
-        this.member = member;
-        this.post = post;
-    }
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+
 
 }

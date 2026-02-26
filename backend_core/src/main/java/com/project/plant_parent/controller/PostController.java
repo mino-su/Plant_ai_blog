@@ -1,9 +1,9 @@
 package com.project.plant_parent.controller;
 
+import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
-import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,7 +54,6 @@ public class PostController {
     @GetMapping("/images/{imageId}/analyze")
     public ResponseEntity<AiAnalysisResponseDto> analyzeImage(@PathVariable Long imageId) {
         AiAnalysisResponseDto result = postService.analyzeImage(imageId);
-        log.info(">>> PostController");
         return ResponseEntity.ok(result);
     }
 
@@ -64,12 +62,14 @@ public class PostController {
     public ResponseEntity<Page<PostResponseDto>> getAllPosts(
             @PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
+
         return ResponseEntity.ok(postService.getPostList(pageable));
     }
 
     // 특정 게시물 조회
     @GetMapping("/{postId}")
-    public ResponseEntity<PostResponseDto> getPostWithPostId(@PathVariable("postId") Long postId) {
+    public ResponseEntity<PostResponseDto> getPostWithPostId(
+            @PathVariable("postId") Long postId) {
         return ResponseEntity.ok(postService.getPost(postId));
     }
 
@@ -99,5 +99,39 @@ public class PostController {
     ) {
         Page<PostResponseDto> search = postService.search(searchCondition, pageable);
         return ResponseEntity.ok(search);
+    }
+
+    // 게시글 좋아요
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<PostLikeDto> createPostLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = userDetails.getMember();
+        PostLikeDto postLike = postService.createPostLike(postId, currentMember);
+        return ResponseEntity.status(HttpStatus.CREATED).body(postLike);
+    }
+
+    // 게시글 좋아요 삭제
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<PostLikeDto> deletePostLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = userDetails.getMember();
+        PostLikeDto postLikeDto = postService.deletePostLike(postId, currentMember);
+        log.info("좋아요가 취소되었습니다. postId: {} , memberId: {}", postId, currentMember.getId());
+        return ResponseEntity.ok(postLikeDto);
+    }
+
+    // 게시글 좋아요 조회
+    @GetMapping("/{postId}/like")
+    public ResponseEntity<PostLikeDto> getPostLike(
+            @PathVariable("postId")Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Member currentMember = (userDetails != null) ? userDetails.getMember() : null;
+        PostLikeDto postLike = postService.getPostLike(postId, currentMember);
+        return ResponseEntity.ok(postLike);
     }
 }

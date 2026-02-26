@@ -41,15 +41,16 @@ public class Post extends BaseTimeEntity{
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    // 이미지 리스트 (1:N)
+    // 이미지 리스트 (1:N) - 게시글 삭제시 이미지도 삭제
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> postImages = new ArrayList<>();
 
-    // 좋아요 리스트 (1:N)
+    // 좋아요 리스트 (1:N) - 게시글 삭제시 좋아요도 삭제
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostLike> postLike = new HashSet<>();
+    @BatchSize(size = 100)
+    private Set<PostLike> postLikes = new HashSet<>();
 
     @Builder
     public Post(String title, String content, Member member) {

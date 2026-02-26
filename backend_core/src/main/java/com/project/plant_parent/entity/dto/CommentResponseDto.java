@@ -33,6 +33,8 @@ public class CommentResponseDto {
 
     private boolean isDeleted;
 
+    private String profileImageUrl;
+
 
     public static CommentResponseDto from(Comment comment) {
         return CommentResponseDto.builder()
@@ -46,6 +48,7 @@ public class CommentResponseDto {
                                 .map(CommentResponseDto::from)
                                 .collect(Collectors.toList())
                 )
+                .profileImageUrl(comment.getMember().getProfile().getProfileImageUrl())
                 .createdAt(comment.getCreatedAt())
                 .modifiedAt(comment.getModifiedAt())
                 .isDeleted(comment.isDeleted())

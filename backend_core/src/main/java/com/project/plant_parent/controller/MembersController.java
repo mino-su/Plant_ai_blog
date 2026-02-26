@@ -92,8 +92,6 @@ public class MembersController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         if (userDetails == null) {
-            // 프론트엔드 MyPage.jsx의 catch 문으로 보내기 위해 401을 반환하거나,
-            // 혹은 null을 포함한 DTO를 반환해서 "비로그인"임을 알려야 합니다.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Member currentMember =  userDetails.getMember();

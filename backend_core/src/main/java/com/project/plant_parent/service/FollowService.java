@@ -13,6 +13,7 @@ import com.project.plant_parent.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,16 +48,20 @@ public class FollowService {
             throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
         }
 
+        try {
+            Follow follow = Follow.builder()
+                    .fromMember(currentMember)
+                    .toMember(toMember)
+                    .build();
 
-        Follow follow = Follow.builder()
-                            .fromMember(currentMember)
-                            .toMember(toMember)
-                            .build();
+            Follow save = followRepository.save(follow);
 
-        Follow save = followRepository.save(follow);
-
-        return FollowResponseDto.from(save);
-
+            return FollowResponseDto.from(save);
+        } catch (DataIntegrityViolationException e) {
+            // 찰나의 순간 동시성 요청이 와서 유니크 제약 조건을 건드릴 경우 예외 던짐
+            log.warn("[동시성 차단] currentMemberId = {}, toMemberId = {}", currentMember.getId(), toMemberId);
+            throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
+        }
     }
 
     @Transactional

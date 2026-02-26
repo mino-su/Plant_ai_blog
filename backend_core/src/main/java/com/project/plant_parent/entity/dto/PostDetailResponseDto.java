@@ -15,17 +15,15 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostResponseDto {
+public class PostDetailResponseDto {
     private Long id;
     private String title;
     private String content;
     private String writer; // Member 전체가 아니라 username만 전달
     private Long memberId;
     private List<CommentResponseDto> comments;
-    private Long totalLikeCount;
+    private PostLikeDto postLike;
 
-
-//    private List<PostImageDto> images; // Refactor: editor 개편 (Content에 이미지 정보(Url) 포함 예정)
 
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
@@ -33,11 +31,10 @@ public class PostResponseDto {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime modifiedAt;
 
-    private String profileImageUrl;
 
     // Entity -> DTO 변환 생성자
-    public static PostResponseDto from(Post post) {
-        return PostResponseDto.builder()
+    public static PostDetailResponseDto of(Post post, PostLikeDto postLike) {
+        return PostDetailResponseDto.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
@@ -49,11 +46,9 @@ public class PostResponseDto {
                                 .map(CommentResponseDto::from)
                                 .collect(Collectors.toList())
                 )
-                .profileImageUrl(post.getMember().getProfile().getProfileImageUrl())
-                .totalLikeCount((long) post.getPostLikes().size())
+                .postLike(postLike)
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
     }
-
 }

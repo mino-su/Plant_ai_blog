@@ -7,18 +7,24 @@ import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.dto.MyPageResponseDto;
 import com.project.plant_parent.repository.FollowRepository;
 import com.project.plant_parent.repository.MemberRepository;
+import com.project.plant_parent.repository.PostLikeRepository;
 import com.project.plant_parent.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MyPageService {
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
+    private final PostLikeRepository postLikeRepository;
     
     public MyPageResponseDto getMyPageInfo(Long memberId, Member currentMember){
         Member member = memberRepository.findById(memberId).orElseThrow(
@@ -40,6 +46,8 @@ public class MyPageService {
 
 
         List<Post> posts = postRepository.findAllByMemberOrderByCreatedAtDesc(member);
+
+
 
         return MyPageResponseDto.of(member, posts, followers, followings ,isFollowing, isFollower);
 

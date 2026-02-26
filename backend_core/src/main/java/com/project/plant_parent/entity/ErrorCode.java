@@ -23,6 +23,11 @@ public enum ErrorCode {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND,"POST_001","게시글이 존재하지 않습니다."),
     POST_NOT_WRITER(HttpStatus.FORBIDDEN,"POST_002","게시글 작성자만 수정/삭제 할 수 있습니다."),
 
+    // 게시글 좋아요 관련 에러
+    POST_LIKE_FORBIDDEN(HttpStatus.FORBIDDEN,"POST_LIKE_001","게시글 작성자 본인은 좋아요를 할 수 없습니다.."),
+    POST_LIKE_ALREADY_EXISTS(HttpStatus.CONFLICT,"POST_LIKE_002","이미 좋아요 한 게시글 입니다."),
+    POST_LIKE_NOT_FOUND(HttpStatus.NOT_FOUND,"POST_LIKE_003","게시글 좋아요가 존재하지 않습니다."),
+
     // 이미지 관련 에러
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND,"IMAGE_001","존재하지 않는 이미지 입니다."),
 
