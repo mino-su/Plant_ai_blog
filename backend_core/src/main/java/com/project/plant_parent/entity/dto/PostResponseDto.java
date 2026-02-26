@@ -33,6 +33,7 @@ public class PostResponseDto {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime modifiedAt;
 
+    private String profileImageUrl;
 
     // Entity -> DTO 변환 생성자
     public static PostResponseDto from(Post post) {
@@ -48,6 +49,7 @@ public class PostResponseDto {
                                 .map(CommentResponseDto::from)
                                 .collect(Collectors.toList())
                 )
+                .profileImageUrl(post.getMember().getProfile().getProfileImageUrl())
                 .totalLikeCount((long) post.getPostLikes().size())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())

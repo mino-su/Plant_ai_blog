@@ -399,22 +399,61 @@ export default function PostDetail() {
             <Header/>
             <main className="container" style={{maxWidth: '800px', paddingBottom: '10rem'}}>
                 {/*  게시글 헤더 영역 */}
-                <div className="post-header">
-                    <h1 className="post-title">{post.title}</h1>
-                    <div className="post-info">
-                        <div>
-                            <span className="nickname-link"
+                <div className="post-header" style={{ borderBottom: '1px solid #f1f3f5', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
+                    <h1 className="post-title" style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>{post.title}</h1>
+
+                    <div className="post-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                        {/* --- 1. 작성자 프로필 & 정보 영역 --- */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <img
+                                src={
+                                    !post.profileImageUrl
+                                        ? '/default_profile.jpg'
+                                        : post.profileImageUrl.startsWith('http')
+                                            ? post.profileImageUrl
+                                            : `${BASE_URL}${post.profileImageUrl}`
+                                }
+                                alt="작성자 프로필"
+                                style={{
+                                    width: '48px', height: '48px', borderRadius: '50%',
+                                    objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
+                                }}
                                 onClick={() => handleNicknameClick(post.memberId)}
-                                style={{fontWeight: 'bold', color: '#343a40'}}>{post.writer}</span>
-                            <span style={{margin: '0 0.5rem'}}>·</span>
-                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        {isAuthor && (
-                            <div className="post-actions">
-                                <button onClick={() => navigate(`/posts/${postId}/edit`)}>수정</button>
-                                <button onClick={handleDelete} style={{color: '#fa5252'}}>삭제</button>
+                                crossOrigin="anonymous"
+                                onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="nickname-link"
+                      onClick={() => handleNicknameClick(post.memberId)}
+                      style={{ fontWeight: 'bold', color: '#343a40', fontSize: '1.1rem', cursor: 'pointer' }}>
+                    {post.writer}
+                </span>
+                                <span style={{ color: '#868e96', fontSize: '0.9rem', marginTop: '2px' }}>
+                    {new Date(post.createdAt).toLocaleDateString()}
+                </span>
                             </div>
-                            )}
+                        </div>
+
+                        {/* --- 2. 수정/삭제 버튼 영역 --- */}
+                        {isAuthor && (
+                            <div className="post-actions" style={{ display: 'flex', gap: '10px' }}>
+                                <button
+                                    className="action-btn"
+                                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #dee2e6', backgroundColor: 'white', cursor: 'pointer' }}
+                                    onClick={() => navigate(`/posts/${postId}/edit`)}
+                                >
+                                    수정
+                                </button>
+                                <button
+                                    className="action-btn"
+                                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ff8787', backgroundColor: 'white', color: '#fa5252', cursor: 'pointer' }}
+                                    onClick={handleDelete}
+                                >
+                                    삭제
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -505,6 +544,7 @@ export default function PostDetail() {
 
 
                 {/*  댓글 영역 */}
+                {/* 댓글 영역 */}
                 <div className="comment-list">
                     {post.comments?.map(comment => {
                         const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
@@ -515,9 +555,10 @@ export default function PostDetail() {
                         };
 
                         return (
-                            <div key={comment.id} className="comment-thread">
+                            <div key={comment.id} className="comment-thread" style={{ marginBottom: '1.5rem', borderBottom: '1px solid #f1f3f5', paddingBottom: '1.5rem' }}>
                                 {/* [1] 부모 댓글 */}
                                 <div className="comment-item">
+                                    {/* --- 1. 부모 댓글 프로필 & 버튼 헤더 --- */}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <img
@@ -543,67 +584,69 @@ export default function PostDetail() {
                                                     {new Date(comment.createdAt).toLocaleDateString()}
                                                 </span>
                                             </div>
-
-
-                                            {/* 수정/삭제 버튼 */}
-                                            {isCommentAuthor && !comment.isDeleted && (
-                                                <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
-                                                    <button className="action-btn" onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); }}>수정</button>
-                                                    <button className="action-btn btn-delete" onClick={() => handleCommentDelete(comment.id)}>삭제</button>
-                                                </div>
-                                            )}
                                         </div>
+
+                                        {/* 수정/삭제 버튼 */}
+                                        {isCommentAuthor && !comment.deleted && (
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button className="action-btn" onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); }}>수정</button>
+                                                <button className="action-btn btn-delete" onClick={() => handleCommentDelete(comment.id)}>삭제</button>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* 본문/수정창 분기 */}
-                                    {editingCommentId === comment.id ? (
-                                        <div className="comment-edit-area">
-                                            <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
-                                            <div className="button-group-right">
-                                                <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
-                                                <button className="action-btn" style={{ color: '#12b886', fontWeight: 'bold' }} onClick={() => handleCommentUpdate(comment.id)}>수정완료</button>
+                                    {/* --- 2. 부모 댓글 본문 (프로필 너비만큼 들여쓰기) --- */}
+                                    {/* 변경점: paddingLeft를 52px(40px+12px)로 고정하여 텍스트가 프로필 이미지 하단으로 침범하지 않게 함 */}
+                                    <div style={{ paddingLeft: '52px' }}>
+                                        {editingCommentId === comment.id ? (
+                                            <div className="comment-edit-area" style={{ marginTop: '0.8rem' }}>
+                                                <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                                                <div className="button-group-right">
+                                                    <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
+                                                    <button className="action-btn" style={{ color: '#12b886', fontWeight: 'bold' }} onClick={() => handleCommentUpdate(comment.id)}>수정완료</button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <p style={{ color: comment.isDeleted ? '#adb5bd' : '#495057', margin: '0.8rem 0', lineHeight: '1.6' }}>
-                                            {comment.isDeleted ? "🗑️ 삭제된 댓글입니다." : comment.content}
-                                        </p>
-                                    )}
+                                        ) : (
+                                            <p style={{ color: comment.deleted ? '#adb5bd' : '#495057', margin: '0.5rem 0', lineHeight: '1.6' }}>
+                                                {comment.deleted ? "🗑️ 삭제된 댓글입니다." : comment.content}
+                                            </p>
+                                        )}
 
-                                    {/* 답글 버튼 */}
-                                    {!comment.isDeleted && (
-                                        <button className="action-btn btn-reply" onClick={() => handleReplyClick(comment.id)}>
-                                            {activeReplyId === comment.id ? "✕ 취소" : "💬 답글 달기"}
-                                        </button>
-                                    )}
+                                        {/* 답글 버튼 */}
+                                        {!comment.deleted && (
+                                            <button className="action-btn btn-reply" onClick={() => handleReplyClick(comment.id)}>
+                                                {activeReplyId === comment.id ? "✕ 취소" : "💬 답글 달기"}
+                                            </button>
+                                        )}
 
-                                    {/* 대댓글 입력창 */}
-                                    {activeReplyId === comment.id && (
-                                        <div className="reply-input-area">
-                                            <textarea className="comment-textarea-styled" placeholder={`@${comment.writer}님에게 답글 남기기...`} value={replyContent} onChange={(e) => setReplyContent(e.target.value)} />
-                                            <div className="button-group-right">
-                                                <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }} onClick={() => handleCommentSubmit(comment.id)}>등록</button>
+                                        {/* 대댓글 입력창 */}
+                                        {activeReplyId === comment.id && (
+                                            <div className="reply-input-area" style={{ marginTop: '0.8rem' }}>
+                                                <textarea className="comment-textarea-styled" placeholder={`@${comment.writer}님에게 답글 남기기...`} value={replyContent} onChange={(e) => setReplyContent(e.target.value)} />
+                                                <div className="button-group-right">
+                                                    <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.85rem' }} onClick={() => handleCommentSubmit(comment.id)}>등록</button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* [2] 대댓글 리스트 */}
                                 {comment.children && comment.children.length > 0 && (
-                                    <div className="comment-replies" style={{ paddingLeft: '52px', marginTop: '1rem' }}>
+                                    <div className="comment-replies" style={{ paddingLeft: '0px', marginTop: '1rem' }}>
                                         {comment.children.map(child => {
                                             const isReplyAuthor = currentUser && Number(child.memberId) === Number(currentUser.memberId);
                                             return (
-                                                <div key={child.id} className="comment-item" style={{ padding: '1rem 0', borderTop: '1px dashed #e9ecef' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div key={child.id} className="comment-item" style={{ padding: '1rem', borderTop: '1px dashed #e9ecef', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '8px' }}>
 
-                                                        {/* 👇👇👇 대댓글 프로필 이미지 + 작성자 정보 👇👇👇 */}
+                                                    {/* --- 1. 대댓글 프로필 & 헤더 --- */}
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                             <img
                                                                 src={getSafeImageUrl(child.profileImageUrl)}
                                                                 alt="프로필"
                                                                 style={{
-                                                                    width: '32px', height: '32px', borderRadius: '50%', // 대댓글은 이미지를 살짝 작게
+                                                                    width: '32px', height: '32px', borderRadius: '50%', // 대댓글 이미지 사이즈 32px
                                                                     objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
                                                                 }}
                                                                 onClick={() => handleNicknameClick(child.memberId)}
@@ -619,9 +662,8 @@ export default function PostDetail() {
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        {/* 👆👆👆 대댓글 프로필 영역 끝 👆👆👆 */}
 
-                                                        {isReplyAuthor && !child.isDeleted && (
+                                                        {isReplyAuthor && !child.deleted && (
                                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                                 <button className="action-btn" style={{ fontSize: '0.75rem' }} onClick={() => { setEditingCommentId(child.id); setEditContent(child.content); }}>수정</button>
                                                                 <button className="action-btn btn-delete" style={{ fontSize: '0.75rem' }} onClick={() => handleCommentDelete(child.id)}>삭제</button>
@@ -629,9 +671,11 @@ export default function PostDetail() {
                                                         )}
                                                     </div>
 
-                                                    <div style={{ paddingLeft: '42px' }}> {/* 대댓글 프로필 넓이만큼 여백 주기 */}
+                                                    {/* --- 2. 대댓글 본문 (프로필 너비만큼 들여쓰기) --- */}
+                                                    {/* 변경점: 대댓글 프로필 넓이(32px) + 갭(10px) = 42px 들여쓰기 */}
+                                                    <div style={{ paddingLeft: '42px' }}>
                                                         {editingCommentId === child.id ? (
-                                                            <div className="comment-edit-area" style={{ marginTop: '10px' }}>
+                                                            <div className="comment-edit-area" style={{ marginTop: '0.8rem' }}>
                                                                 <textarea className="comment-textarea-styled" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
                                                                 <div className="button-group-right">
                                                                     <button className="action-btn" onClick={() => setEditingCommentId(null)}>취소</button>
@@ -639,8 +683,8 @@ export default function PostDetail() {
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <p style={{ color: child.isDeleted ? '#adb5bd' : '#495057', fontSize: '0.9rem', margin: '0.4rem 0 0 0', lineHeight: '1.5' }}>
-                                                                {child.isDeleted ? "🗑️ 삭제된 답글입니다." : child.content}
+                                                            <p style={{ color: child.deleted ? '#adb5bd' : '#495057', fontSize: '0.9rem', margin: '0.5rem 0 0 0', lineHeight: '1.5' }}>
+                                                                {child.deleted ? "🗑️ 삭제된 답글입니다." : child.content}
                                                             </p>
                                                         )}
                                                     </div>
