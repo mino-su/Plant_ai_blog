@@ -56,6 +56,9 @@ const PostCard = ({ post }) => {
                     <span className="separator">·</span>
                     <span>{post.writer || '익명'}</span>
                 </div>
+                <div style={{ color: '#ff6b6b', fontWeight: 'bold' }}>
+                    ❤️ {post.totalLikeCount || 0}
+                </div>
             </div>
         </div>
     );

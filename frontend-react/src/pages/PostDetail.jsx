@@ -175,9 +175,13 @@ export default function PostDetail() {
     const [commentContent, setCommentContent] = useState('');
     const [loading, setLoading] = useState(true);
 
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
+
     useEffect(() => {
         if (!postId) return;
         fetchPost();
+        fetchPostLikeStatus();
     }, [postId]);
 
     // [핵심 로직] 게시글 데이터 가져오기 및 파싱
@@ -299,6 +303,51 @@ export default function PostDetail() {
         }
     };
 
+    // 좋아요 초기 상태 조회 (@GetMapping("/{postId}/like"))
+    const fetchPostLikeStatus = async () => {
+        try {
+            const res = await api.get(`/api/posts/${postId}/like`);
+            // PostLikeDto 구조: { postId, totalLikeCount, isLiked }
+            setIsLiked(res.data.liked); // boolean 값
+            setLikeCount(res.data.totalLikeCount); // long 값
+        } catch (err) {
+            console.error("좋아요 상태 조회 실패:", err);
+        }
+    };
+
+    //좋아요 버튼 토글 핸들러 (@PostMapping / @DeleteMapping)
+    const handleLikeToggle = async () => {
+        if (!currentUser) {
+            if (window.confirm("좋아요는 로그인이 필요한 기능입니다. 로그인하시겠습니까?")) {
+                navigate('/login');
+            }
+            return;
+        }
+
+        // 본인 글에는 좋아요 금지 (방어 로직)
+        if (Number(post?.memberId) === Number(currentUser.memberId)) {
+            alert("자신의 게시글에는 좋아요를 누를 수 없습니다. 🌱");
+            return;
+        }
+
+        try {
+            if (isLiked) {
+                // 이미 눌려있다면 취소
+                const res = await api.delete(`/api/posts/${postId}/like`);
+                setIsLiked(res.data.liked); // 서버 응답(false)으로 동기화
+                setLikeCount(res.data.totalLikeCount);
+            } else {
+                // 안 눌려있다면 추가
+                const res = await api.post(`/api/posts/${postId}/like`);
+                setIsLiked(res.data.liked); // 서버 응답(true)으로 동기화
+                setLikeCount(res.data.totalLikeCount);
+            }
+        } catch (err) {
+            // 백엔드 BusinessException (ErrorCode.POST_LIKE_FORBIDDEN 등) 처리
+            const errorMessage = err.response?.data?.message || "요청 처리에 실패했습니다.";
+            alert(errorMessage);
+        }
+    };
 
 
 
@@ -349,7 +398,7 @@ export default function PostDetail() {
         <>
             <Header/>
             <main className="container" style={{maxWidth: '800px', paddingBottom: '10rem'}}>
-                {/* 1. 게시글 헤더 영역 (기존 기능 유지) */}
+                {/*  게시글 헤더 영역 */}
                 <div className="post-header">
                     <h1 className="post-title">{post.title}</h1>
                     <div className="post-info">
@@ -369,7 +418,7 @@ export default function PostDetail() {
                     </div>
                 </div>
 
-                {/* 2. 본문 영역 (하이브리드 렌더링) */}
+                {/*  본문 영역 (하이브리드 렌더링) */}
                 <div className="content-area">
                     {isOldText ? (
                         <div className="post-content">
@@ -380,7 +429,82 @@ export default function PostDetail() {
                     )}
                 </div>
 
-                {/* 3. 댓글 영역 */}
+                {/* ---  좋아요 버튼 영역 --- */}
+                <div style={{ textAlign: 'center', margin: '4rem 0 2rem 0' }}>
+                    <button
+                        onClick={handleLikeToggle}
+                        style={{
+                            background: isLiked ? '#fff5f5' : '#ffffff',
+                            border: `2px solid ${isLiked ? '#ff6b6b' : '#dee2e6'}`,
+                            borderRadius: '50%',
+                            width: '80px', height: '80px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto',
+                            boxShadow: isLiked ? '0 4px 10px rgba(255, 107, 107, 0.2)' : '0 2px 5px rgba(0,0,0,0.05)'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        <span style={{ fontSize: '2rem', lineHeight: '1' }}>{isLiked ? '❤️' : '🤍'}</span>
+                        <span style={{ fontSize: '1rem', fontWeight: 'bold', color: isLiked ? '#ff6b6b' : '#868e96', marginTop: '5px' }}>
+                            {likeCount}
+                        </span>
+                    </button>
+                </div>
+                {/* ---------------------------------------------------- */}
+
+                {/* 메인 댓글 작성 영역 */}
+                <div className="comment-write-area" style={{ marginBottom: '2rem' }}>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                        댓글 {post.comments?.length || 0}개
+                    </h3>
+
+                    {/* 로그인 여부에 따라 작성창을 다르게 보여줍니다 */}
+                    {currentUser ? (
+                        <div className="comment-input-box" style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '12px' }}>
+                            <textarea
+                                className="comment-textarea-styled"
+                                placeholder="식물에 대한 따뜻한 댓글을 남겨주세요 🌱"
+                                value={commentContent}
+                                onChange={(e) => setCommentContent(e.target.value)} // 상태에 텍스트 저장
+                                style={{
+                                    width: '100%', minHeight: '80px', padding: '12px',
+                                    borderRadius: '8px', border: '1px solid #dee2e6',
+                                    resize: 'vertical', fontSize: '1rem'
+                                }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                <button
+                                    className="btn-primary"
+                                    onClick={() => handleCommentSubmit()} // 부모 ID 없이 호출하여 원댓글로 등록
+                                    style={{
+                                        padding: '8px 20px', borderRadius: '6px',
+                                        backgroundColor: '#12b886', color: 'white',
+                                        border: 'none', cursor: 'pointer', fontWeight: 'bold'
+                                    }}
+                                >
+                                    댓글 등록
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{
+                            padding: '1.5rem', backgroundColor: '#f8f9fa', borderRadius: '12px',
+                            textAlign: 'center', color: '#868e96'
+                        }}>
+                            댓글을 작성하려면 <span
+                            style={{ color: '#12b886', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
+                            onClick={() => navigate('/login')}
+                        >로그인</span>이 필요합니다.
+                        </div>
+                    )}
+                </div>
+
+
+
+                {/*  댓글 영역 */}
                 <div className="comment-list">
                     {post.comments?.map(comment => {
                         const isCommentAuthor = currentUser && Number(comment.memberId) === Number(currentUser.memberId);
