@@ -49,6 +49,10 @@ public enum ErrorCode {
     // 검색 관련 에러
     SEARCH_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "SEARCH_001","존재하지 않는 검색 타입 입니다."),
 
+    // 알림 관련 에러
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION_001","존재하지 않는 알림입니다."),
+    NOTIFICATION_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "NOTIFICATION_002","인증되지 않은 사용자입니다."),
+
     // 공통 에러
     GLOBAL_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "GLOBAL_001","파일이 존재하지 않습니다."),
     GLOBAL_INVALID_INPUT(HttpStatus.BAD_REQUEST,"GLOBAL_002","잘못된 요청 양식입니다."),

@@ -1,5 +1,7 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import {AuthProvider} from "./components/AuthContext.jsx";
+import { AuthProvider, useAuth } from "./components/AuthContext.jsx";
+import { ToastContainer, toast } from 'react-toastify';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
@@ -9,58 +11,82 @@ import PostEdit from './pages/PostEdit';
 import MyPage from "./pages/MyPage";
 import Setting from "./pages/settings";
 import Search from './pages/Search';
-import './App.css';
 import FollowListPage from "./pages/FollowListPage.jsx";
+import './App.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 /**
- * [작동 원리 및 수정 포인트]
- * 1. PrivateRoute: 토큰 여부에 따라 페이지 접근을 제한하는 아주 정석적인 보안 로직입니다.
- * 2. 파라미터 명명: :id 대신 :memberId, :postId를 사용하여 useParams() 호출 시 데이터 성격을 명확히 했습니다.
- * 3. 컨테이너 제거: <div className="container">를 여기서 제거했습니다.
- * - 이유: 에디터 페이지나 홈 화면 등 페이지마다 필요한 너비가 다르기 때문입니다.
- * - 대신 각 페이지 컴포넌트(Home, MyPage 등) 내부에서 최상단에 <div className="container">를 넣어주세요.
+ * [백그라운드 알림 매니저]
+ * 앱 전역에서 렌더링되며 SSE 연결 및 Toast 팝업을 담당
  */
-function App() {
-    // 인증 보호 라우트 (로그인 안 한 유저는 접근 불가)
-    const PrivateRoute = ({ children }) => {
-        const token = localStorage.getItem('accessToken');
-        return token ? children : <Navigate to="/login" />;
-    };
+function NotificationManager() {
+    const { user, token } = useAuth();
+    const BASE_URL = "http://localhost:8080";
 
+    useEffect(() => {
+        if (!user || !token) return;
+
+        const eventSource = new EventSource(`${BASE_URL}/api/notifications/subscribe?token=${token}`);
+
+        eventSource.addEventListener('connection', (e) => {
+            console.log("🟢 SSE 연결 완료:", e.data);
+        });
+
+        eventSource.addEventListener('like', (e) => {
+            toast.info(`❤️ ${e.data}`, { position: "top-right", autoClose: 3000 });
+        });
+
+        eventSource.addEventListener('comment', (e) => {
+            toast.success(`💬 ${e.data}`, { position: "top-right", autoClose: 3000 });
+        });
+
+        eventSource.addEventListener('follow', (e) => {
+            toast.info(`👤 ${e.data}`, { position: "top-right", autoClose: 3000 });
+        });
+
+        eventSource.onerror = (error) => {
+            console.error("🔴 SSE 연결 에러. 재연결 대기 중...", error);
+            eventSource.close();
+        };
+
+        return () => {
+            eventSource.close();
+            console.log("⚪ SSE 연결 해제");
+        };
+    }, [user, token]);
+
+    return null;
+}
+
+/**
+ * [인증 보호 라우트]
+ * 성능 최적화를 위해 App 컴포넌트 바깥으로 분리
+ */
+const PrivateRoute = ({ children }) => {
+    const token = localStorage.getItem('accessToken');
+    return token ? children : <Navigate to="/login" />;
+};
+
+
+function App() {
     return (
         <AuthProvider>
             <Router>
-                {/* 전역 container를 삭제하여 각 페이지가 자신의 레이아웃을 100% 통제하게 합니다.
-             에디터 같은 페이지는 화면 끝까지 넓게 써야 하기 때문입니다.
-          */}
+                {/* Router 안쪽에 배치하여 추후 알림 클릭 시 페이지 이동(navigate)이 가능하도록 설계 */}
+                <ToastContainer />
+                <NotificationManager />
+
                 <Routes>
-                    {/* 인증이 필요 없는 공용 라우트 */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/" element={<Home />} />
-
-                    {/* [에디터 개편] 글쓰기 - Editor.js가 로드될 페이지 */}
                     <Route path="/write" element={<PrivateRoute><PostCreate /></PrivateRoute>} />
-
-                    {/* [구조화] 마이페이지 - 파라미터를 :memberId로 변경하여 가독성 향상 */}
                     <Route path="/members/:memberId/mypage" element={<MyPage />} />
-
-                    {/* [구조화] 상세 조회 - 파라미터를 :postId로 변경 */}
                     <Route path="/posts/:postId" element={<PostDetail />} />
-
-                    {/* [에디터 개편] 수정하기 - 기존 데이터를 JSON으로 불러올 페이지 */}
                     <Route path="/posts/:postId/edit" element={<PrivateRoute><PostEdit /></PrivateRoute>} />
-
-                    {/* 설정 및 프로필 수정 */}
                     <Route path="/setting" element={<PrivateRoute><Setting /></PrivateRoute>} />
-
-                    {/* 검색 페이지 */}
                     <Route path="/search" element={<Search />} />
-
-                    {/* 잘못된 주소 접근 시 메인으로 리다이렉트 (방어 코드) */}
                     <Route path="*" element={<Navigate to="/" />} />
-
-                    {/* 팔로우/팔로잉 목록 페이지 */}
                     <Route path="/members/:memberId/:type" element={<PrivateRoute><FollowListPage /></PrivateRoute>} />
                 </Routes>
             </Router>

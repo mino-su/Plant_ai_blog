@@ -71,6 +71,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
+
+        // 2. [추가된 SSE 전용 방식] URL 쿼리 파라미터에서 토큰 추출
+        // 알림 구독 API("/api/notifications/subscribe")로 들어온 요청일 때만 파라미터를 검사하여 보안을 유지.
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/api/notifications/subscribe")) {
+            // 프론트엔드 EventSource에서 ?token=... 으로 보낸 값을 꺼냄.
+            String tokenParam = request.getParameter("token");
+            if (StringUtils.hasText(tokenParam)) {
+                return tokenParam; // 파라미터로 넘어온 토큰 반환
+            }
+        }
         return null;
     }
 

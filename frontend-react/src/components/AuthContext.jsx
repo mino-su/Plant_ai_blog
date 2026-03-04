@@ -24,6 +24,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const [notifications, setNotifications] = useState([]);
+
+
+    const addNotification = (message, type) => {
+        const newNoti = {
+            id: Date.now(),
+            message,
+            type,
+            read: false,
+            time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+        };
+        setNotifications(prev => [newNoti, ...prev]);
+    };
+
     const loginSuccess = (token) =>{
         localStorage.setItem('accessToken', token);
         setIsLoggedIn(true);
@@ -49,7 +63,8 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn, fetchMyInfo, handleLogout, loginSuccess, loading }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, fetchMyInfo, handleLogout, loginSuccess, loading,
+            notifications, setNotifications, addNotification}}>
             {children}
         </AuthContext.Provider>
     );
