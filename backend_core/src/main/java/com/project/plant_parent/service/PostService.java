@@ -30,6 +30,7 @@ public class PostService {
     private final FileService fileService;
     private final AiAnalysisService aiAnalysisService;
     private final PostLikeRepository postLikeRepository;
+    private final NotificationService notificationService;
 
 
     // Refactor: 리액트에서 보낸 json 본문을 그대로 저장
@@ -176,6 +177,9 @@ public class PostService {
 
         try {
             PostLike save = postLikeRepository.save(postlike);
+
+            String message = currentMember.getUsername() + "님이 회원님의 게시글을 좋아합니다.";
+            notificationService.notify(post.getMember().getId(), message, "like");
 
             long totalCount = postLikeRepository.countPostLikesByPost(post);
 

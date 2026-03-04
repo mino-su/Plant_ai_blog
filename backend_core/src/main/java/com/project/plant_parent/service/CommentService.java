@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     // 댓글 작성
     public CommentResponseDto createComment(Long postId, CommentRequestDto commentRequestDto, Member member) {
@@ -48,6 +49,13 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        Long receiverId = post.getMember().getId();
+
+        if (!receiverId.equals(member.getId())) {
+            String message = member.getUsername() + "님이 회원님의 게시글에 댓글을 남겼습니다.";
+            notificationService.notify(receiverId, message, "comment");
+        }
 
         return CommentResponseDto.from(comment);
     }
