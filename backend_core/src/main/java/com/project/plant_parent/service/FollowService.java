@@ -120,7 +120,7 @@ public class FollowService {
                         follow -> {
                             Member toMember = follow.getToMember();
                             boolean isFollowing = currentMemberFollowingIdList.contains(toMember.getId());
-                            Profile profile = getProfile(toMember);
+                            Profile profile = toMember.getProfile();
                             return FollowListResponseDto.of(toMember, profile, isFollowing);
                         }
                 ).collect(Collectors.toList());
@@ -144,18 +144,14 @@ public class FollowService {
                         follow -> {
                             Member fromMember = follow.getFromMember();
                             boolean isFollowing = currentMemberFollowingIdList.contains(fromMember.getId());
-                            Profile profile = getProfile(fromMember);
+                            Profile profile = fromMember.getProfile();
                             return FollowListResponseDto.of(fromMember, profile, isFollowing);
                         }
                 ).collect(Collectors.toList());
 
     }
 
-    private Profile getProfile(Member fromMember) {
-        return profileRepository.findWithMemberById(fromMember.getId()).orElseThrow(
-                () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
-        );
-    }
+
 
     private @NonNull Member getMember(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(
