@@ -43,6 +43,7 @@ public class Post extends BaseTimeEntity{
 
     // 이미지 리스트 (1:N) - 게시글 삭제시 이미지도 삭제
     @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> postImages = new ArrayList<>();
 
