@@ -90,6 +90,7 @@ public class AuthService {
         // 3. Authentication 에서 email 가져오기
         RefreshToken refreshToken = refreshTokenRepository.findById(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+
         // 4. Refresh Token 일치하는지 검사
         if (!refreshToken.getValue().equals(tokenRequestDto.getRefreshToken())) {
             throw new BusinessException(ErrorCode.AUTH_TOKEN_MISMATCH);
