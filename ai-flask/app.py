@@ -42,6 +42,7 @@ def validate_image(file):
 
 
 @app.route('/detect', methods=['POST'])
+@limiter.limit("10 per minute")
 def detect():
     if 'image' not in request.files:
         return jsonify({"error": "이미지가 없습니다."}), 400
