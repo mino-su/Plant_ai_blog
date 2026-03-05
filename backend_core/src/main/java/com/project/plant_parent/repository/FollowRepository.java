@@ -24,17 +24,19 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
 
     // 팔로잉 목록 조회 (사용자가 팔로우 한 사람들)
-    // select * from follows where from_member_id = ?
-    //    List<Follow> findAllByFromMember(Member fromMember); -> N+1 문제 발생
-    @Query("select f from Follow f join fetch f.toMember where f.fromMember = :member")
+    @Query("select f from Follow f " +
+            "join fetch f.toMember m " +
+            "left join fetch m.profile " +
+            "where f.fromMember = :member")
     List<Follow> findAllByFromMember(@Param("member") Member fromMember);
 
 
     // 팔로워 목록 조회(사용자를 팔로우 한 사람들)
-    // select * from follows where to_member_id = ?
-    //   List<Follow> findAllByToMember(Member toMember); -> N+1 문제 발생
-    @Query("select f from Follow f join fetch f.fromMember where f.toMember= :member")
-    List<Follow> findAllByToMember(@Param("member") Member toMember);
+    @Query("select f from Follow f " +
+            "join fetch f.fromMember m " +
+            "left join fetch m.profile " +
+            "where f.toMember = :member")
+    List<Follow> findAllByToMember(@Param("member") Member member);
 
     // 카운트 조회(마이페이지 숫자 표시)
 

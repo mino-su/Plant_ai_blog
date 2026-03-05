@@ -29,6 +29,7 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
+    private final NotificationService notificationService;
 
 
     @Transactional
@@ -55,6 +56,9 @@ public class FollowService {
                     .build();
 
             Follow save = followRepository.save(follow);
+
+            String message = currentMember.getUsername() + "님이 회원님을 팔로우하기 시작했습니다.";
+            notificationService.notify(toMemberId, message, "follow");
 
             return FollowResponseDto.from(save);
         } catch (DataIntegrityViolationException e) {
