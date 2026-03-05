@@ -28,20 +28,28 @@ function NotificationManager() {
 
         const eventSource = new EventSource(`${BASE_URL}/api/notifications/subscribe?token=${token}`);
 
+        // 알림이 도착했음을 앱 전체에 알리는 헬퍼 함수
+        const triggerBadgeUpdate = () => {
+            window.dispatchEvent(new Event('newNotification'));
+        };
+
         eventSource.addEventListener('connection', (e) => {
             console.log("🟢 SSE 연결 완료:", e.data);
         });
 
         eventSource.addEventListener('like', (e) => {
             toast.info(`❤️ ${e.data}`, { position: "top-right", autoClose: 3000 });
+            triggerBadgeUpdate();
         });
 
         eventSource.addEventListener('comment', (e) => {
             toast.success(`💬 ${e.data}`, { position: "top-right", autoClose: 3000 });
+            triggerBadgeUpdate();
         });
 
         eventSource.addEventListener('follow', (e) => {
             toast.info(`👤 ${e.data}`, { position: "top-right", autoClose: 3000 });
+            triggerBadgeUpdate();
         });
 
         eventSource.onerror = (error) => {
