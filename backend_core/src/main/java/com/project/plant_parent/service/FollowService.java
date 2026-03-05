@@ -43,12 +43,6 @@ public class FollowService {
 
         Member toMember = getMember(toMemberId);
 
-
-        if (followRepository.existsByFromMemberAndToMember(currentMember, toMember)) {
-            // 이미 팔로우를 한 경우
-            throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
-        }
-
         try {
             Follow follow = Follow.builder()
                     .fromMember(currentMember)
@@ -62,7 +56,7 @@ public class FollowService {
 
             return FollowResponseDto.from(save);
         } catch (DataIntegrityViolationException e) {
-            // 찰나의 순간 동시성 요청이 와서 유니크 제약 조건을 건드릴 경우 예외 던짐
+
             log.warn("[동시성 차단] currentMemberId = {}, toMemberId = {}", currentMember.getId(), toMemberId);
             throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
         }

@@ -165,10 +165,7 @@ public class PostService {
         if (post.getMember().getId().equals(currentMember.getId())) {
             throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
         }
-        //  이미 좋아요가 있는 경우 금지
-        if (postLikeRepository.existsByPostAndMember(post, currentMember)) {
-            throw new BusinessException(ErrorCode.POST_LIKE_FORBIDDEN);
-        }
+
         //  postlikeRepository에 저장
         PostLike postlike = PostLike.builder()
                 .member(currentMember)
