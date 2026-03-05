@@ -69,10 +69,10 @@ def detect():
 
     except Exception as e:
         # 서버 내부 오류 처리
+        app.logger.error(f"AI 모델 분석 중 오류: {str(e)}")
         return jsonify({
             "status": "FAILED",
-            "error": str(e)
-
+            "error": "AI 모델 분석 중 오류가 발생했습니다."
         }), 500
 
 

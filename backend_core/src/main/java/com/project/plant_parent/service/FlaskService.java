@@ -67,7 +67,7 @@ public class FlaskService {
                     .body(FlaskResponseDto.class);
         } catch (Exception e) {
             // Flask 와 연결이 끊겼거나 Flask 서버가 down 됐을 경우
-            log.error("[5xx] Flask 서버와 연결 불가", e.getMessage());
+            log.error("[5xx] Flask 서버와 연결 불가", e);
             throw new BusinessException(ErrorCode.AI_SERVER_CONNECT_ERROR);
         }
 
