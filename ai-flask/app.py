@@ -1,20 +1,45 @@
 from flask import Flask, request, jsonify
 from ultralytics import YOLO
-from werkzeug.utils import secure_filename
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import uuid
 import os
+import filetype
+from PIL import Image
+import io
 
 app = Flask(__name__)
 
 #  YOLO 모델 로드,
 plant_model = YOLO('plant_best.pt')
 disease_model = YOLO('disease_best_v2.pt')
+ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/jpg','image/webp'}
 
+# 보안 및 속도 제한 설정
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
 
 # 이미지 저장 경로 설정
 UPLOAD_FOLDER = '../uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+
+def validate_image(file):
+
+    head = file.read(2048)
+    file.seek(0)
+
+    kind = filetype.guess(head)
+    if kind is None or kind.mime not in ALLOWED_MIME_TYPES:
+        return False, kind.mime if kind else "unknown"
+    return True, kind.mime
+
+
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -23,6 +48,13 @@ def detect():
 
     file = request.files['image']
 
+    is_valid, mime_type = validate_image(file)
+    if not is_valid:
+        app.logger.warning(f"잘못된 파일 형식 시도됨: {mime_type}")
+        return jsonify({"error": f"지원되지 않는 파일 형식입니다. (감지된 형식: {mime_type})"}), 400
+
+
+
     ext = os.path.splitext(file.filename)[1] # 원래 파일의 확장자만 추출 (.jpg 등)
     unique_filename = str(uuid.uuid4()) + ext # 고유한 이름 + 확장자 결합
     save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
@@ -30,7 +62,15 @@ def detect():
 
     # 2. 첫 번째 모델 분석
     try:
-        plant_results = plant_model.predict(source=save_path, conf=0.2)
+
+        img_bytes = file.read()
+        img = Image.open(io.BytesIO(img_bytes))
+
+        # 실제 분석을 위해 파일로 저장 (Spring Boot와 볼륨 공유 시 필요)
+        with open(save_path, 'wb') as f:
+            f.write(img_bytes)
+
+        plant_results = plant_model.predict(source=img, conf=0.2)
         plant_data = []
         for r in plant_results:
             for box in r.boxes:
@@ -42,7 +82,7 @@ def detect():
         plant_data = sorted(plant_data, key= lambda x: x['confidence'], reverse= True)
 
         # 3. 두 번째 모델 분석
-        disease_results = disease_model.predict(source=save_path, conf=0.1)
+        disease_results = disease_model.predict(source=img, conf=0.1)
         disease_data = []
         for r in disease_results:
             for box in r.boxes:

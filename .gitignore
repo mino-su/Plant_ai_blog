@@ -11,6 +11,7 @@ ai-serving/.env
 .DS_Store
 *.class
 *.jar
+.env
 
 # postgres
 /postgres-data

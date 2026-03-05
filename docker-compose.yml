@@ -5,7 +5,7 @@ services:
     container_name: plant-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: plant
     ports:
       - "5433:5432"
@@ -33,25 +33,26 @@ services:
     environment:
         REDIS_HOST: redis
 
-#  spring-app:
-#    build: ./backend_core
-#    container_name: plant-spring
-#    ports:
-#      - "8080:8080"
-#    volumes:
-#      - ./build/libs:/app/libs
-#      - ./uploads:/app/uploads
-#    depends_on:
-#      - db
-#      - redis
-#      - ai-flask
-#    environment:
-#      SPRING_DEVTOOLS_RESTART_ENABLED: true
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: 1234
-#      SPRING_DATA_REDIS_HOST: redis
-#      FLASK_AI_HOST: http://ai-flask:5000
+  spring-app:
+    build: ./backend_core
+    container_name: plant-spring
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./build/libs:/app/libs
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+      - redis
+      - ai-flask
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: true
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      FLASK_AI_HOST: http://ai-flask:5000
+      SPRING_JWT_SECRET: ${JWT_SECRET}
 
   frontend:
 
