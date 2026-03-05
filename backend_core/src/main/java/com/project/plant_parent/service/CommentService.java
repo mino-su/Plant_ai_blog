@@ -15,13 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
 
     // 댓글 작성
+    @Transactional
     public CommentResponseDto createComment(Long postId, CommentRequestDto commentRequestDto, Member member) {
         // 게시글 확인
         Post post = postRepository.findPostById(postId).orElseThrow(
@@ -61,6 +62,7 @@ public class CommentService {
     }
 
     // 댓글 수정
+    @Transactional
     public CommentResponseDto update(Long commentId, CommentRequestDto commentRequestDto, Member member) {
         Comment comment = findComment(commentId);
 
@@ -78,6 +80,7 @@ public class CommentService {
     }
 
     // 댓글 삭제
+    @Transactional
     public void delete(Long commentId, Member member) {
         Comment comment = findComment(commentId);
         validateWriter(comment, member);

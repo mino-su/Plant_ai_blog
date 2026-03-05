@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify
 from ultralytics import YOLO
+from werkzeug.utils import secure_filename
+import uuid
 import os
 
 app = Flask(__name__)
-
-
-# TODO: Gunicorn 같은 WSGI 서버 추후 도입 - 성능 향상 및 배포 용이, 여러명의 사용자가 접속해도 과부화 X
 
 #  YOLO 모델 로드,
 plant_model = YOLO('plant_best.pt')
@@ -24,13 +23,9 @@ def detect():
 
     file = request.files['image']
 
-    # uuid를 통해 고유 파일명 생성
-
-    filename = file.filename
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
-
-    # 파일 저장
-    file.save(save_path)
+    ext = os.path.splitext(file.filename)[1] # 원래 파일의 확장자만 추출 (.jpg 등)
+    unique_filename = str(uuid.uuid4()) + ext # 고유한 이름 + 확장자 결합
+    save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
 
 
     # 2. 첫 번째 모델 분석
@@ -61,7 +56,7 @@ def detect():
 
         response_data = {
             "status": "success",
-            "filename": filename,
+            "filename": unique_filename,
             "results": {
                 "plant_detection": plant_data,
                 "disease_analysis": disease_data
@@ -74,10 +69,10 @@ def detect():
 
     except Exception as e:
         # 서버 내부 오류 처리
+        app.logger.error(f"AI 모델 분석 중 오류: {str(e)}")
         return jsonify({
             "status": "FAILED",
-            "error": str(e)
-
+            "error": "AI 모델 분석 중 오류가 발생했습니다."
         }), 500
 
 

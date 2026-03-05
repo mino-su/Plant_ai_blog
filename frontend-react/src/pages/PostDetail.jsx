@@ -6,6 +6,7 @@ import api from '../api'; // 공통 API 모듈
 import Header from "../components/Header";
 import '../App.css';
 import {useAuth} from "../components/AuthContext.jsx";
+import {DOMPurify} from "dompurify";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -359,13 +360,28 @@ export default function PostDetail() {
                 return <HeaderTag key={index}
                                   style={{fontWeight: 'bold', margin: '2.5rem 0 1rem'}}>{block.data.text}</HeaderTag>;
             case 'paragraph':
-                return <p key={index} className="post-content" dangerouslySetInnerHTML={{__html: block.data.text}}
-                          style={{marginBottom: '1.2rem', lineHeight: '1.8'}}></p>;
+                // [작동 원리]
+                // 1. block.data.text에 악성 스크립트가 있는지 DOMPurify가 검사합니다.
+                // 2. 위험한 태그(<script> 등)나 속성(onerror 등)이 발견되면 모두 제거(Sanitize)합니다.
+                // 3. 안전해진 순수 HTML 문자열만 반환되어 __html에 안전하게 주입됩니다.
+                return (
+                    <p key={index}
+                       className="post-content"
+                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.data.text) }}
+                       style={{ marginBottom: '1.2rem', lineHeight: '1.8' }}>
+                    </p>
+                );
+
             case 'list':
                 const ListTag = block.data.style === 'ordered' ? 'ol' : 'ul';
                 return (
-                    <ListTag key={index} style={{marginLeft: '1.5rem', marginBottom: '1.2rem'}}>
-                        {block.data.items.map((item, i) => <li key={i} dangerouslySetInnerHTML={{__html: item}}></li>)}
+                    <ListTag key={index} style={{ marginLeft: '1.5rem', marginBottom: '1.2rem' }}>
+                        {block.data.items.map((item, i) => (
+                            // [작동 원리] 리스트의 각 항목(item)에 대해서도 동일하게 정화 작업을 수행합니다.
+                            <li key={i}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item) }}>
+                            </li>
+                        ))}
                     </ListTag>
                 );
             case 'image':

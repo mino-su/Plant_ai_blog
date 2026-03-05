@@ -43,12 +43,6 @@ public class FollowService {
 
         Member toMember = getMember(toMemberId);
 
-
-        if (followRepository.existsByFromMemberAndToMember(currentMember, toMember)) {
-            // 이미 팔로우를 한 경우
-            throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
-        }
-
         try {
             Follow follow = Follow.builder()
                     .fromMember(currentMember)
@@ -62,7 +56,7 @@ public class FollowService {
 
             return FollowResponseDto.from(save);
         } catch (DataIntegrityViolationException e) {
-            // 찰나의 순간 동시성 요청이 와서 유니크 제약 조건을 건드릴 경우 예외 던짐
+
             log.warn("[동시성 차단] currentMemberId = {}, toMemberId = {}", currentMember.getId(), toMemberId);
             throw new BusinessException(ErrorCode.FOLLOW_ALREADY_EXIST);
         }
@@ -120,7 +114,7 @@ public class FollowService {
                         follow -> {
                             Member toMember = follow.getToMember();
                             boolean isFollowing = currentMemberFollowingIdList.contains(toMember.getId());
-                            Profile profile = getProfile(toMember);
+                            Profile profile = toMember.getProfile();
                             return FollowListResponseDto.of(toMember, profile, isFollowing);
                         }
                 ).collect(Collectors.toList());
@@ -144,18 +138,14 @@ public class FollowService {
                         follow -> {
                             Member fromMember = follow.getFromMember();
                             boolean isFollowing = currentMemberFollowingIdList.contains(fromMember.getId());
-                            Profile profile = getProfile(fromMember);
+                            Profile profile = fromMember.getProfile();
                             return FollowListResponseDto.of(fromMember, profile, isFollowing);
                         }
                 ).collect(Collectors.toList());
 
     }
 
-    private Profile getProfile(Member fromMember) {
-        return profileRepository.findWithMemberById(fromMember.getId()).orElseThrow(
-                () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
-        );
-    }
+
 
     private @NonNull Member getMember(Long memberId) {
         return memberRepository.findById(memberId).orElseThrow(
