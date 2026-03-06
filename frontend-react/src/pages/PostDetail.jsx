@@ -8,7 +8,7 @@ import '../App.css';
 import {useAuth} from "../components/AuthContext.jsx";
 import {DOMPurify} from "dompurify";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 function AnalysisImageBlock({ imageInfo }) {
     const [result, setResult] = useState({

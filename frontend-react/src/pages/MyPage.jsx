@@ -28,7 +28,7 @@ export default function MyPage() {
     const [modalType, setModalType] = useState('follower'); // 'follower' 또는 'following'
     const [modalUserList, setModalUserList] = useState([]); // 모달에 띄울 유저 목록
 
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = import.meta.env.VITE_API_URL || "";
 
     // 3. 권한 판별 변수 (중요!)
     const isLoggedIn = myId !== null; // 현재 로그인 상태인가?

@@ -21,7 +21,7 @@ const Setting = () => {
     const [imageFile, setImageFile] = useState(null); // 실제 서버로 보낼 파일 객체
     const [previewUrl, setPreviewUrl] = useState(''); // 브라우저용 미리보기 URL
 
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = import.meta.env.VITE_API_URL || "";
 
     useEffect(() => {
         fetchProfile();
