@@ -49,7 +49,7 @@ api.interceptors.response.use(
 
             try {
                 const accessToken = localStorage.getItem('accessToken');
-                const res = await axios.post('http://localhost:8080/auth/reissue', {
+                const res = await axios.post('/auth/reissue', {
                     accessToken,
                     refreshToken
                 });
