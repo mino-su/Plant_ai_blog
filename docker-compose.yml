@@ -11,42 +11,62 @@ services:
       - "5433:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d plant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plant-net
 
 
 
   redis:
     image: redis:alpine
     container_name: plant-redis
+    restart: unless-stopped
     ports:
         - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plant-net
 
   ai-flask:
     build: ./ai-flask
     container_name: plant-flask
+    restart: unless-stopped
     hostname: ai-flask
     ports:
       - "5000:5000"
     volumes:
       - ./uploads:/app/uploads
     depends_on:
-     - redis
+      redis:
+        condition: service_healthy
     environment:
         REDIS_HOST: redis
 
   spring-app:
     build: ./backend_core
     container_name: plant-spring
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
       - ./build/libs:/app/libs
       - ./uploads:/app/uploads
     depends_on:
-      - db
-      - redis
-      - ai-flask
+      db:
+        - condition: service_healthy
+      redis:
+        condition: service_healthy
+      ai-flask:
+        condition: service_healthy
     environment:
-      SPRING_DEVTOOLS_RESTART_ENABLED: true
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/plant
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
@@ -58,17 +78,20 @@ services:
 
     build:
       context: ./frontend-react
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
     container_name: plant-frontend
+    restart: unless-stopped
     ports:
+      - "80:80"
+    depends_on:
+      - spring-app
+    networks:
+      - plant-net
+volumes:
+  postgres-data:
+  uploads-data:
 
-      - "80:5173"
-    volumes:
-
-      - ./frontend-react:/app
-
-      - /app/node_modules
-    environment:
-
-      - CHOKIDAR_USEPOLLING=true
-
-    command: npm run dev
+networks:
+    plant-net:
+      driver: bridge
