@@ -14,3 +14,6 @@ numpy
 redis
 requests
 python-dotenv
+flask-limiter
+pillow
+filetype
