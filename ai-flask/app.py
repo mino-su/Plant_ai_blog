@@ -42,6 +42,7 @@ def validate_image(file):
     return True, kind.mime
 
 @app.route('/health', methods=['GET'])
+@limiter.exempt
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
