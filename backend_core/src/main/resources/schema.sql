@@ -1,21 +1,6 @@
 
 -- =========================================================================
--- [1] 기존 테이블 초기화
--- =========================================================================
-DROP TABLE IF EXISTS "public"."post_images" CASCADE;
-DROP TABLE IF EXISTS "public"."post_like" CASCADE;
-DROP TABLE IF EXISTS "public"."comments" CASCADE;
-DROP TABLE IF EXISTS "public"."follows" CASCADE;
-DROP TABLE IF EXISTS "public"."notifications" CASCADE;
-DROP TABLE IF EXISTS "public"."profile" CASCADE;
-DROP TABLE IF EXISTS "public"."post" CASCADE;
-DROP TABLE IF EXISTS "public"."disease_dictionary" CASCADE;
-DROP TABLE IF EXISTS "public"."plant_dictionary" CASCADE;
-DROP TABLE IF EXISTS "public"."members" CASCADE;
-
-
--- =========================================================================
--- [2] 테이블 생성
+--  테이블 생성
 -- =========================================================================
 
 -- 1. 회원 (Members)
