@@ -9,6 +9,8 @@ from PIL import Image
 import io
 
 app = Flask(__name__)
+redis_host = os.environ.get('REDIS_HOST', None)
+storage_uri = f"redis://{redis_host}:6379" if redis_host else "memory://"
 
 #  YOLO 모델 로드,
 plant_model = YOLO('plant_best.pt')
@@ -20,7 +22,7 @@ limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://",
+    storage_uri= storage_uri,
 )
 
 # 이미지 저장 경로 설정
