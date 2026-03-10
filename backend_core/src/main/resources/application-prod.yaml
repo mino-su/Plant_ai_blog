@@ -10,9 +10,9 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-
         show_sql: false
         format_sql: false
+    defer-datasource-initialization: true
 
   sql:
     init:
