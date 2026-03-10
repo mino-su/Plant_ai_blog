@@ -4,7 +4,7 @@ import '../App.css';
 
 const PostCard = ({ post }) => {
     const navigate = useNavigate();
-    const BASE_URL = import.meta.env.VITE_API_URL || "";
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
     /**
      * [스마트 썸네일 추출]

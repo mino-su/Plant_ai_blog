@@ -6,7 +6,7 @@ import '../FollowListPage.css';
 
 const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFollowToggle }) => {
     const navigate = useNavigate();
-    const BASE_URL = import.meta.env.VITE_API_URL || "";
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
     // [작동 원리] 페이지(모달)가 열릴 때 로그인 상태를 체크하는 로직입니다.
     useEffect(() => {
         if (isOpen && !isLoggedIn) {
