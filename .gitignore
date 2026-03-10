@@ -3,10 +3,13 @@
 /backend-core/.gradle/
 /backend-core/out/
 # Python
-ai-serving/venv/
-ai-serving/__pycache__/
-ai-serving/*.pyc
-ai-serving/.env
+ai-flask/venv/
+ai-flask/__pycache__/
+ai-flask/*.pyc
+ai-flask/.env
+#frontend
+/frontend-react/.env.production
+/frontend-react/.env.development
 .idea/
 .DS_Store
 *.class
