@@ -1,7 +1,5 @@
 package com.project.plant_parent.entity.dto;
 
-import com.project.plant_parent.entity.Member;
-import com.project.plant_parent.entity.Post;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
