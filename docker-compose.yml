@@ -77,7 +77,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       FLASK_AI_HOST: http://ai-flask:5000
-
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       SPRING_JWT_SECRET: ${JWT_SECRET}
     networks:
       - plant-net
@@ -86,7 +86,7 @@ services:
     build:
       context: ./frontend-react
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: plant-frontend
     restart: unless-stopped
     ports:
