@@ -4,6 +4,7 @@ import com.project.plant_parent.entity.Member;
 import com.project.plant_parent.entity.dto.*;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class PostController {
     // 게시글 생성
     @PostMapping
     public ResponseEntity<PostResponseDto> createPost(
-            @RequestBody PostRequestDto postRequestDto,
+            @RequestBody @Valid PostRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
 
@@ -85,7 +86,7 @@ public class PostController {
     @PutMapping(value = "/{postId}")
     public ResponseEntity<PostResponseDto> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostUpdateRequestDto postupdateRequestDto,
+            @RequestBody @Valid PostUpdateRequestDto postupdateRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) throws IOException {
         return ResponseEntity.ok(postService.update(postId, postupdateRequestDto, userDetails.getMember()));

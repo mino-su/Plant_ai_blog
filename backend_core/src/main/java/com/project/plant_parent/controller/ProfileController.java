@@ -4,6 +4,7 @@ import com.project.plant_parent.entity.dto.ProfileRequestDto;
 import com.project.plant_parent.entity.dto.ProfileResponseDto;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.ProfileService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +30,7 @@ public class ProfileController {
 
     @PutMapping("/me/profile")
     public ResponseEntity<ProfileResponseDto> updateProfile(
-            @RequestPart("profile") ProfileRequestDto profileRequestDto,
+            @RequestPart("profile")  @Valid ProfileRequestDto profileRequestDto,
             @RequestPart(value="image", required = false) MultipartFile image,
             @AuthenticationPrincipal UserDetailsImpl userDetails
             ) throws IOException {

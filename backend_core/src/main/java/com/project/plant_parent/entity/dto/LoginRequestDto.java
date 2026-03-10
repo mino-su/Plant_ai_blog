@@ -2,6 +2,7 @@ package com.project.plant_parent.entity.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +12,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginRequestDto {
-    @Email
+    @Email @NotBlank
     private String email;
+    @NotBlank
     private String password;
 
     // 이 dto를 spring security가 사용하는 인증객체로 변환하는 메서드

@@ -4,6 +4,7 @@ import com.project.plant_parent.entity.dto.CommentRequestDto;
 import com.project.plant_parent.entity.dto.CommentResponseDto;
 import com.project.plant_parent.security.UserDetailsImpl;
 import com.project.plant_parent.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +22,7 @@ public class CommentController {
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentResponseDto> createComment(
             @PathVariable("postId") Long postId,
-            @RequestBody CommentRequestDto commentRequestDto,
+            @RequestBody @Valid CommentRequestDto commentRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return ResponseEntity.ok(commentService.createComment(postId, commentRequestDto, userDetails.getMember()));
@@ -43,7 +44,7 @@ public class CommentController {
     @PutMapping("/comments/{commentId}")
     public ResponseEntity<CommentResponseDto> updateComment(
             @PathVariable Long commentId,
-            @RequestBody CommentRequestDto commentRequestDto,
+            @RequestBody @Valid CommentRequestDto commentRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         return ResponseEntity.ok(commentService.update(commentId, commentRequestDto, userDetails.getMember()));
