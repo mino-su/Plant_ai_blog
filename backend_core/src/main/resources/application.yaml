@@ -13,7 +13,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update # 로컬에서는 개발 편의를 위해 update 유지
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
