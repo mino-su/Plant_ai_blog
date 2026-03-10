@@ -7,7 +7,6 @@ spring:
 
   jpa:
     hibernate:
-
       ddl-auto: validate
     properties:
       hibernate:
@@ -17,7 +16,7 @@ spring:
 
   sql:
     init:
-      mode: never
+      mode: always
 
 logging:
   level:

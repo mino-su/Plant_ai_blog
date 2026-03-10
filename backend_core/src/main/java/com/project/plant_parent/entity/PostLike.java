@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
     }
 )
 // 좋아요 중복 방지
-public class PostLike {
+public class PostLike{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,7 +36,6 @@ public class PostLike {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
-
 
 
 }
