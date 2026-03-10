@@ -38,8 +38,7 @@ spring:
       url: ${FLASK_AI_HOST:http://localhost:5000}
 
 jwt:
-
-  secret: ${SPRING_JWT_SECRET:ThisIsADefaultSecretKeyForLocalDevelopmentAndTestingPurposes12345}
+  secret: ${SPRING_JWT_SECRET}
 
 logging:
   level:
@@ -50,3 +49,6 @@ logging:
 
 file:
   upload-dir: ./uploads/
+
+cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

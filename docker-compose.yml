@@ -49,6 +49,11 @@ services:
       REDIS_HOST: redis
     networks:
       - plant-net
+    healthcheck:
+      test: ["CMD","curl","-f","http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spring-app:
     build: ./backend_core
