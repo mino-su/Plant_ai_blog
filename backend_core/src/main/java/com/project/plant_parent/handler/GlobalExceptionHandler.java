@@ -5,6 +5,7 @@ import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,7 +15,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponseDto> handleCustomException(BusinessException exception) {
-        log.warn(">> [BusinessException] :{} = {}", exception.getErrorCode().getCode(),exception.getMessage());
+        log.warn(">> [BusinessException] :{} = {}", exception.getErrorCode().getCode(), exception.getMessage());
         ErrorCode errorCode = exception.getErrorCode();
 
         return ResponseEntity
@@ -30,6 +31,17 @@ public class GlobalExceptionHandler {
         log.error("Exception 발생: ", exception);
 
         ErrorCode errorCode = ErrorCode.GLOBAL_INTERNAL_ERROR;
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResponseDto.from(errorCode));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException exception) {
+        log.warn(">> [ValidationException] : {}", exception.getMessage());
+
+        ErrorCode errorCode = ErrorCode.GLOBAL_INVALID_INPUT;
 
         return ResponseEntity
                 .status(errorCode.getStatus())
