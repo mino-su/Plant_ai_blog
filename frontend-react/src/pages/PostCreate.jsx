@@ -21,6 +21,8 @@ function PostCreate() {
     const [title, setTitle] = useState('');
     const [imageIds, setImageIds] = useState([]); // 업로드된 사진들의 ID를 추적
 
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+
     useEffect(() => {
         // [중요] 리액트의 StrictMode 때문에 에디터가 두 번 생기는 것을 방지하기 위해 초기화 체크
         if (!editorInstance.current) {
@@ -61,7 +63,7 @@ function PostCreate() {
                                     return {
                                         success: 1,
                                         file: {
-                                            url: `http://localhost:8080${data.imageUrl}`,
+                                            url:`${BASE_URL}${data.imageUrl}`,
                                             imageId: data.id // 이미지 블록 데이터에 ID 포함
                                         }
                                     };

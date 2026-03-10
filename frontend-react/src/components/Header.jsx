@@ -105,6 +105,9 @@ const Header = () => {
         navigate('/');
     };
 
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+
+
     return (
         <header style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} className="container">
             <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>
@@ -185,7 +188,7 @@ const Header = () => {
                         <button className="profile-button" onClick={toggleMenu} style={{ background: 'none', border: 'none', padding: 0 }}>
                             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#eee', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 { profile?.profileImageUrl ? (
-                                    <img src={`http://localhost:8080${profile.profileImageUrl}`} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={`${BASE_URL}${profile.profileImageUrl}`} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : "👤"}
                             </div>
                         </button>

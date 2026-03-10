@@ -42,7 +42,7 @@ services:
       - "5000:5000"
     volumes:
       - uploads-data:/app/uploads
-      - ${MODEL_DIR:-/opt/models}:/app/models:ro
+      - ./models:/app/models
     depends_on:
       redis:
         condition: service_healthy

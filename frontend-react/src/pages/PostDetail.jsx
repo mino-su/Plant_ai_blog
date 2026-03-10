@@ -6,7 +6,7 @@ import api from '../api'; // 공통 API 모듈
 import Header from "../components/Header";
 import '../App.css';
 import {useAuth} from "../components/AuthContext.jsx";
-import {DOMPurify} from "dompurify";
+import DOMPurify from "dompurify";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 

@@ -19,6 +19,8 @@ function PostEdit() {
     const [deleteImageIds, setDeleteImageIds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+
     useEffect(() => {
         if (postId) {
             fetchPostAndInitEditor();
@@ -68,7 +70,7 @@ function PostEdit() {
                                     return {
                                         success: 1,
                                         file: {
-                                            url: `http://localhost:8080${data.imageUrl}`,
+                                            url: `${BASE_URL}${data.imageUrl}`,
                                             imageId: data.id
                                         }
                                     };
