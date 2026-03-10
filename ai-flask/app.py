@@ -13,8 +13,8 @@ redis_host = os.environ.get('REDIS_HOST', None)
 storage_uri = f"redis://{redis_host}:6379" if redis_host else "memory://"
 
 #  YOLO 모델 로드,
-plant_model = YOLO('plant_best.pt')
-disease_model = YOLO('disease_best_v2.pt')
+plant_model = YOLO('/app/models/plant_best.pt')
+disease_model = YOLO('/app/models/disease_best_v2.pt')
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/jpg','image/webp'}
 
 # 보안 및 속도 제한 설정
