@@ -41,6 +41,9 @@ def validate_image(file):
         return False, kind.mime if kind else "unknown"
     return True, kind.mime
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 
 @app.route('/detect', methods=['POST'])
