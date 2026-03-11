@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: plant-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234} # .env가 없으면 1234 사용
+      POSTGRES_DB: plant
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - plant-net
+
+
+  redis:
+    image: redis:alpine
+    container_name: plant-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - plant-net
+
+
+  ai-flask:
+    image: ghcr.io/mino-su/plant_ai_blog-flask:latest
+    container_name: plant-flask-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+    environment:
+      REDIS_HOST: redis
+    networks:
+      - plant-net
+
+
+  frontend:
+    image: ghcr.io/mino-su/plant_ai_blog-frontend:latest
+    container_name: plant-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+
+      - ./frontend-react/default-local.conf:/etc/nginx/conf.d/default.conf:ro
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - ai-flask
+    networks:
+      - plant-net
+
+
+networks:
+  plant-net:
+    driver: bridge
