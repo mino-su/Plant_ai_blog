@@ -34,6 +34,7 @@ services:
       - plant-net
 
   ai-flask:
+    image: ghcr.io/mino-su/plant_ai_blog-flask:latest
     build: ./ai-flask
     container_name: plant-flask
     restart: unless-stopped
@@ -58,6 +59,7 @@ services:
       start_period: 60s
 
   spring-app:
+    image: ghcr.io/mino-su/plant_ai_blog-backend:latest
     build: ./backend_core
     container_name: plant-spring
     restart: unless-stopped
@@ -85,6 +87,7 @@ services:
       - plant-net
 
   frontend:
+    image: ghcr.io/mino-su/plant_ai_blog-frontend:latest
     build:
       context: ./frontend-react
       args:

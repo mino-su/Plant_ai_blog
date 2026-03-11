@@ -42,7 +42,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
 
           build-args: |
-            VITE_API_URL="" 
+            VITE_API_URL=
 
       - name: 5. AI서버(Flask) 이미지 빌드 및 푸시
         uses: docker/build-push-action@v5
