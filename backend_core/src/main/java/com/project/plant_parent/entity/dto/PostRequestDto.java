@@ -12,9 +12,9 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class PostRequestDto {
-    @NotBlank @Size(max=30)
+    @NotBlank @Size(max=100)
     private String title;
-    @NotBlank @Size(max=500)
+    @NotBlank
     private String content;
     // Member는 SecurityContext에서 가져올 것이므로 DTO에 포함하지 않음
     private List<Long> imageIds;

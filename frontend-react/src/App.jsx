@@ -21,7 +21,7 @@ import 'react-toastify/dist/ReactToastify.css';
  */
 function NotificationManager() {
     const { user, token } = useAuth();
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
     useEffect(() => {
         if (!user || !token) return;
