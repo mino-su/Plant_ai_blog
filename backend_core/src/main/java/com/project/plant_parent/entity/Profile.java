@@ -2,6 +2,8 @@ package com.project.plant_parent.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Builder
 @Getter
@@ -16,6 +18,7 @@ public class Profile {
     @MapsId // Member의 Pk 값을 이 엔티티의 PK로 그대로 사용
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
 
