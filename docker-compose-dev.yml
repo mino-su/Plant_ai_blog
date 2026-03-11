@@ -2,15 +2,16 @@ version: '3.8'
 
 services:
   db:
+    platform: linux/amd64
     image: postgres:15
     container_name: plant-db-dev
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234} # .env가 없으면 1234 사용
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # .env가 없으면 1234 사용
       POSTGRES_DB: plant
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     networks:
@@ -18,6 +19,7 @@ services:
 
 
   redis:
+    platform: linux/amd64
     image: redis:alpine
     container_name: plant-redis-dev
     restart: unless-stopped
@@ -28,6 +30,7 @@ services:
 
 
   ai-flask:
+    platform: linux/amd64
     image: ghcr.io/mino-su/plant_ai_blog-flask:latest
     container_name: plant-flask-dev
     restart: unless-stopped
@@ -43,6 +46,7 @@ services:
 
 
   frontend:
+    platform: linux/amd64
     image: ghcr.io/mino-su/plant_ai_blog-frontend:latest
     container_name: plant-frontend-dev
     restart: unless-stopped
