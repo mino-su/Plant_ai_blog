@@ -45,7 +45,7 @@ function Home() {
                     marginTop: '2rem',
                     minHeight: '600px' // 로딩 시 레이아웃 무너짐 방지
                 }}>
-                    {posts.length === 0 ? (
+                    {posts?.length === 0 ? (
                         <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#868e96', marginTop: '5rem' }}>
                             작성된 게시글이 없습니다.
                         </p>
