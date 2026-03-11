@@ -18,6 +18,9 @@ spring:
     init:
       mode: never
 
+file:
+  upload-dir: /app/uploads/
+
 logging:
   level:
 

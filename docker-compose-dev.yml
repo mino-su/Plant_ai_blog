@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  db:
+    platform: linux/amd64
+    image: postgres:15
+    container_name: plant-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: plant
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - plant-net
+
+  redis:
+    platform: linux/amd64
+    image: redis:alpine
+    container_name: plant-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - plant-net
+
+  ai-flask:
+    platform: linux/amd64
+    build:
+      context: ./ai-flask
+      dockerfile: Dockerfile
+    container_name: plant-flask-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+    environment:
+      REDIS_HOST: redis
+    networks:
+      - plant-net
+
+  frontend:
+    platform: linux/amd64
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile-dev
+    container_name: plant-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-react:/app
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - ai-flask
+    networks:
+      - plant-net
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    stdin_open: true
+    tty: true
+
+networks:
+  plant-net:
+    driver: bridge

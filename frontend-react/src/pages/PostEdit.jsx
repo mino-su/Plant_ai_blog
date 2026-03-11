@@ -18,76 +18,79 @@ function PostEdit() {
     const [newImageIds, setNewImageIds] = useState([]);
     const [deleteImageIds, setDeleteImageIds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [initialEditorData, setInitialEditorData] = useState(null);
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
     useEffect(() => {
-        if (postId) {
-            fetchPostAndInitEditor();
-        }
+        const fetchPostData = async () => {
+            try {
+                const res = await api.get(`/api/posts/${postId}`);
+                setTitle(res.data.title);
 
-        // 페이지를 벗어날 때 에디터 인스턴스를 메모리에서 해제합니다.
+                // 본문 파싱 로직
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(res.data.content);
+                } catch (e) {
+                    parsedData = {
+                        blocks: [{ type: 'paragraph', data: { text: res.data.content } }]
+                    };
+                }
+
+                setInitialEditorData(parsedData); // 데이터를 먼저 상태에 저장
+                setIsLoading(false); // 로딩 끝! (이제 화면에 <div id="editorjs">가 그려짐)
+            } catch (err) {
+                alert("게시글 정보를 불러올 수 없습니다.");
+                navigate(-1);
+            }
+        };
+
+        if (postId) fetchPostData();
+    }, [postId]);
+
+    // 2. [useEffect] 로딩이 끝나고 데이터가 준비되면 에디터를 초기화합니다.
+    useEffect(() => {
+        // 로딩 중이거나, 데이터가 없거나, 이미 에디터가 있으면 실행 안 함
+        if (isLoading || !initialEditorData || editorInstance.current) return;
+
+        const editor = new EditorJS({
+            holder: 'editorjs',
+            data: initialEditorData, // 불러온 데이터 주입
+            tools: {
+                header: HeaderTool,
+                list: List,
+                image: {
+                    class: ImageTool,
+                    config: {
+                        uploader: {
+                            uploadByFile: async (file) => {
+                                const data = await uploadImage(file);
+                                setNewImageIds(prev => [...prev, data.id]);
+                                return {
+                                    success: 1,
+                                    file: {
+                                        url: `${BASE_URL}${data.imageUrl}`,
+                                        imageId: data.id
+                                    }
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        editorInstance.current = editor;
+
+        // Cleanup: 페이지 나갈 때 해제
         return () => {
             if (editorInstance.current && editorInstance.current.destroy) {
                 editorInstance.current.destroy();
                 editorInstance.current = null;
             }
         };
-    }, [postId]);
-
-    const fetchPostAndInitEditor = async () => {
-        try {
-            // 주소에 postId를 넣어 정상적인 데이터를 가져옵니다.
-            const res = await api.get(`/api/posts/${postId}`);
-            setTitle(res.data.title);
-
-            let initialData;
-            try {
-                // 본문이 JSON 형식이면 파싱하여 블록 단위로 에디터에 주입합니다.
-                initialData = JSON.parse(res.data.content);
-            } catch (e) {
-                // 일반 텍스트라면 에디터가 인식할 수 있는 문단(paragraph) 블록으로 감싸줍니다.
-                initialData = {
-                    blocks: [{ type: 'paragraph', data: { text: res.data.content } }]
-                };
-            }
-
-            // Editor.js 인스턴스를 생성합니다.
-            const editor = new EditorJS({
-                holder: 'editorjs',
-                data: initialData,
-                tools: {
-                    header: HeaderTool,
-                    list: List,
-                    image: {
-                        class: ImageTool,
-                        config: {
-                            uploader: {
-                                uploadByFile: async (file) => {
-                                    // 수정 중 새 이미지를 올릴 때의 처리입니다.
-                                    const data = await uploadImage(file);
-                                    setNewImageIds(prev => [...prev, data.id]);
-                                    return {
-                                        success: 1,
-                                        file: {
-                                            url: `${BASE_URL}${data.imageUrl}`,
-                                            imageId: data.id
-                                        }
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            editorInstance.current = editor;
-            setIsLoading(false);
-        } catch (err) {
-            console.error("데이터 로드 실패:", err);
-            alert("게시글 정보를 불러올 수 없습니다.");
-            navigate(-1);
-        }
-    };
+    }, [isLoading, initialEditorData]);
 
     const handleUpdate = async () => {
         try {
@@ -108,7 +111,12 @@ function PostEdit() {
         }
     };
 
-    if (isLoading) return <CustomHeader />;
+    if (isLoading) return (
+        <>
+            <CustomHeader />
+            <div className="container">데이터를 불러오는 중... 🌱</div>
+        </>
+    );
 
     return (
         <>
