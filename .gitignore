@@ -22,8 +22,8 @@ ai-flask/.env
 
 #local Data Folder
 /uploads/*
-!/uploads/default_profile.jpg
 /models/*
+
 /postgres_data/base/1/112
 /postgres_data/base/1/113
 /postgres_data/base/1/174
