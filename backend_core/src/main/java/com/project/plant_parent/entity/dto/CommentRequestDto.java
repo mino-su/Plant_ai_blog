@@ -12,7 +12,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class CommentRequestDto {
-    @NotBlank @Size(max=500)
+    @NotBlank(message = "댓글 내용을 입력해주세요.")
+    @Size(max=500)
     private String content;
 
     private Long parentId; // 대댓글이 아니고 새 댓글이면 null

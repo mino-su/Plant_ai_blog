@@ -52,7 +52,7 @@ public class FollowService {
             Follow save = followRepository.save(follow);
 
             String message = currentMember.getUsername() + "님이 회원님을 팔로우하기 시작했습니다.";
-            notificationService.notify(toMemberId, message, "follow");
+            notificationService.notify(toMemberId, message, "follow", currentMember.getId());
 
             return FollowResponseDto.from(save);
         } catch (DataIntegrityViolationException e) {

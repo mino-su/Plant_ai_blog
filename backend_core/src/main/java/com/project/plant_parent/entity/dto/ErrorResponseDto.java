@@ -8,18 +8,21 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ErrorResponseDto {
-    @Builder.Default  // timestamp는 선언 시점에 초기화되므로 final 유지 가능
+    @Builder.Default
     private LocalDateTime timeStamp = LocalDateTime.now();
 
     private int status;
     private String code;
     private String message;
+
+    private List<FieldErrorDetail> fieldErrors;
 
     public static ErrorResponseDto from(ErrorCode errorCode) {
         return ErrorResponseDto.builder()
@@ -28,5 +31,12 @@ public class ErrorResponseDto {
                 .message(errorCode.getMessage())
                 .build();
 
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class FieldErrorDetail{
+        private String field;
+        private String message;
     }
 }

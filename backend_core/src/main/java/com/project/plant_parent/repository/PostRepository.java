@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long>, PostRepositoryCustom {
@@ -36,6 +37,16 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
                     "order by p.createdAt desc"
     )
     List<Post> findAllByMemberOrderByCreatedAtDesc(@Param("member")Member member);
+
+    // 좋아요한 게시글 조회용
+    @Query(
+            "select distinct p from Post p " +
+                    "left join fetch p.postImages " +
+                    "join fetch p.member " +
+                    "where p.id in :postIds " +
+                    "order by p.createdAt desc"
+    )
+    List<Post> findLikedPostsByIds(@Param("postIds") Set<Long> postIds);
 
 
 }

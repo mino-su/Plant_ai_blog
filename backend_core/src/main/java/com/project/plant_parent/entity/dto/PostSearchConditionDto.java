@@ -1,5 +1,6 @@
 package com.project.plant_parent.entity.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data

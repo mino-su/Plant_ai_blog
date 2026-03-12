@@ -69,14 +69,28 @@ const Header = () => {
     // [3] 개별 알림 클릭 시 읽음 처리 API
     const handleNotificationClick = async (noti) => {
         // 이미 읽은 알림이면 무시
-        if (noti.read || noti.isRead) return;
+        if (noti.read || noti.isRead) {
+            if (noti.type === 'like' || noti.type === 'comment') {
+                navigate(`/posts/${noti.targetId}`); // 게시글 상세 페이지로
+            } else if (noti.type === 'follow') {
+                navigate(`/members/${noti.targetId}/mypage`); // 팔로우한 사람의 마이페이지로
+            }
+            return;
+        }
 
         try {
             await api.put(`/api/notifications/${noti.id}/read`);
 
-            // 로컬 상태 즉시 업데이트 (UI 반응속도 향상)
+            // 로컬 상태 즉시 업데이트
             setNotifications(prev => prev.map(n => n.id === noti.id ? { ...n, isRead: true, read: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
+
+            if (noti.type === 'like' || noti.type === 'comment') {
+                navigate(`/posts/${noti.targetId}`); // 게시글 상세 페이지로
+            } else if (noti.type === 'follow') {
+                navigate(`/members/${noti.targetId}/mypage`); // 팔로우한 사람의 마이페이지로
+            }
+
         } catch (error) {
             console.error("알림 읽음 처리 실패:", error);
         }

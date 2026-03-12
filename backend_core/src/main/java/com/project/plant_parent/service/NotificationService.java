@@ -57,7 +57,7 @@ public class NotificationService {
      * @param eventName  이벤트 종류 (예: "newComment", "newFollower")
      */
     @Transactional // 트랜잭션 추가
-    public void notify(Long receiverId, String content, String eventName) {
+    public void notify(Long receiverId, String content, String eventName, Long targetId) {
         Member receiver = memberRepository.findById(receiverId).orElseThrow(
                 () -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND)
         );
@@ -66,6 +66,7 @@ public class NotificationService {
                 .receiver(receiver)
                 .content(content)
                 .type(eventName)
+                .targetId(targetId)
                 .isRead(false)
                 .build();
 

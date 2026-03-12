@@ -8,13 +8,7 @@ import api, { uploadImage } from '../api'; // 수정된 api.js 활용
 import CustomHeader from "../components/Header";
 import '../App.css';
 
-/**
- * [게시글 생성 페이지 - Editor.js 버전]
- * 작동 원리:
- * 1. 사용자가 사진을 추가하면 즉시 uploadImage API가 호출됩니다.
- * 2. 서버가 준 {id, imageUrl} 중 id는 imageIds 배열에 보관하고, imageUrl은 에디터에 보여줍니다.
- * 3. 최종 저장 시, 에디터의 모든 블록을 JSON 문자열로 변환하여 보냅니다.
- */
+
 function PostCreate() {
     const navigate = useNavigate();
     const editorInstance = useRef(null); // 에디터 객체를 담을 참조 변수

@@ -176,7 +176,7 @@ public class PostService {
             PostLike save = postLikeRepository.save(postlike);
 
             String message = currentMember.getUsername() + "님이 회원님의 게시글을 좋아합니다.";
-            notificationService.notify(post.getMember().getId(), message, "like");
+            notificationService.notify(post.getMember().getId(), message, "like", post.getId());
 
             long totalCount = postLikeRepository.countPostLikesByPost(post);
 

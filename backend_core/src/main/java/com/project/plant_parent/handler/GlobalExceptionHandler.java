@@ -4,10 +4,14 @@ import com.project.plant_parent.exception.BusinessException;
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -16,6 +20,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponseDto> handleCustomException(BusinessException exception) {
         log.warn(">> [BusinessException] :{} = {}", exception.getErrorCode().getCode(), exception.getMessage());
+
+
         ErrorCode errorCode = exception.getErrorCode();
 
         return ResponseEntity
@@ -41,10 +47,26 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException exception) {
         log.warn(">> [ValidationException] : {}", exception.getMessage());
 
-        ErrorCode errorCode = ErrorCode.GLOBAL_INVALID_INPUT;
+        List<ErrorResponseDto.FieldErrorDetail> fieldErrorDetails = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(
+                        error ->
+                                new ErrorResponseDto.FieldErrorDetail(
+                                        error.getField(),
+                                        error.getDefaultMessage()
+                                )
+                ).collect(Collectors.toList());
+
+        ErrorResponseDto response = ErrorResponseDto.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code(ErrorCode.GLOBAL_INVALID_INPUT.getCode())
+                .message(ErrorCode.GLOBAL_INVALID_INPUT.getMessage())
+                .fieldErrors(fieldErrorDetails)
+                .build();
 
         return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ErrorResponseDto.from(errorCode));
+                .badRequest()
+                .body(response);
     }
 }

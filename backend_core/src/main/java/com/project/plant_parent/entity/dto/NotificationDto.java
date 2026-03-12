@@ -23,6 +23,8 @@ public class NotificationDto {
 
     private String type;
 
+    private Long targetId;
+
     private boolean isRead;
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
@@ -33,6 +35,8 @@ public class NotificationDto {
                 .receiver(notification.getReceiver().getUsername())
                 .content(notification.getContent())
                 .type(notification.getType())
+                .targetId(notification.getTargetId())
+                .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .build();
     }

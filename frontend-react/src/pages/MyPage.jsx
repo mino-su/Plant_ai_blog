@@ -27,6 +27,7 @@ export default function MyPage() {
     const [showModal, setShowModal] = useState(false); // 모달 열림 여부
     const [modalType, setModalType] = useState('follower'); // 'follower' 또는 'following'
     const [modalUserList, setModalUserList] = useState([]); // 모달에 띄울 유저 목록
+    const [activeTab, setActiveTab] = useState('written');
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
@@ -268,34 +269,73 @@ export default function MyPage() {
                     onFollowToggle={handleFollowToggleInModal}
                 />
 
-                {/* 탭 바 */}
-                <div className="mypage-tab-bar" style={{ marginTop: '3rem', borderBottom: '1px solid #dee2e6' }}>
-                    <div style={{
-                        display: 'inline-block',
-                        padding: '1rem 0',
-                        borderBottom: '2px solid #12b886',
-                        color: '#12b886',
-                        fontWeight: 'bold'
-                    }}>
-                        작성한 일지 ({data.postCount || 0})
+                <div className="mypage-tab-bar" style={{
+                    display: 'flex',
+                    gap: '2rem',
+                    marginTop: '3rem',
+                    borderBottom: '1px solid #dee2e6'
+                }}>
+                    <div
+                        onClick={() => setActiveTab('written')}
+                        style={{
+                            padding: '1rem 0',
+                            cursor: 'pointer',
+                            borderBottom: activeTab === 'written' ? '2px solid #12b886' : '2px solid transparent',
+                            color: activeTab === 'written' ? '#12b886' : '#868e96',
+                            fontWeight: activeTab === 'written' ? 'bold' : 'normal',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        작성한 일지 ({data.posts?.length || 0})
+                    </div>
+
+                    {/* 타인의 마이페이지에서는 '좋아요한 일지'를 숨기고 싶다면 여기에 isMe && 를 추가하세요! */}
+                    <div
+                        onClick={() => setActiveTab('liked')}
+                        style={{
+                            padding: '1rem 0',
+                            cursor: 'pointer',
+                            borderBottom: activeTab === 'liked' ? '2px solid #12b886' : '2px solid transparent',
+                            color: activeTab === 'liked' ? '#12b886' : '#868e96',
+                            fontWeight: activeTab === 'liked' ? 'bold' : 'normal',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        좋아요한 일지 ({data.likePosts?.length || 0})
                     </div>
                 </div>
 
-                {/* 게시글 그리드 */}
+                {/* 조건부 렌더링: 선택된 탭에 따라 다른 그리드를 렌더링 */}
                 <div className="mypage-post-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                     gap: '2rem',
                     marginTop: '2rem'
                 }}>
-                    {data.posts && data.posts.length > 0 ? (
-                        data.posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))
-                    ) : (
-                        <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem', color: '#adb5bd' }}>
-                            아직 작성된 일지가 없습니다. 🍃
-                        </div>
+                    {/* '작성한 일지' 탭이 활성화되었을 때 */}
+                    {activeTab === 'written' && (
+                        data.posts && data.posts.length > 0 ? (
+                            data.posts.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))
+                        ) : (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem', color: '#adb5bd' }}>
+                                아직 작성된 일지가 없습니다. 🍃
+                            </div>
+                        )
+                    )}
+
+                    {/* '좋아요한 일지' 탭이 활성화되었을 때 */}
+                    {activeTab === 'liked' && (
+                        data.likePosts && data.likePosts.length > 0 ? (
+                            data.likePosts.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))
+                        ) : (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem', color: '#adb5bd' }}>
+                                아직 좋아요를 누른 일지가 없습니다. 🍃
+                            </div>
+                        )
                     )}
                 </div>
             </main>
