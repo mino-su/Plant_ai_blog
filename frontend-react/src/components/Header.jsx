@@ -123,101 +123,76 @@ const Header = () => {
 
 
     return (
-        <header style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} className="container">
-            <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 'bold', textDecoration: 'none', color: '#333' }}>
-                Plant.log
-            </Link>
+        <header className="site-header">
+            <div className="container">
+                <Link to="/" className="header-logo">Plant.log</Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative' }}>
-                <BsSearch size={24} style={{ cursor: 'pointer' }} onClick={() => navigate('/search')} />
+                <div className="header-right">
+                    <BsSearch size={24} style={{ cursor: 'pointer' }} onClick={() => navigate('/search')} />
 
-                {isLoggedIn ? (
-                    <>
-                        {/* --- 알림 영역 시작 --- */}
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <BsBell size={24} style={{ cursor: 'pointer' }} onClick={toggleNotifications} />
-
-                            {/* 안 읽은 알림 뱃지 */}
-                            {unreadCount > 0 && (
-                                <span style={{
-                                    position: 'absolute', top: '-5px', right: '-5px',
-                                    background: '#fa5252', color: 'white', fontSize: '0.7rem',
-                                    width: '18px', height: '18px', borderRadius: '50%',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                                }}>
+                    {isLoggedIn ? (
+                        <>
+                            {/* 알림 */}
+                            <div className="notif-wrapper">
+                                <BsBell size={24} style={{ cursor: 'pointer' }} onClick={toggleNotifications} />
+                                {unreadCount > 0 && (
+                                    <span className="notif-badge">
                                     {unreadCount > 99 ? '99+' : unreadCount}
                                 </span>
-                            )}
-
-                            {/* 알림 드롭다운 */}
-                            {showNotifications && (
-                                <div className="dropdown-menu" style={{
-                                    position: 'absolute', top: '40px', right: '-80px',
-                                    width: '320px', maxHeight: '400px', overflowY: 'auto',
-                                    background: 'white', border: '1px solid #dee2e6', borderRadius: '8px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000, padding: 0
-                                }}>
-                                    <h4 style={{ padding: '15px', margin: 0, borderBottom: '1px solid #f1f3f5', fontSize: '1rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-                                        알림
-                                        {unreadCount > 0 && <span style={{ color: '#12b886', fontSize: '0.85rem' }}>{unreadCount}개 안 읽음</span>}
-                                    </h4>
-
-                                    {notifications.length > 0 ? (
-                                        notifications.map((noti) => {
-                                            // Jackson 직렬화 시 isRead가 read로 넘어올 수 있으므로 둘 다 체크
-                                            const isRead = noti.isRead || noti.read;
-                                            return (
-                                                <div
-                                                    key={noti.id}
-                                                    onClick={() => handleNotificationClick(noti)}
-                                                    style={{
-                                                        padding: '15px', borderBottom: '1px solid #f8f9fa',
-                                                        cursor: 'pointer', transition: 'background 0.2s',
-                                                        background: isRead ? 'white' : '#e6fcf5' // 안 읽은 알림은 옅은 민트색 배경
-                                                    }}
-                                                    onMouseOver={(e) => e.currentTarget.style.background = isRead ? '#f8f9fa' : '#c3fae8'}
-                                                    onMouseOut={(e) => e.currentTarget.style.background = isRead ? 'white' : '#e6fcf5'}
-                                                >
-                                                    <p style={{ margin: 0, fontSize: '0.9rem', color: isRead ? '#868e96' : '#212529', fontWeight: isRead ? 'normal' : '500', lineHeight: '1.4' }}>
-                                                        {noti.content}
-                                                    </p>
-                                                    <span style={{ fontSize: '0.75rem', color: '#adb5bd', marginTop: '6px', display: 'block' }}>
-                                                        {noti.createdAt}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div style={{ padding: '40px 15px', textAlign: 'center', color: '#868e96', fontSize: '0.9rem' }}>
-                                            새로운 알림이 없습니다. 🌱
+                                )}
+                                {showNotifications && (
+                                    <div className="notif-dropdown">
+                                        <div className="notif-header">
+                                            알림
+                                            {unreadCount > 0 && (
+                                                <span className="notif-count">{unreadCount}개 안 읽음</span>
+                                            )}
                                         </div>
-                                    )}
+                                        {notifications.length > 0 ? (
+                                            notifications.map((noti) => {
+                                                const isRead = noti.isRead || noti.read;
+                                                return (
+                                                    <div
+                                                        key={noti.id}
+                                                        className={`notif-item ${isRead ? '' : 'unread'}`}
+                                                        onClick={() => handleNotificationClick(noti)}
+                                                    >
+                                                        <p className={`notif-text ${isRead ? 'read' : 'unread'}`}>
+                                                            {noti.content}
+                                                        </p>
+                                                        <span className="notif-date">{noti.createdAt}</span>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="notif-empty">새로운 알림이 없습니다. 🌱</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <Link to="/write" className="btn-primary">새 글 작성</Link>
+
+                            <button className="profile-button" onClick={toggleMenu}>
+                                <div className="profile-avatar">
+                                    {profile?.profileImageUrl ? (
+                                        <img src={`${BASE_URL}${profile.profileImageUrl}`} alt="profile" />
+                                    ) : "👤"}
+                                </div>
+                            </button>
+
+                            {showMenu && (
+                                <div className="dropdown-menu">
+                                    <Link to={`/members/${user?.memberId}/mypage`} className="dropdown-item" onClick={() => setShowMenu(false)}>내 페이지</Link>
+                                    <Link to="/setting" className="dropdown-item" onClick={() => setShowMenu(false)}>설정</Link>
+                                    <button className="dropdown-item" onClick={onLogoutClick}>로그아웃</button>
                                 </div>
                             )}
-                        </div>
-                        {/* --- 알림 영역 끝 --- */}
-
-                        <Link to="/write" className="btn-primary">새 글 작성</Link>
-
-                        <button className="profile-button" onClick={toggleMenu} style={{ background: 'none', border: 'none', padding: 0 }}>
-                            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#eee', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                { profile?.profileImageUrl ? (
-                                    <img src={`${BASE_URL}${profile.profileImageUrl}`} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : "👤"}
-                            </div>
-                        </button>
-
-                        {showMenu && (
-                            <div className="dropdown-menu" style={{ position: 'absolute', top: '40px', right: 0, zIndex: 1000 }}>
-                                <Link to={`/members/${user?.memberId}/mypage`} className="dropdown-item" onClick={() => setShowMenu(false)}>내 페이지</Link>
-                                <Link to="/setting" className="dropdown-item" onClick={() => setShowMenu(false)}>설정</Link>
-                                <button className="dropdown-item" onClick={onLogoutClick}>로그아웃</button>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <Link to="/login" className="btn-primary" style={{ background: '#343a40' }}>로그인</Link>
-                )}
+                        </>
+                    ) : (
+                        <Link to="/login" className="btn-primary" style={{ background: '#343a40' }}>로그인</Link>
+                    )}
+                </div>
             </div>
         </header>
     );

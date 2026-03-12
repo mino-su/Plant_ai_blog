@@ -4,13 +4,8 @@ import '../App.css';
 
 const PostCard = ({ post }) => {
     const navigate = useNavigate();
-    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+    const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || "";
 
-    /**
-     * [스마트 썸네일 추출]
-     * 1. DB 관계 데이터(post.images)에서 먼저 찾습니다.
-     * 2. 없으면 JSON 본문(content) 내부의 이미지 블록을 뒤져서 주소를 찾아냅니다.
-     */
     const getThumbnail = () => {
         if (post.images && post.images.length > 0) {
             const url = post.images[0].imageUrl;
@@ -19,19 +14,17 @@ const PostCard = ({ post }) => {
         try {
             const parsed = JSON.parse(post.content);
             const imgBlock = parsed.blocks.find(b => b.type === 'image');
-            return imgBlock ? imgBlock.data.file.url : `${BASE_URL}${url}`;
+            return imgBlock ? imgBlock.data.file.url : null;
         } catch (e) { return null; }
     };
 
-    /**
-     * [스마트 요약문 추출]
-     * JSON 블록 중 첫 번째 paragraph를 찾아 태그를 제거하고 텍스트만 보여줍니다.
-     */
     const getSummary = () => {
         try {
             const parsed = JSON.parse(post.content);
             const textBlock = parsed.blocks.find(b => b.type === 'paragraph');
-            return textBlock ? textBlock.data.text.replace(/<[^>]*>/g, '').substring(0, 100) : "이미지 게시글입니다.";
+            return textBlock
+                ? textBlock.data.text.replace(/<[^>]*>/g, '').substring(0, 100)
+                : "이미지 게시글입니다.";
         } catch (e) {
             return post.content?.substring(0, 100) || "내용이 없습니다.";
         }
@@ -45,20 +38,18 @@ const PostCard = ({ post }) => {
                 {thumb ? (
                     <img src={thumb} alt={post.title} className="card-thumbnail-img" />
                 ) : (
-                    <div className="card-thumbnail-placeholder"><span>Alleaf</span></div>
+                    <div className="card-thumbnail-placeholder">Alleaf</div>
                 )}
             </div>
             <div className="card-content">
                 <h4 className="card-title">{post.title}</h4>
                 <p className="card-desc">{getSummary()}</p>
                 <div className="card-footer">
-                    <span>{post.createdAt ? post.createdAt.split(' ')[0] : ' '}</span>
+                    <span>{post.createdAt ? post.createdAt.split(' ')[0] : ''}</span>
                     <span className="separator">·</span>
                     <span>{post.writer || '익명'}</span>
                 </div>
-                <div style={{ color: '#ff6b6b', fontWeight: 'bold' }}>
-                    ♥ {post.totalLikeCount || 0}
-                </div>
+                <div className="card-likes">♥ {post.totalLikeCount || 0}</div>
             </div>
         </div>
     );
