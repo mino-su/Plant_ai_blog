@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProfileRequestDto {
 
-    @NotBlank @Size(max=30)
+    @NotBlank(message = "닉네임을 반드시 적어주세요") @Size(max=30)
     private String username;
 
     private String bio;

@@ -20,6 +20,7 @@ const Setting = () => {
     });
     const [imageFile, setImageFile] = useState(null); // 실제 서버로 보낼 파일 객체
     const [previewUrl, setPreviewUrl] = useState(''); // 브라우저용 미리보기 URL
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
@@ -39,6 +40,7 @@ const Setting = () => {
                 profileImageUrl: res.data.profileImageUrl ?? ""
             });
         } catch (err) {
+
             console.error("프로필 로드 실패", err);
         }
     };
@@ -76,6 +78,20 @@ const Setting = () => {
             alert("프로필이 성공적으로 수정되었습니다! ✨");
             navigate(-1); // 이전 마이페이지로 이동
         } catch (err) {
+            // 필드별 에러가 있으면 인라인 표시
+            const data = err.response?.data;
+            if (data?.fieldErrors?.length > 0) {
+                const errors = {};
+                data.fieldErrors.forEach(({ field, message }) => {
+                    errors[field] = message;
+                });
+                setFieldErrors(errors);
+            } else {
+                // 일반 에러(잘못된 로그인 등)는 alert
+                const msg = data?.message || "유저 이름을 반드시 확인해 주세요";
+                alert(msg);
+            }
+
             console.error("수정 실패", err);
             alert("수정 중 오류가 발생했습니다.");
         }
@@ -100,7 +116,7 @@ const Setting = () => {
                 <div className="auth-box" style={{ maxWidth: '500px', padding: '2rem' }}>
                     <h2 className="auth-title">프로필 설정</h2>
 
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} noValidate>
                         {/* --- 이미지 업로드 섹션 (수정됨) --- */}
                         <div className="setting-profile-upload" style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <div className="mypage-profile-img" style={{
@@ -144,6 +160,11 @@ const Setting = () => {
                                 onChange={(e) => setProfile({...profile, username: e.target.value})}
                                 placeholder="닉네임을 작성해주세요."
                             />
+                            {fieldErrors.username && (
+                                <span style={{ color: 'red', fontSize: '12px' }}>
+                                {fieldErrors.username}
+                            </span>
+                            )}
                         </div>
 
 
