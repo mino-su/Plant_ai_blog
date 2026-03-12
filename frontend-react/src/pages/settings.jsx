@@ -87,7 +87,7 @@ const Setting = () => {
                 });
                 setFieldErrors(errors);
             } else {
-                // 일반 에러(잘못된 로그인 등)는 alert
+                // 일반 에러(잘못된 수정 등)는 alert
                 const msg = data?.message || "유저 이름을 반드시 확인해 주세요";
                 alert(msg);
             }

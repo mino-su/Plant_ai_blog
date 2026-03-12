@@ -96,7 +96,6 @@ function AnalysisImageBlock({ imageInfo }) {
             </div>
 
                 <div className="analysis-result" style={{ width: '100%', marginTop: '1.5rem' }}>
-                    <p style={{ color: '#868e96', marginBottom: '1.2rem', fontStyle: 'italic' }}>"{imageInfo.caption}"</p>
 
                     {result.loading ? (
                         <div className="loading-container" style={{ textAlign: 'center', padding: '2rem' }}>
@@ -233,7 +232,20 @@ export default function PostDetail() {
             setEditingCommentId(null);
             fetchPost();
         } catch (err) {
-            alert("수정 실패: 권한이 없습니다.");
+            const data = err.response?.data;
+            if (data?.fieldErrors?.length > 0) {
+                const errors = {};
+                data.fieldErrors.forEach(({ field, message }) => {
+                    errors[field] = message;
+                });
+                setFieldErrors(errors);
+            } else {
+                // 일반 에러(잘못된 댓글작성 등)는 alert
+                const msg = data?.message || "빈 댓글은 작성할 수 없습니다.";
+                alert(msg);
+            }
+            console.error(err);
+            alert("수정에 실패했습니다.");
         }
     };
 
@@ -272,7 +284,10 @@ export default function PostDetail() {
         const contentToSubmit = parentId ? replyContent : commentContent;
 
 
-        if (!contentToSubmit.trim()) return;
+        if (!contentToSubmit.trim()) {
+            alert("댓글을 입력해주세요.");
+            return;
+        }
 
         try {
 
@@ -360,10 +375,6 @@ export default function PostDetail() {
                 return <HeaderTag key={index}
                                   style={{fontWeight: 'bold', margin: '2.5rem 0 1rem'}}>{block.data.text}</HeaderTag>;
             case 'paragraph':
-                // [작동 원리]
-                // 1. block.data.text에 악성 스크립트가 있는지 DOMPurify가 검사합니다.
-                // 2. 위험한 태그(<script> 등)나 속성(onerror 등)이 발견되면 모두 제거(Sanitize)합니다.
-                // 3. 안전해진 순수 HTML 문자열만 반환되어 __html에 안전하게 주입됩니다.
                 return (
                     <p key={index}
                        className="post-content"
@@ -391,7 +402,6 @@ export default function PostDetail() {
                         imageInfo={{
                             id: block.data.file.imageId,
                             imageUrl: block.data.file.url,
-                            caption: block.data.caption,
                             plant: block.data.plant,
                             disease: block.data.disease
                         }}
