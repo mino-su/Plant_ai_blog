@@ -30,13 +30,11 @@ const PostCard = ({ post }) => {
         }
     };
 
-    const thumb = getThumbnail();
-
     return (
         <div className="post-card" onClick={() => navigate(`/posts/${post.id}`)}>
             <div className="card-thumbnail-wrapper">
-                {thumb ? (
-                    <img src={thumb} alt={post.title} className="card-thumbnail-img" />
+                {getThumbnail() ? (
+                    <img src={getThumbnail()} alt={post.title} className="card-thumbnail-img" />
                 ) : (
                     <div className="card-thumbnail-placeholder">Alleaf</div>
                 )}

@@ -45,7 +45,6 @@ function Home() {
                             onClick={() => handlePageClick(currentPage - 1)}
                             className="page-nav-btn"
                         >이전</button>
-
                         {[...Array(totalPages)].map((_, index) => (
                             <button
                                 key={index}
@@ -53,7 +52,6 @@ function Home() {
                                 className={`page-number-btn ${currentPage === index ? 'active' : ''}`}
                             >{index + 1}</button>
                         ))}
-
                         <button
                             disabled={currentPage === totalPages - 1}
                             onClick={() => handlePageClick(currentPage + 1)}

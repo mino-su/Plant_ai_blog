@@ -157,7 +157,7 @@ const Header = () => {
                                                         className={`notif-item ${isRead ? '' : 'unread'}`}
                                                         onClick={() => handleNotificationClick(noti)}
                                                     >
-                                                        <p className={`notif-text ${isRead ? 'read' : 'unread'}`}>
+                                                        <p className={`notif-text ${isRead ? '' : 'unread'}`}>
                                                             {noti.content}
                                                         </p>
                                                         <span className="notif-date">{noti.createdAt}</span>
