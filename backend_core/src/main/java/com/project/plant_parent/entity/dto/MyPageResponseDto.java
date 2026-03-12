@@ -21,6 +21,7 @@ public class MyPageResponseDto {
     private String username;
     private String email;
     private long postCount;
+    private long likeCount;
     private long followerCount;
     private long followingCount;
 
@@ -32,18 +33,24 @@ public class MyPageResponseDto {
 
     private List<PostResponseDto> posts;
 
-    public static MyPageResponseDto of(Member member, List<Post> posts,
+    private List<PostResponseDto> likePosts;
+
+    public static MyPageResponseDto of(Member member, List<Post> posts, List<Post> likePosts,
                                        long followerCount, long followingCount, boolean isFollowing, boolean isFollower) {
         return MyPageResponseDto.builder()
                 .username(member.getUsername())
                 .email(member.getEmail())
                 .postCount(posts.size())
+                .likeCount(likePosts.size())
                 .followerCount(followerCount)
                 .followingCount(followingCount)
                 .isFollowing(isFollowing)
                 .isFollower(isFollower)
                 .posts(posts.stream().map(
                         PostResponseDto::from
+                        ).collect(Collectors.toList()))
+                .likePosts(likePosts.stream().map(
+                                PostResponseDto::from
                         ).collect(Collectors.toList()))
                 .build();
     }

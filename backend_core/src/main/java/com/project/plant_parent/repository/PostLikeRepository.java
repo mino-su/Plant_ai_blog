@@ -20,4 +20,5 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Query("select p.post.id from PostLike p where p.member = :member ")
     Set<Long> findPostIdsByMember(@Param("member")Member currentMember);
 
+
 }

@@ -39,6 +39,7 @@ public class MyPageService {
         boolean isFollowing = false;
         boolean isFollower = false;
 
+
         if (currentMember != null) {
             isFollowing = followRepository.existsByFromMemberAndToMember(currentMember, member);
             isFollower = followRepository.existsByFromMemberAndToMember(member, currentMember);
@@ -46,10 +47,16 @@ public class MyPageService {
 
 
         List<Post> posts = postRepository.findAllByMemberOrderByCreatedAtDesc(member);
+        Set<Long> likedPostIds = postLikeRepository.findPostIdsByMember(member);
+        List<Post> likedPosts;
+        if (likedPostIds.isEmpty()) {
+            likedPosts = List.of(); // 비어있으면 DB 조회 없이 빈 리스트 반환 (에러 방지)
+        } else {
+            likedPosts = postRepository.findLikedPostsByIds(likedPostIds);
+        }
 
 
-
-        return MyPageResponseDto.of(member, posts, followers, followings ,isFollowing, isFollower);
+        return MyPageResponseDto.of(member, posts,likedPosts, followers, followings ,isFollowing, isFollower);
 
 
     }
