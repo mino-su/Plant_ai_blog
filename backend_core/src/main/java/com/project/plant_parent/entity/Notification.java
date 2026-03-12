@@ -30,6 +30,9 @@ public class Notification extends BaseTimeEntity {
     @Column(nullable = false)
     private String type;
 
+    @Column(nullable = false)
+    private Long targetId;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean isRead = false;
