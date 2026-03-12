@@ -9,6 +9,7 @@ function Login() {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const {loginSuccess} = useAuth();
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,14 +20,26 @@ function Login() {
             localStorage.setItem('accessToken', response.data.accessToken);
             localStorage.setItem('refreshToken', response.data.refreshToken);
 
-            // 사용자 경험을 위해 바로 이동하기보다 살짝 알림
+
             alert("로그인 성공!");
             loginSuccess(response.data.accessToken);
             navigate('/');
+
         } catch (error) {
-            // 에러 메시지가 서버에서 오면 그것을 보여주고, 아니면 기본 메시지
-            const msg = error.response?.data?.message || "아이디나 비밀번호를 확인해주세요.";
-            alert(msg);
+            const data = error.response?.data;
+
+            // 필드별 에러가 있으면 인라인 표시
+            if (data?.fieldErrors?.length > 0) {
+                const errors = {};
+                data.fieldErrors.forEach(({ field, message }) => {
+                    errors[field] = message;
+                });
+                setFieldErrors(errors);
+            } else {
+                // 일반 에러(잘못된 로그인 등)는 alert
+                const msg = data?.message || "아이디나 비밀번호를 확인해주세요.";
+                alert(msg);
+            }
         }
     };
 
@@ -40,23 +53,41 @@ function Login() {
 
                 <h2 className="auth-title">로그인</h2>
 
-                <form onSubmit={handleLogin}>
-                    <input
-                        className="styled-input"
-                        type="email"
-                        placeholder="이메일을 입력하세요"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        className="styled-input"
-                        type="password"
-                        placeholder="비밀번호를 입력하세요"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                <form onSubmit={handleLogin} noValidate>
+                    <div>
+                        <input
+                            className="styled-input"
+                            type="email"
+                            placeholder="이메일을 입력하세요"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+
+                        {fieldErrors.email && (
+                            <span style={{ color: 'red', fontSize: '12px' }}>
+                                {fieldErrors.email}
+                            </span>
+                        )}
+                    </div>
+
+                    <div>
+                        <input
+                            className="styled-input"
+                            type="password"
+                            placeholder="비밀번호를 입력하세요"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+
+                        {fieldErrors.password && (
+                            <span style={{ color: 'red', fontSize: '12px' }}>
+                                {fieldErrors.password}
+                            </span>
+                        )}
+
+                    </div>
 
                     {/* 버튼은 기존 App.css에 정의된 btn-primary 사용하되 너비 100% 추가 */}
                     <button

@@ -12,9 +12,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginRequestDto {
-    @Email @NotBlank
+    @Email(message = "이메일 형식이 올바르지 않습니다.")
+    @NotBlank(message = "이메일을 입력해주세요.")
     private String email;
-    @NotBlank
+
+    @NotBlank(message = "비밀번호를 입력해주세요.")
     private String password;
 
     // 이 dto를 spring security가 사용하는 인증객체로 변환하는 메서드
