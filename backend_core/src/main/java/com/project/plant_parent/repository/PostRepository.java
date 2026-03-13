@@ -38,6 +38,7 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
     )
     List<Post> findAllByMemberOrderByCreatedAtDesc(@Param("member")Member member);
 
+
     // 좋아요한 게시글 조회용
     @Query(
             "select distinct p from Post p " +

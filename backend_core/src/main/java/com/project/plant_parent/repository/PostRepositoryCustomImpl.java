@@ -2,15 +2,15 @@ package com.project.plant_parent.repository;
 
 import com.project.plant_parent.entity.*;
 import com.project.plant_parent.entity.dto.PostSearchConditionDto;
-import com.project.plant_parent.exception.BusinessException;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +36,36 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .fetch();
 
         // 2. 전체 개수 세기
-        Long total = queryFactory
+        JPAQuery<Long> total = queryFactory
                 .select(post.count())
-                .from(post)
-                .fetchOne();
+                .from(post);
 
-        // 결과 합쳐서 PageImpl 반환
-        return new PageImpl<>(content, pageable, total);
+        // PageableExecutionUtils 사용하여 Page 반환 (count 쿼리는 content 사이즈가 limit보다 작을 때 생략)
+        return PageableExecutionUtils.getPage(content, pageable, total::fetchOne);
 
+    }
+
+    @Override
+    public Page<Post> findAllOrderByPostLikesDescWithPaging(Pageable pageable) {
+        QPost post = QPost.post;
+        QMember member = QMember.member;
+
+        // 1. 실제 데이터 가져오기
+        List<Post> content = queryFactory.selectFrom(post)
+                .join(post.member, member).fetchJoin()
+                .orderBy(post.likeCount.desc(),post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 2. 전체 개수 세기
+        JPAQuery<Long> total = queryFactory
+                .select(post.count())
+                .from(post);
+
+
+        // PageableExecutionUtils 사용하여 Page 반환 (count 쿼리는 content 사이즈가 limit보다 작을 때 생략)
+        return PageableExecutionUtils.getPage(content, pageable, total::fetchOne);
     }
 
     @Override
