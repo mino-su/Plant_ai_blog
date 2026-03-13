@@ -16,4 +16,6 @@ public interface PostRepositoryCustom {
     Page<Post> search(PostSearchConditionDto postSearchConditionDto, Pageable pageable);
 
     Page<Post> findAllByCategoryWithPaging(String category, Pageable pageable);
+
+    Page<Post> findAllByCategoryOrderByPostLikesDescWithPaging(String category, Pageable pageable);
 }

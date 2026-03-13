@@ -74,14 +74,14 @@ function AnalysisImageBlock({ imageInfo }) {
 
 
     return (
-        <div className="analysis-box" style={{ flexDirection: 'column', marginBottom: '3rem' }}>
+        <div className="analysis-box" style={{ marginBottom: '3rem' }}>
             {/* 이미지 영역 */}
             <div style={{ position: 'relative' }}>
                 <img
                     src={imageUrl}
                     alt="식물 사진"
                     className="analysis-img"
-                    style={{ width: '100%', height: 'auto', borderRadius: '12px', display: 'block' }}
+                    style={{ borderRadius: '12px', display: 'block' }}
                     crossOrigin="anonymous"
                 />
                 {result.status === "SUCCESS" && (
@@ -95,7 +95,7 @@ function AnalysisImageBlock({ imageInfo }) {
                 )}
             </div>
 
-                <div className="analysis-result" style={{ width: '100%', marginTop: '1.5rem' }}>
+            <div className="analysis-result">
 
                     {result.loading ? (
                         <div className="loading-container" style={{ textAlign: 'center', padding: '2rem' }}>
@@ -108,10 +108,10 @@ function AnalysisImageBlock({ imageInfo }) {
                         <div className="result-card" style={{ background: '#f8f9fa', padding: '1.5rem', borderRadius: '15px', border: '1px solid #e9ecef' }}>
 
                             {/* 1. 식물 정보 */}
-                            <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #dee2e6', paddingBottom: '1rem' }}>
+                            <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #dee2e6', paddingBottom: '0.3rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                                     <span className="analysis-badge badge-green">식물 종류</span>
-                                    <strong style={{ fontSize: '1.2rem', marginLeft: '0.8rem' }}>{result.plantNameKr}</strong>
+                                    <strong style={{ fontSize: '1.3rem', marginLeft: '0.8rem' }}>{result.plantNameKr}</strong>
                                 </div>
                                 <p style={{ fontSize: '0.9rem', color: '#495057', lineHeight: '1.5' }}>{result.plantDescription}</p>
                             </div>
@@ -125,23 +125,23 @@ function AnalysisImageBlock({ imageInfo }) {
                                 </span>
                                 </div>
 
-                                <div className="guide-box" style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+                                <div className="guide-box" style={{ display: 'grid', gap: '0.1rem', marginTop: '0.1rem' }}>
                                     <div className="guide-item">
-                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.3rem', color: '#212529' }}>🔍 주요 증상</h4>
+                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.1rem', color: '#212529' }}>🔍 주요 증상</h4>
                                         <p style={{ fontSize: '0.85rem', color: '#495057' }}>{result.symptoms}</p>
                                     </div>
                                     <div className="guide-item">
-                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.3rem', color: '#212529' }}>💊 해결 방법</h4>
+                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.1rem', color: '#212529' }}>💊 해결 방법</h4>
                                         <p style={{ fontSize: '0.85rem', color: '#495057' }}>{result.solutions}</p>
                                     </div>
                                     <div className="guide-item">
-                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.3rem', color: '#212529' }}>🛡️ 예방 방법</h4>
+                                        <h4 style={{ fontSize: '0.95rem', marginBottom: '0.1rem', color: '#212529' }}>🛡️ 예방 방법</h4>
                                         <p style={{ fontSize: '0.85rem', color: '#495057' }}>{result.prevention}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style={{ color: '#adb5bd', fontSize: '0.8rem', marginTop: '1.2rem', textAlign: 'right' }}>
+                            <div style={{ color: '#adb5bd', fontSize: '0.8rem', marginTop: '0.5rem', textAlign: 'right' }}>
                                 AI 분석 신뢰도: {(result.diseaseConfidence * 100).toFixed(1)}%
                             </div>
                         </div>

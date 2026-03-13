@@ -732,19 +732,21 @@ button {
     margin-bottom: 2rem;
     display: flex;
     gap: 2rem;
-    align-items: center;
+    align-items: stretch;
 }
 
 .analysis-img {
-    width: 280px;
-    height: 280px;
+    width: 350px;           /* 280px → 420px */
+    height: 100%;           /* 280px → 100% (부모 높이에 딱 맞춤) */
+    min-height: 300px;      /* 최소 높이 보장 */
     object-fit: cover;
-    border-radius: 4px;
-    flex-shrink: 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;     /* (유지) */
+    flex-shrink: 0;         /* (유지) */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* (유지) */
 }
 
-.analysis-result { flex: 1; }
+.analysis-result {  flex: 1;  /* flex:1 → 고정 300px (이미지 옆 작은 패널) */
+    min-width: 0; }
 
 .analysis-badge {
     display: inline-block;
