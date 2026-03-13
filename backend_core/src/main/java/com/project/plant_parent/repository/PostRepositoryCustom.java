@@ -1,5 +1,6 @@
 package com.project.plant_parent.repository;
 
+import com.project.plant_parent.entity.Category;
 import com.project.plant_parent.entity.Post;
 import com.project.plant_parent.entity.dto.PostSearchConditionDto;
 import org.springframework.data.domain.Page;
@@ -13,4 +14,6 @@ public interface PostRepositoryCustom {
     Page<Post> findAllOrderByPostLikesDescWithPaging(Pageable pageable);
 
     Page<Post> search(PostSearchConditionDto postSearchConditionDto, Pageable pageable);
+
+    Page<Post> findAllByCategoryWithPaging(String category, Pageable pageable);
 }

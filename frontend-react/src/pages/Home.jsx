@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import Header from "../components/Header.jsx";
 import PostCard from "../components/PostCard.jsx";
@@ -10,18 +11,36 @@ function Home() {
     const [totalPages, setTotalPages] = useState(0);
     const [sortType, setSortType] = useState('latest');
 
-    useEffect(() => { fetchPosts(currentPage); }, [currentPage]);
+    const [searchParams] = useSearchParams();
+    const category = searchParams.get('category');
 
-    useEffect(() => { fetchPosts(currentPage, sortType); }, [currentPage, sortType]);
+    // category 변경 시 페이지 0으로 리셋
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [category]);
+
+    // 핵심 fetch
+    useEffect(() => {
+        fetchPosts(currentPage, sortType, category);
+    }, [currentPage, sortType, category]);
 
 
-    const fetchPosts = async (page, sort) => {
-        const url = sort === 'popular'
-            ? `/api/posts/popular?page=${page}&size=6`
-            : `/api/posts?page=${page}&size=6`;
-        const res = await api.get(url);
-        setPosts(res.data.content);
-        setTotalPages(res.data.totalPages);
+    const fetchPosts = async (page, sort, category) => {
+        try {
+            let url;
+            if (category) {
+                url = `/api/posts/category/${category}?page=${page}&size=6`;
+            } else if (sort === 'popular') {
+                url = `/api/posts/popular?page=${page}&size=6`;
+            } else {
+                url = `/api/posts?page=${page}&size=6`;
+            }
+            const res = await api.get(url);
+            setPosts(res.data.content);
+            setTotalPages(res.data.totalPages);
+        } catch (err) {
+            console.error("게시글 로드 실패:", err);
+        }
     };
 
     const handleSortChange = (type) => {
