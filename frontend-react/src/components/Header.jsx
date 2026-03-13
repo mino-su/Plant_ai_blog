@@ -125,7 +125,7 @@ const Header = () => {
     return (
         <header className="site-header">
             <div className="container">
-                <Link to="/" className="header-logo">Plant.log</Link>
+                <Link to="/" className="header-logo">Alleaf 🪴</Link>
 
                 <div className="header-right">
                     <BsSearch size={24} style={{ cursor: 'pointer' }} onClick={() => navigate('/search')} />
