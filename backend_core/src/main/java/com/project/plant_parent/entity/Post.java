@@ -53,6 +53,10 @@ public class Post extends BaseTimeEntity{
     @BatchSize(size = 100)
     private Set<PostLike> postLikes = new HashSet<>();
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long likeCount = 0L; // 좋아요 수 별도 관리
+
     @Builder
     public Post(String title, String content, Member member) {
         this.title = title;
@@ -65,5 +69,14 @@ public class Post extends BaseTimeEntity{
         this.content =content;
     }
 
+    public void addLike(){
+        this.likeCount++;
+    }
+
+    public void removeLike() {
+        if (likeCount > 0) {
+            this.likeCount--;
+        }
+    }
 
 }

@@ -67,10 +67,19 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostList(pageable));
     }
 
+    // 좋아요순 전체 게시글 조회
+    @GetMapping("/popular")
+    public ResponseEntity<Page<PostResponseDto>> getAllPostsOrderByLike(
+            @PageableDefault(size = 6) Pageable pageable
+    ) {
+        return ResponseEntity.ok(postService.getPostListOrderByLikes(pageable));
+    }
+
     // 특정 게시물 조회
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponseDto> getPostWithPostId(
             @PathVariable("postId") Long postId) {
+
         return ResponseEntity.ok(postService.getPost(postId));
     }
 

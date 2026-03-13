@@ -10,5 +10,7 @@ import org.springframework.data.domain.Pageable;
 public interface PostRepositoryCustom {
     Page<Post> findAllWithPaging(Pageable pageable); // 페이징
 
+    Page<Post> findAllOrderByPostLikesDescWithPaging(Pageable pageable);
+
     Page<Post> search(PostSearchConditionDto postSearchConditionDto, Pageable pageable);
 }

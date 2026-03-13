@@ -175,6 +175,8 @@ public class PostService {
         try {
             PostLike save = postLikeRepository.save(postlike);
 
+            post.addLike(); // 좋아요 수 증가
+
             String message = currentMember.getUsername() + "님이 회원님의 게시글을 좋아합니다.";
             notificationService.notify(post.getMember().getId(), message, "like", post.getId());
 
@@ -199,6 +201,8 @@ public class PostService {
         }
         // 3. 좋아요 삭제
         postLikeRepository.deleteByPostAndMember(post, currentMember);
+
+        post.removeLike(); // 좋아요 수 감소
 
         long totalCount = postLikeRepository.countPostLikesByPost(post);
         return PostLikeDto.of(post.getId(), false, totalCount);
@@ -231,6 +235,12 @@ public class PostService {
     // 전체 조회 - 페이징 적용
     public Page<PostResponseDto> getPostList(Pageable pageable) {
         Page<Post> posts = postRepository.findAllWithPaging(pageable);
+        return posts.map(PostResponseDto::from);
+    }
+
+    // 좋아요 순 조회 - 페이징 적용
+    public Page<PostResponseDto> getPostListOrderByLikes(Pageable pageable) {
+        Page<Post> posts = postRepository.findAllOrderByPostLikesDescWithPaging(pageable);
         return posts.map(PostResponseDto::from);
     }
 
