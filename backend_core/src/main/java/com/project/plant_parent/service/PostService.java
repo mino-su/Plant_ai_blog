@@ -42,6 +42,7 @@ public class PostService {
                 .title(postRequestDto.getTitle())
                 .content(postRequestDto.getContent())
                 .member(member)
+                .category(postRequestDto.getCategory())
                 .build();
 
         Post savedPost = postRepository.save(newPost);
@@ -104,7 +105,7 @@ public class PostService {
         validateWriter(post, member);
 
         // 1. 텍스트 수정
-        post.update(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getContent());
+        post.update(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getContent(), postUpdateRequestDto.getCategory());
 
         // 2. 이미지 삭제 로직
         // 사용자가 삭제하라고 보낸 ID리스트가 있다면
@@ -241,6 +242,12 @@ public class PostService {
     // 좋아요 순 조회 - 페이징 적용
     public Page<PostResponseDto> getPostListOrderByLikes(Pageable pageable) {
         Page<Post> posts = postRepository.findAllOrderByPostLikesDescWithPaging(pageable);
+        return posts.map(PostResponseDto::from);
+    }
+
+    // 카테고리별 조회 - 페이징 적용
+    public Page<PostResponseDto> getPostListByCategory(String category, Pageable pageable) {
+        Page<Post> posts = postRepository.findAllByCategoryWithPaging(category, pageable);
         return posts.map(PostResponseDto::from);
     }
 

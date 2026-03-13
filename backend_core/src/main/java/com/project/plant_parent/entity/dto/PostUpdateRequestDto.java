@@ -1,6 +1,8 @@
 package com.project.plant_parent.entity.dto;
 
+import com.project.plant_parent.entity.Category;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,4 +21,8 @@ public class PostUpdateRequestDto {
     private List<Long> deleteImageIds;
 
     private List<Long> newImageIds;
+
+    @NotNull
+    private Category category;
+
 }

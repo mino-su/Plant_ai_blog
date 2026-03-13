@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 // Querydsl 구현체
@@ -65,6 +64,28 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
 
 
         // PageableExecutionUtils 사용하여 Page 반환 (count 쿼리는 content 사이즈가 limit보다 작을 때 생략)
+        return PageableExecutionUtils.getPage(content, pageable, total::fetchOne);
+    }
+
+    @Override
+    public Page<Post> findAllByCategoryWithPaging(String category, Pageable pageable) {
+        QPost post = QPost.post;
+        QMember member = QMember.member;
+
+        // 1. 실제 데이터 가져오기
+        List<Post> content = queryFactory.selectFrom(post)
+                .join(post.member, member).fetchJoin()
+                .where(post.category.eq(Category.valueOf(category.toUpperCase())))
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 2. 전체 갯수 세기
+        JPAQuery<Long> total = queryFactory.select(post.count())
+                .from(post)
+                .where(post.category.eq(Category.valueOf(category.toUpperCase())));
+
         return PageableExecutionUtils.getPage(content, pageable, total::fetchOne);
     }
 

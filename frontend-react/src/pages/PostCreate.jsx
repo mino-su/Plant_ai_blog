@@ -14,6 +14,7 @@ function PostCreate() {
     const editorInstance = useRef(null); // 에디터 객체를 담을 참조 변수
     const [title, setTitle] = useState('');
     const [imageIds, setImageIds] = useState([]); // 업로드된 사진들의 ID를 추적
+    const [category, setCategory] = useState('COMMUNITY'); // 게시글 카테고리 (기본값은 COMMUNITY)
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
@@ -87,7 +88,8 @@ function PostCreate() {
             const payload = {
                 title: title,
                 content: JSON.stringify(outputData), // 블록 데이터를 문자열로 직렬화
-                imageIds: imageIds // 이번 글에 쓰인 사진 ID 리스트
+                imageIds: imageIds, // 이번 글에 쓰인 사진 ID 리스트
+                category: category,
             };
 
             await api.post('/api/posts', payload);
@@ -111,6 +113,22 @@ function PostCreate() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
+
+                <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0' }}>
+                    {[
+                        { value: 'COMMUNITY', label: '커뮤니티' },
+                        { value: 'QUESTION',  label: 'Q&A' },
+                        { value: 'INFORMATION', label: '정보공유' },
+                    ].map(({ value, label }) => (
+                        <button
+                            key={value}
+                            type="button"
+                            onClick={() => setCategory(value)}
+                            className={`sort-btn ${category === value ? 'active' : ''}`}
+                        >{label}</button>
+                    ))}
+                </div>
+
                 <div style={{ width: '100%', height: '4px', background: '#12b886', marginBottom: '2rem' }}></div>
 
                 {/* Editor.js가 마운트될 구역 */}

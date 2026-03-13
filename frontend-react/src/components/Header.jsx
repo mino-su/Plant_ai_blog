@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "./AuthContext.jsx";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BsSearch, BsBell } from 'react-icons/bs';
 import '../App.css';
 import api from "../api.js";
@@ -10,6 +10,16 @@ const Header = () => {
     const { user, isLoggedIn, handleLogout } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [profile, setProfile] = useState(null);
+
+    // 카테고리 관련 상태
+    const [searchParams] = useSearchParams();
+    const activeCategory = searchParams.get('category') || '';
+
+    const CATEGORIES = [
+        { value: 'COMMUNITY',   label: '커뮤니티' },
+        { value: 'QUESTION',    label: 'Q&A' },
+        { value: 'INFORMATION', label: '정보공유' },
+    ];
 
     // 알림 관련 상태
     const [showNotifications, setShowNotifications] = useState(false);
@@ -125,7 +135,22 @@ const Header = () => {
     return (
         <header className="site-header">
             <div className="container">
+
+
                 <Link to="/" className="header-logo">Alleaf 🪴</Link>
+
+
+                <nav className="category-nav">
+                    <div className="container">
+                        {CATEGORIES.map(({ value, label }) => (
+                            <Link
+                                key={value}
+                                to={value ? `/?category=${value}` : '/'}
+                                className={`cat-btn ${activeCategory === value ? 'active' : ''}`}
+                            >{label}</Link>
+                        ))}
+                    </div>
+                </nav>
 
                 <div className="header-right">
                     <BsSearch size={24} style={{ cursor: 'pointer' }} onClick={() => navigate('/search')} />

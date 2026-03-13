@@ -19,6 +19,7 @@ function PostEdit() {
     const [deleteImageIds, setDeleteImageIds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [initialEditorData, setInitialEditorData] = useState(null);
+    const [category, setCategory] = useState('');
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
@@ -27,7 +28,7 @@ function PostEdit() {
             try {
                 const res = await api.get(`/api/posts/${postId}`);
                 setTitle(res.data.title);
-
+                setCategory(res.data.category)
                 // 본문 파싱 로직
                 let parsedData;
                 try {
@@ -100,7 +101,8 @@ function PostEdit() {
                 title: title,
                 content: JSON.stringify(outputData),
                 newImageIds: newImageIds,
-                deleteImageIds: deleteImageIds
+                deleteImageIds: deleteImageIds,
+                category: category,
             };
 
             await api.put(`/api/posts/${postId}`, payload);
@@ -137,6 +139,21 @@ function PostEdit() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
+                <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0' }}>
+                    {[
+                        { value: 'COMMUNITY', label: '커뮤니티' },
+                        { value: 'QUESTION',  label: 'Q&A' },
+                        { value: 'INFORMATION', label: '정보공유' },
+                    ].map(({ value, label }) => (
+                        <button
+                            key={value}
+                            type="button"
+                            onClick={() => setCategory(value)}
+                            className={`sort-btn ${category === value ? 'active' : ''}`}
+                        >{label}</button>
+
+                    ))}
+                </div>
                 <div style={{ width: '100%', height: '4px', background: '#12b886', marginBottom: '2rem' }}></div>
 
                 {/* 에디터가 그려질 공간입니다. */}

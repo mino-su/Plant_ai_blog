@@ -75,6 +75,14 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostListOrderByLikes(pageable));
     }
 
+    @GetMapping("/category/{category}")
+    public ResponseEntity<Page<PostResponseDto>> getAllPostsByCategory(
+            @PathVariable String category,
+            @PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(postService.getPostListByCategory(category, pageable));
+    }
+
     // 특정 게시물 조회
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponseDto> getPostWithPostId(

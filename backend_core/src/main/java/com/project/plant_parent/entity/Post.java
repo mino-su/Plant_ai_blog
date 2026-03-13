@@ -30,6 +30,10 @@ public class Post extends BaseTimeEntity{
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'COMMUNITY'")
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
     // 작성자(N:1)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -64,9 +68,10 @@ public class Post extends BaseTimeEntity{
         this.member = member;
     }
 
-    public void update(String title, String content) {
+    public void update(String title, String content, Category category) {
         this.title = title;
         this.content =content;
+        this.category = category;
     }
 
     public void addLike(){

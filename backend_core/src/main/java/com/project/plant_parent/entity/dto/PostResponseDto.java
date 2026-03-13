@@ -1,6 +1,7 @@
 package com.project.plant_parent.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.project.plant_parent.entity.Category;
 import com.project.plant_parent.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class PostResponseDto {
     private Long memberId;
     private List<CommentResponseDto> comments;
     private Long totalLikeCount;
+    private Category category;
 
 
 //    private List<PostImageDto> images; // Refactor: editor 개편 (Content에 이미지 정보(Url) 포함 예정)
@@ -51,6 +53,7 @@ public class PostResponseDto {
                 )
                 .profileImageUrl(post.getMember().getProfile().getProfileImageUrl())
                 .totalLikeCount((long) post.getPostLikes().size())
+                .category(post.getCategory())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
