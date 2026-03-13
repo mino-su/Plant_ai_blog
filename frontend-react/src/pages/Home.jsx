@@ -9,10 +9,12 @@ function Home() {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortType, setSortType] = useState('latest');
 
-    const [searchParams] = useSearchParams();
+
+    const [searchParams, setSearchParams] = useSearchParams();
     const category = searchParams.get('category');
+    const sortType = searchParams.get('sort') || 'latest';
+
 
     // category 변경 시 페이지 0으로 리셋
     useEffect(() => {
@@ -28,7 +30,9 @@ function Home() {
     const fetchPosts = async (page, sort, category) => {
         try {
             let url;
-            if (category) {
+            if (category && sort === 'popular') {
+                url = `/api/posts/category/${category}?sort=popular&page=${page}&size=6`;
+            } else if (category) {
                 url = `/api/posts/category/${category}?page=${page}&size=6`;
             } else if (sort === 'popular') {
                 url = `/api/posts/popular?page=${page}&size=6`;
@@ -44,8 +48,14 @@ function Home() {
     };
 
     const handleSortChange = (type) => {
-        setSortType(type);
         setCurrentPage(0);
+        const newParams = new URLSearchParams(searchParams);
+        if (type === 'latest') {
+            newParams.delete('sort');
+        } else {
+            newParams.set('sort', type);
+        }
+        setSearchParams(newParams);
     };
 
     const handlePageClick = (pageNumber) => {

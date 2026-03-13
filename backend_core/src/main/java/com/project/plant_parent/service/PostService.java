@@ -251,6 +251,12 @@ public class PostService {
         return posts.map(PostResponseDto::from);
     }
 
+    // 카테고리별 좋아요 순 조회 - 페이징 적용
+    public Page<PostResponseDto> getPostListByCategoryOrderByLikes(String category, Pageable pageable) {
+        Page<Post> posts = postRepository.findAllByCategoryOrderByPostLikesDescWithPaging(category, pageable);
+        return posts.map(PostResponseDto::from);
+    }
+
     // 검색 기능
     public Page<PostResponseDto> search(PostSearchConditionDto searchCondition, Pageable pageable) {
         Page<Post> searchPosts = postRepository.search(searchCondition, pageable);

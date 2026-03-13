@@ -78,8 +78,12 @@ public class PostController {
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<PostResponseDto>> getAllPostsByCategory(
             @PathVariable String category,
-            @PageableDefault(size = 6, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @PageableDefault(size = 6) Pageable pageable
     ) {
+        if("popular".equals(sort)){
+            return ResponseEntity.ok(postService.getPostListByCategoryOrderByLikes(category, pageable));
+        }
         return ResponseEntity.ok(postService.getPostListByCategory(category, pageable));
     }
 
