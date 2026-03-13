@@ -8,17 +8,25 @@ function Home() {
     const [posts, setPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [sortType, setSortType] = useState('latest');
 
     useEffect(() => { fetchPosts(currentPage); }, [currentPage]);
 
-    const fetchPosts = async (page) => {
-        try {
-            const res = await api.get(`/api/posts?page=${page}&size=6`);
-            setPosts(res.data.content);
-            setTotalPages(res.data.totalPages);
-        } catch (err) {
-            console.error("게시글 로드 실패:", err);
-        }
+    useEffect(() => { fetchPosts(currentPage, sortType); }, [currentPage, sortType]);
+
+
+    const fetchPosts = async (page, sort) => {
+        const url = sort === 'popular'
+            ? `/api/posts/popular?page=${page}&size=6`
+            : `/api/posts?page=${page}&size=6`;
+        const res = await api.get(url);
+        setPosts(res.data.content);
+        setTotalPages(res.data.totalPages);
+    };
+
+    const handleSortChange = (type) => {
+        setSortType(type);
+        setCurrentPage(0);
     };
 
     const handlePageClick = (pageNumber) => {
@@ -30,6 +38,17 @@ function Home() {
         <>
             <Header />
             <main className="container home-main">
+                <div className="sort-bar">
+                    <button
+                        className={`sort-btn ${sortType === 'latest' ? 'active' : ''}`}
+                        onClick={() => handleSortChange('latest')}
+                    >최신순</button>
+                    <button
+                        className={`sort-btn ${sortType === 'popular' ? 'active' : ''}`}
+                        onClick={() => handleSortChange('popular')}
+                    >좋아요 순</button>
+                </div>
+
                 <div className="post-grid">
                     {posts?.length === 0 ? (
                         <p className="empty-state">작성된 게시글이 없습니다.</p>

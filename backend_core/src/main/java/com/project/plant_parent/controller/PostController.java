@@ -67,6 +67,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostList(pageable));
     }
 
+    // 좋아요순 전체 게시글 조회
     @GetMapping("/popular")
     public ResponseEntity<Page<PostResponseDto>> getAllPostsOrderByLike(
             @PageableDefault(size = 6) Pageable pageable

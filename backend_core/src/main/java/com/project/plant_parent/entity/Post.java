@@ -54,7 +54,7 @@ public class Post extends BaseTimeEntity{
     private Set<PostLike> postLikes = new HashSet<>();
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long likeCount = 0L; // 좋아요 수 별도 관리
 
     @Builder
