@@ -3,12 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import api from '../api'; // 공통 API 모듈
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import Header from "../components/Header";
 import '../App.css';
 import {useAuth} from "../components/AuthContext.jsx";
 import DOMPurify from "dompurify";
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+dayjs.extend(relativeTime);
+dayjs.locale('ko');
 
 function AnalysisImageBlock({ imageInfo }) {
     const [result, setResult] = useState({
@@ -496,7 +501,7 @@ export default function PostDetail() {
                     {post.writer}
                 </span>
                                 <span style={{ color: '#868e96', fontSize: '0.9rem', marginTop: '2px' }}>
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    {dayjs(post.createdAt).format('YYYY년 MM월 DD일')}
                 </span>
                             </div>
                         </div>
@@ -647,7 +652,7 @@ export default function PostDetail() {
                                                     {comment.writer}
                                                 </span>
                                                 <span className="comment-date" style={{ fontSize: '0.8rem', color: '#adb5bd' }}>
-                                                    {new Date(comment.createdAt).toLocaleDateString()}
+                                                    {dayjs(comment.createdAt).fromNow()}
                                                 </span>
                                             </div>
                                         </div>
@@ -724,7 +729,7 @@ export default function PostDetail() {
                                                                     {child.writer}
                                                                 </span>
                                                                 <span className="comment-date" style={{ fontSize: '0.75rem', color: '#adb5bd' }}>
-                                                                    {new Date(child.createdAt).toLocaleDateString()}
+                                                                    {dayjs(child.createdAt).fromNow()}
                                                                 </span>
                                                             </div>
                                                         </div>
