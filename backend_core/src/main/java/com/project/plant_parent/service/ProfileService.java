@@ -23,7 +23,7 @@ import java.io.IOException;
 @Transactional(readOnly = true)
 public class ProfileService {
     private final ProfileRepository profileRepository;
-    private final FileService fileService;
+    private final StorageService storageService;
     private final MemberRepository memberRepository;
 
 
@@ -48,13 +48,11 @@ public class ProfileService {
 
         // 새로운 이미지가 업로드 된 경우
         if (image != null && !image.isEmpty()) {
-            if (profileImageUrl != null && profileImageUrl.startsWith("/images/")) {
-                String oldFileName = profileImageUrl.replace("/images/", "");
-                fileService.deleteFile(oldFileName);
-                // 기존 파일 삭제
+            if (profileImageUrl != null && !profileImageUrl.contains("default_profile") ) {
+                storageService.deleteByUrl(profileImageUrl);
             }
-            String newFileName = fileService.saveFile(image);
-            profileImageUrl = "/images/" + newFileName;
+            String newFileName = storageService.saveFile(image);
+            profileImageUrl = storageService.getFileUrl(newFileName);
         }
 
         Member member = getMemberByMemberId(memberId);

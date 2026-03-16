@@ -7,10 +7,17 @@ import os
 import filetype
 from PIL import Image
 import io
+import boto3
 
 app = Flask(__name__)
 redis_host = os.environ.get('REDIS_HOST', None)
 storage_uri = f"redis://{redis_host}:6379" if redis_host else "memory://"
+STORAGE_MODE = os.environ.get('STORAGE_MODE', 'local')  # 'local' 또는 's3'
+
+if STORAGE_MODE == 's3':
+    AWS_S3_BUCKET = os.environ.get('AWS_S3_BUCKET')
+    AWS_S3_REGION = os.environ.get('AWS_S3_REGION', 'ap-northeast-2')
+    s3_boto = boto3.client('s3', region_name=AWS_S3_REGION)
 
 #  YOLO 모델 로드,
 plant_model = YOLO('/app/models/plant_best.pt')
@@ -72,9 +79,18 @@ def detect():
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
 
-        # 실제 분석을 위해 파일로 저장 (Spring Boot와 볼륨 공유 시 필요)
-        with open(save_path, 'wb') as f:
-            f.write(img_bytes)
+        if STORAGE_MODE == 's3':
+            s3_key = f"uploads/{unique_filename}"
+            s3_boto.put_object(
+                Bucket = AWS_S3_BUCKET,
+                Key = s3_key,
+                Body = img_bytes,
+                ContentType =  file.content_type
+            )
+            app.logger.info(f"S3 업로드 성공: {s3_key}")
+        else:
+            with open(save_path, 'wb') as f:
+                f.write(img_bytes)
 
         plant_results = plant_model.predict(source=img, conf=0.2)
         plant_data = []
