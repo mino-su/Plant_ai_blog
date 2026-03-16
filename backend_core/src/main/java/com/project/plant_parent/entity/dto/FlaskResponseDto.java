@@ -10,6 +10,7 @@ import java.util.List;
 public class FlaskResponseDto {
     private String status; // Flask의 statis
     private String filename; //flask의 filename: email_uuid
+    private String plant_result_image; // flask custom model 결과 이미지
     private DetectionResults results; // flask custom model detection result
 
     @Getter

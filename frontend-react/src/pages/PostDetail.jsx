@@ -17,6 +17,7 @@ function AnalysisImageBlock({ imageInfo }) {
         plantDescription: "",
         diseaseNameKr: "",
         diseaseConfidence: 0,
+        resultImgUrl: null,
         symptoms: "",
         solutions: "",
         prevention: "",
@@ -57,6 +58,7 @@ function AnalysisImageBlock({ imageInfo }) {
         }
     }, [imageInfo.id]);
 
+    const [isResultPopupOpen, setIsResultPopupOpen] = useState(false);
 
     const imageUrl = imageInfo.imageUrl.startsWith('http')
         ? imageInfo.imageUrl
@@ -91,6 +93,29 @@ function AnalysisImageBlock({ imageInfo }) {
                         color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold'
                     }}>
                         위험도: {result.dangerLevel}
+                    </div>
+                )}
+
+                {isResultPopupOpen && (
+                    <div className="modal-overlay" onClick={() => setIsResultPopupOpen(false)}>
+                        <div className="modal-content result-img-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>🔬 AI 분석 상세 결과</h3>
+                                <button className="close-button" onClick={() => setIsResultPopupOpen(false)}>&times;</button>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <img
+                                    src={result.resultImgUrl.startsWith('http')
+                                        ? result.resultImgUrl
+                                        : `${BASE_URL}${result.resultImgUrl}`} src={result.resultImgUrl.startsWith('http')
+                                    ? result.resultImgUrl
+                                    : `${BASE_URL}${result.resultImgUrl}`}
+                                    alt="AI 분석 결과"
+                                    style={{ width: '100%', borderRadius: '8px' }}
+                                    crossOrigin="anonymous"
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -141,8 +166,23 @@ function AnalysisImageBlock({ imageInfo }) {
                                 </div>
                             </div>
 
-                            <div style={{ color: '#adb5bd', fontSize: '0.8rem', marginTop: '0.5rem', textAlign: 'right' }}>
-                                AI 분석 신뢰도: {(result.diseaseConfidence * 100).toFixed(1)}%
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <span style={{ color: '#adb5bd', fontSize: '0.8rem' }}>
+                                    AI 분석 신뢰도: {(result.diseaseConfidence * 100).toFixed(1)}%
+                                </span>
+                                {result.resultImgUrl && (
+                                    <button
+                                        onClick={() => setIsResultPopupOpen(true)}
+                                        style={{
+                                            padding: '5px 12px', borderRadius: '8px',
+                                            border: '1px solid #12b886', backgroundColor: 'white',
+                                            color: '#12b886', fontWeight: 'bold',
+                                            cursor: 'pointer', fontSize: '0.8rem'
+                                        }}
+                                    >
+                                        🔬 자세한 결과 보기
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ) : (
