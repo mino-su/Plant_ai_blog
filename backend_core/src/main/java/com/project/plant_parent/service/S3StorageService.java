@@ -30,7 +30,7 @@ import java.util.UUID;
 public class S3StorageService implements StorageService{
     private final S3Client s3Client;
 
-    @Value("${aws.s3.bucket-name}")
+    @Value("${aws.s3.bucket-name:plant-parent-image-bucket}")
     private String bucketName;
 
     @Value("${aws.s3.regin:ap-northeast-2}")
