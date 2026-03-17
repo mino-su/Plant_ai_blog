@@ -1,5 +1,6 @@
 package com.project.plant_parent.service;
 
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,4 +24,7 @@ public interface StorageService {
 
 
     void deleteByUrl(String imageUrl);
+
+    Resource loadAsResource(String fileName);
+
 }

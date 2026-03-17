@@ -1,8 +1,11 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.ErrorCode;
+import com.project.plant_parent.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,5 +75,18 @@ public class LocalStorgeService implements StorageService{
             String fileName = imageUrl.substring("/images/".length());
             deleteFile(fileName);
         }
+    }
+
+    @Override
+    public Resource loadAsResource(String fileName) {
+        Path path = Paths.get(uploadDir, fileName);
+        File file = path.toFile();
+
+        if (!file.exists()) {
+            log.error(">>> 파일명 : {}", fileName);
+            throw new BusinessException(ErrorCode.GLOBAL_FILE_NOT_FOUND);
+        }
+
+        return new FileSystemResource(path.toFile());
     }
 }

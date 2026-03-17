@@ -13,6 +13,7 @@ import com.project.plant_parent.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,6 +38,9 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ProfileRepository profileRepository;
 
+    @Value("${app.default-image-url}")
+    private String defaultProfileImage;
+
 
     @Transactional
     public MemberResponseDto signup(MemberRequestDto memberRequestDto) {
@@ -48,7 +52,8 @@ public class AuthService {
 
         Profile profile = Profile.builder()
                 .member(member)
-                .bio("반갑습니다! " + member.getUsername() + "님의 정원입니다.") // 여기서 초기화
+                .bio("반갑습니다! " + member.getUsername() + "님의 정원입니다.")
+                .profileImageUrl(defaultProfileImage)
                 .build();
 
         member.setProfile(profile);

@@ -1,15 +1,22 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.ErrorCode;
+import com.project.plant_parent.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -79,6 +86,29 @@ public class S3StorageService implements StorageService{
 
         }catch (Exception e){
             log.error(">>> url에서 fileName 추출 실패: {}", imageUrl,e);
+        }
+    }
+
+    @Override
+    public Resource loadAsResource(String fileName) {
+        String s3Key = S3_PREFIX + fileName;
+        try{
+            GetObjectRequest request = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build();
+            ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(request);
+            byte[] data = objectBytes.asByteArray();
+            log.info(">>> S3에서 파일 로드 성공: {}", s3Key);
+            return new ByteArrayResource(data) {
+                @Override
+                public String getFilename() {
+                    return fileName;
+                }
+            };
+        } catch (Exception e) {
+            log.error(">>> S3에서 파일 로드 실패 : {}", s3Key, e);
+            throw new BusinessException(ErrorCode.GLOBAL_INVALID_INPUT);
         }
     }
 }
