@@ -12,14 +12,15 @@ spring:
       hibernate:
         show_sql: false
         format_sql: false
-    defer-datasource-initialization: true
+
 
   sql:
     init:
       mode: never
 
-file:
-  upload-dir: /app/uploads/
+
+app:
+  default-image-url: https://${AWS_S3_BUCKET_NAME}.s3.${AWS_S3_REGION:ap-northeast-2}.amazonaws.com/uploads/default_profile.jpg
 
 logging:
   level:
@@ -29,3 +30,7 @@ logging:
     org.springframework.security: INFO
     org.hibernate.sql: ERROR
     org.hibernate.type.descriptor.sql: ERROR
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_S3_REGION:ap-northeast-2}

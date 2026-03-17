@@ -16,6 +16,7 @@ public class AiAnalysisResponseDto {
     private Long imageId;
     private String status; // FAILED, SUCCESS
 
+    private String resultImgUrl;
 
     // PlantDecionary 정보
     private String plantLabel;
@@ -36,7 +37,8 @@ public class AiAnalysisResponseDto {
 
     public static AiAnalysisResponseDto of(PostImage postImage,
                                            PlantDictionary plantDictionary,
-                                           DiseaseDictionary diseaseDictionary) {
+                                           DiseaseDictionary diseaseDictionary,
+                                           FlaskResponseDto flaskResponseDto) {
 
         return AiAnalysisResponseDto.builder()
                 .imageId(postImage.getId())
@@ -47,7 +49,7 @@ public class AiAnalysisResponseDto {
                 .diseaseLabel(diseaseDictionary.getLabel())
                 .diseaseNameKr(diseaseDictionary.getNameKr())
                 .diseaseConfidence(postImage.getConfidence())
-
+                .resultImgUrl(flaskResponseDto.getPlant_result_image())
                 .symptoms(diseaseDictionary.getGuide().getSymptoms())
                 .solutions(diseaseDictionary.getGuide().getSolutions())
                 .prevention(diseaseDictionary.getGuide().getPrevention())

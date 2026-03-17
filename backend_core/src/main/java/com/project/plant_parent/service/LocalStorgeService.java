@@ -1,7 +1,11 @@
 package com.project.plant_parent.service;
 
+import com.project.plant_parent.entity.ErrorCode;
+import com.project.plant_parent.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,13 +16,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-@Slf4j
 @Service
-public class FileService {
+@Slf4j
+@Profile("local")
+public class LocalStorgeService implements StorageService{
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    // 파일 저장 메서드
+    @Override
     public String saveFile(MultipartFile image) throws IOException {
 
         // 파일명 중복 방지를 위한 UUID 생성
@@ -39,19 +44,20 @@ public class FileService {
 
         try {
             image.transferTo(saveFile);
-            log.info(">>> [FileService] 파일 저장 성공: {}", saveFile.getAbsolutePath());
+            log.info(">>> 파일 저장 성공: {}", saveFile.getAbsolutePath());
             return filename;
         } catch (IOException e) {
-            log.info(">>> [FileService] 파일 저장중 오류 발생: {}", e.getMessage());
+            log.info(">>> 파일 저장중 오류 발생: {}", e.getMessage());
             throw e;
         }
-
-
-
-
     }
 
-    // 파일명을 받아 실제 디스크에서 파일 삭제
+    @Override
+    public String getFileUrl(String fileKey) {
+        return "/images/" + fileKey;
+    }
+
+    @Override
     public void deleteFile(String fileName) {
         Path filePath = Paths.get(uploadDir, fileName);
         try{
@@ -61,5 +67,26 @@ public class FileService {
         } catch (IOException e) {
             log.error("파일 삭제 중 오류 발생:{}",fileName, e);
         }
+    }
+
+    @Override
+    public void deleteByUrl(String imageUrl) {
+        if (imageUrl != null && imageUrl.startsWith("/images/")) {
+            String fileName = imageUrl.substring("/images/".length());
+            deleteFile(fileName);
+        }
+    }
+
+    @Override
+    public Resource loadAsResource(String fileName) {
+        Path path = Paths.get(uploadDir, fileName);
+        File file = path.toFile();
+
+        if (!file.exists()) {
+            log.error(">>> 파일명 : {}", fileName);
+            throw new BusinessException(ErrorCode.GLOBAL_FILE_NOT_FOUND);
+        }
+
+        return new FileSystemResource(path.toFile());
     }
 }

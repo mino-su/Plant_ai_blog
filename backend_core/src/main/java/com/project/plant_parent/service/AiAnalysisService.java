@@ -41,8 +41,6 @@ public class AiAnalysisService {
         }
 
 
-
-
         String pLabel;
 
         if (flaskResult.getResults().getPlant_detection() != null &&
@@ -84,6 +82,7 @@ public class AiAnalysisService {
                     .plantNameKr(plantDictionary.getNameKr())
                     .plantDescription(plantDictionary.getDescription())
                     .diseaseConfidence(dConfidence)
+                    .resultImgUrl("/images/" + flaskResult.getPlant_result_image())
                     .diseaseLabel("Healthy")
                     .diseaseNameKr("건강한 식물")
                     .symptoms("식물이 건강합니다.")
@@ -101,6 +100,7 @@ public class AiAnalysisService {
                                     Guide.builder()
                                             .symptoms("정보가 없습니다.")
                                             .solutions("가까운 화원이나 전문가에게 문의하세요.")
+                                            .prevention("예방 정보가 없습니다.")
                                             .dangerLevel(DangerLevel.LOW)
                                             .build()
                             )
@@ -117,6 +117,7 @@ public class AiAnalysisService {
                     .diseaseConfidence(dConfidence)
                     .diseaseLabel(diseaseDictionary.getLabel())
                     .diseaseNameKr(diseaseDictionary.getNameKr())
+                    .resultImgUrl("/images/" + flaskResult.getPlant_result_image())
                     .symptoms(diseaseDictionary.getGuide().getSymptoms())
                     .solutions(diseaseDictionary.getGuide().getSolutions())
                     .prevention(diseaseDictionary.getGuide().getPrevention())

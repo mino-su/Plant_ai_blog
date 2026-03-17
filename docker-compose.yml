@@ -42,13 +42,16 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - uploads-data:/app/uploads
       - ./models:/app/models
     depends_on:
       redis:
         condition: service_healthy
     environment:
       REDIS_HOST: redis
+      STORAGE_MODE: s3
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+
     networks:
       - plant-net
     healthcheck:
@@ -65,8 +68,6 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-    volumes:
-      - uploads-data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -83,6 +84,9 @@ services:
       FLASK_AI_HOST: http://ai-flask:5000
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       SPRING_JWT_SECRET: ${JWT_SECRET}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+
     networks:
       - plant-net
 
@@ -103,7 +107,6 @@ services:
 
 volumes:
   postgres-data:
-  uploads-data:
 
 networks:
   plant-net:

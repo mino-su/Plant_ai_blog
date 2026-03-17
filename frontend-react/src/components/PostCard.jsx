@@ -1,6 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
+dayjs.locale('ko');
 
 const PostCard = ({ post }) => {
     const navigate = useNavigate();
@@ -43,7 +48,7 @@ const PostCard = ({ post }) => {
                 <h4 className="card-title">{post.title}</h4>
                 <p className="card-desc">{getSummary()}</p>
                 <div className="card-footer">
-                    <span>{post.createdAt ? post.createdAt.split(' ')[0] : ''}</span>
+                    <span>{post.createdAt ? dayjs(post.createdAt).format('YYYY년 MM월 DD일') : ''}</span>
                     <span className="separator">·</span>
                     <span>{post.writer || '익명'}</span>
                 </div>

@@ -4,6 +4,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BsSearch, BsBell } from 'react-icons/bs';
 import '../App.css';
 import api from "../api.js";
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
+dayjs.locale('ko');
 
 const Header = () => {
     const navigate = useNavigate();
@@ -185,7 +190,7 @@ const Header = () => {
                                                         <p className={`notif-text ${isRead ? '' : 'unread'}`}>
                                                             {noti.content}
                                                         </p>
-                                                        <span className="notif-date">{noti.createdAt}</span>
+                                                        <span className="notif-date">{dayjs(noti.createdAt).fromNow()}</span>
                                                     </div>
                                                 );
                                             })

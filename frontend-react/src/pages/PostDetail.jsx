@@ -3,12 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import api from '../api'; // 공통 API 모듈
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import Header from "../components/Header";
 import '../App.css';
 import {useAuth} from "../components/AuthContext.jsx";
 import DOMPurify from "dompurify";
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
+dayjs.extend(relativeTime);
+dayjs.locale('ko');
 
 function AnalysisImageBlock({ imageInfo }) {
     const [result, setResult] = useState({
@@ -17,6 +22,7 @@ function AnalysisImageBlock({ imageInfo }) {
         plantDescription: "",
         diseaseNameKr: "",
         diseaseConfidence: 0,
+        resultImgUrl: null,
         symptoms: "",
         solutions: "",
         prevention: "",
@@ -57,6 +63,7 @@ function AnalysisImageBlock({ imageInfo }) {
         }
     }, [imageInfo.id]);
 
+    const [isResultPopupOpen, setIsResultPopupOpen] = useState(false);
 
     const imageUrl = imageInfo.imageUrl.startsWith('http')
         ? imageInfo.imageUrl
@@ -91,6 +98,29 @@ function AnalysisImageBlock({ imageInfo }) {
                         color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold'
                     }}>
                         위험도: {result.dangerLevel}
+                    </div>
+                )}
+
+                {isResultPopupOpen && (
+                    <div className="modal-overlay" onClick={() => setIsResultPopupOpen(false)}>
+                        <div className="modal-content result-img-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>🔬 AI 분석 상세 결과</h3>
+                                <button className="close-button" onClick={() => setIsResultPopupOpen(false)}>&times;</button>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <img
+                                    src={result.resultImgUrl.startsWith('http')
+                                        ? result.resultImgUrl
+                                        : `${BASE_URL}${result.resultImgUrl}`} src={result.resultImgUrl.startsWith('http')
+                                    ? result.resultImgUrl
+                                    : `${BASE_URL}${result.resultImgUrl}`}
+                                    alt="AI 분석 결과"
+                                    style={{ width: '100%', borderRadius: '8px' }}
+                                    crossOrigin="anonymous"
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -141,8 +171,23 @@ function AnalysisImageBlock({ imageInfo }) {
                                 </div>
                             </div>
 
-                            <div style={{ color: '#adb5bd', fontSize: '0.8rem', marginTop: '0.5rem', textAlign: 'right' }}>
-                                AI 분석 신뢰도: {(result.diseaseConfidence * 100).toFixed(1)}%
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <span style={{ color: '#adb5bd', fontSize: '0.8rem' }}>
+                                    AI 분석 신뢰도: {(result.diseaseConfidence * 100).toFixed(1)}%
+                                </span>
+                                {result.resultImgUrl && (
+                                    <button
+                                        onClick={() => setIsResultPopupOpen(true)}
+                                        style={{
+                                            padding: '5px 12px', borderRadius: '8px',
+                                            border: '1px solid #12b886', backgroundColor: 'white',
+                                            color: '#12b886', fontWeight: 'bold',
+                                            cursor: 'pointer', fontSize: '0.8rem'
+                                        }}
+                                    >
+                                        🔬 자세한 결과 보기
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -456,7 +501,7 @@ export default function PostDetail() {
                     {post.writer}
                 </span>
                                 <span style={{ color: '#868e96', fontSize: '0.9rem', marginTop: '2px' }}>
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    {dayjs(post.createdAt).format('YYYY년 MM월 DD일')}
                 </span>
                             </div>
                         </div>
@@ -607,7 +652,7 @@ export default function PostDetail() {
                                                     {comment.writer}
                                                 </span>
                                                 <span className="comment-date" style={{ fontSize: '0.8rem', color: '#adb5bd' }}>
-                                                    {new Date(comment.createdAt).toLocaleDateString()}
+                                                    {dayjs(comment.createdAt).fromNow()}
                                                 </span>
                                             </div>
                                         </div>
@@ -684,7 +729,7 @@ export default function PostDetail() {
                                                                     {child.writer}
                                                                 </span>
                                                                 <span className="comment-date" style={{ fontSize: '0.75rem', color: '#adb5bd' }}>
-                                                                    {new Date(child.createdAt).toLocaleDateString()}
+                                                                    {dayjs(child.createdAt).fromNow()}
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    platform: linux/amd64
+    platform: linux/arm64
     image: postgres:15
     container_name: plant-db-dev
     restart: unless-stopped
@@ -18,7 +18,7 @@ services:
       - plant-net
 
   redis:
-    platform: linux/amd64
+    platform: linux/arm64
     image: redis:alpine
     container_name: plant-redis-dev
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
       - plant-net
 
   ai-flask:
-    platform: linux/amd64
+    platform: linux/arm64
     build:
       context: ./ai-flask
       dockerfile: Dockerfile

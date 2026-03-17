@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.beans.factory.annotation.Value;
 
 @Builder
 @Getter
@@ -24,8 +25,7 @@ public class Profile {
 
     private String bio;
 
-    @Builder.Default
-    private String profileImageUrl = "/images/default_profile.jpg";
+    private String profileImageUrl = null;
 
     private String websiteUrl;
 

@@ -7,10 +7,17 @@ import os
 import filetype
 from PIL import Image
 import io
+import boto3
 
 app = Flask(__name__)
 redis_host = os.environ.get('REDIS_HOST', None)
 storage_uri = f"redis://{redis_host}:6379" if redis_host else "memory://"
+STORAGE_MODE = os.environ.get('STORAGE_MODE', 'local')  # 'local' 또는 's3'
+
+if STORAGE_MODE == 's3':
+    AWS_S3_BUCKET = os.environ.get('AWS_S3_BUCKET')
+    AWS_S3_REGION = os.environ.get('AWS_S3_REGION', 'ap-northeast-2')
+    s3_boto = boto3.client('s3', region_name=AWS_S3_REGION)
 
 #  YOLO 모델 로드,
 plant_model = YOLO('/app/models/plant_best.pt')
@@ -61,7 +68,6 @@ def detect():
         return jsonify({"error": f"지원되지 않는 파일 형식입니다. (감지된 형식: {mime_type})"}), 400
 
 
-
     ext = os.path.splitext(file.filename)[1] # 원래 파일의 확장자만 추출 (.jpg 등)
     unique_filename = str(uuid.uuid4()) + ext # 고유한 이름 + 확장자 결합
     save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
@@ -73,9 +79,18 @@ def detect():
         img_bytes = file.read()
         img = Image.open(io.BytesIO(img_bytes))
 
-        # 실제 분석을 위해 파일로 저장 (Spring Boot와 볼륨 공유 시 필요)
-        with open(save_path, 'wb') as f:
-            f.write(img_bytes)
+        if STORAGE_MODE == 's3':
+            s3_key = f"uploads/{unique_filename}"
+            s3_boto.put_object(
+                Bucket = AWS_S3_BUCKET,
+                Key = s3_key,
+                Body = img_bytes,
+                ContentType =  file.content_type
+            )
+            app.logger.info(f"S3 업로드 성공: {s3_key}")
+        else:
+            with open(save_path, 'wb') as f:
+                f.write(img_bytes)
 
         plant_results = plant_model.predict(source=img, conf=0.2)
         plant_data = []
@@ -88,8 +103,11 @@ def detect():
         # 신뢰도가 가장 높은 결과가 맨위(index 0)에 오도록 정렬
         plant_data = sorted(plant_data, key= lambda x: x['confidence'], reverse= True)
 
+        # Plant 모델이 반환하는 이미지 배열을 PIL 이미지로 변환하여 저장
+        plant_result_img = plant_results[0].plot()
+
         # 3. 두 번째 모델 분석
-        disease_results = disease_model.predict(source=img, conf=0.1)
+        disease_results = disease_model.predict(source= plant_result_img, conf=0.1)
         disease_data = []
         for r in disease_results:
             for box in r.boxes:
@@ -101,9 +119,19 @@ def detect():
         # 신뢰도가 가장 높은 결과가 맨위(index 0)에 오도록 정렬
         disease_data = sorted(disease_data, key= lambda x: x['confidence'], reverse= True)
 
+        disease_result_img= disease_results[0].plot()
+
+
+        plant_result_filename = "combined_" + unique_filename
+        plant_result_save_path = os.path.join(UPLOAD_FOLDER, plant_result_filename)
+        plant_img_pil = Image.fromarray(disease_result_img[..., ::-1])
+        plant_img_pil.save(plant_result_save_path)
+
+
         response_data = {
             "status": "success",
             "filename": unique_filename,
+            "plant_result_image": plant_result_filename,
             "results": {
                 "plant_detection": plant_data,
                 "disease_analysis": disease_data

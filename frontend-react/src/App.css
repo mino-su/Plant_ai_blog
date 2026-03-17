@@ -1029,6 +1029,11 @@ button {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
+.modal-content.result-img-modal {
+    max-width: 700px;
+    width: 95%;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;

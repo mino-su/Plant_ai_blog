@@ -27,7 +27,7 @@ import java.util.Set;
 public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
-    private final FileService fileService;
+    private final StorageService storageService;
     private final AiAnalysisService aiAnalysisService;
     private final PostLikeRepository postLikeRepository;
     private final NotificationService notificationService;
@@ -68,12 +68,12 @@ public class PostService {
             throw new IOException("업로드 할 이미지 파일이 비어있습니다.");
         }
 
-        String filename = fileService.saveFile(image);
+        String filename = storageService.saveFile(image);
 
         // DB에는 이미지 경로와 기본 상태만 저장
 
         PostImage postImage = PostImage.builder()
-                                .imageUrl("/images/" + filename)
+                                .imageUrl(storageService.getFileUrl(filename))
                                 .originalFileName(image.getOriginalFilename())
                                 .plant("분석 대기중...")
                                 .disease("분석 대기중...")
@@ -228,9 +228,7 @@ public class PostService {
 
     // 이미지 삭제
     public void deleteFileByUrl(String imageUrl) {
-        String fileName = imageUrl.replace("/images/", "");
-
-        fileService.deleteFile(fileName);
+        storageService.deleteByUrl(imageUrl);
     }
 
     // 전체 조회 - 페이징 적용

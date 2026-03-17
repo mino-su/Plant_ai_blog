@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -26,9 +27,7 @@ import java.nio.file.Paths;
 @RequiredArgsConstructor
 public class FlaskService {
     private final RestClient restClient;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final StorageService storageService;
 
 
     public FlaskResponseDto analyzeImage(String customFilename){
@@ -37,16 +36,9 @@ public class FlaskService {
         // 바디 설정: 실제 파일 데이터를 담을 바구니
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
-        // 실제 컨데이터 내부 경로에서 파일 찾기
-        Path path = Paths.get(uploadDir, customFilename);
-        File file = path.toFile();
+        Resource resource = storageService.loadAsResource(customFilename);
 
-        if (!file.exists()) {
-            log.error(">>> 파일명 : {}", customFilename);
-            throw new BusinessException(ErrorCode.GLOBAL_FILE_NOT_FOUND);
-        }
-
-        body.add("image", new FileSystemResource(file));
+        body.add("image", resource);
 
 
 

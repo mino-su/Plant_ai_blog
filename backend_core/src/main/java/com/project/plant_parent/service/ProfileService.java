@@ -11,6 +11,7 @@ import com.project.plant_parent.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,8 +24,11 @@ import java.io.IOException;
 @Transactional(readOnly = true)
 public class ProfileService {
     private final ProfileRepository profileRepository;
-    private final FileService fileService;
+    private final StorageService storageService;
     private final MemberRepository memberRepository;
+
+    @Value("${app.default-image-url}")
+    private String defaultProfileImageUrl;
 
 
     public ProfileResponseDto getProfile(Long memberId) {
@@ -48,13 +52,11 @@ public class ProfileService {
 
         // 새로운 이미지가 업로드 된 경우
         if (image != null && !image.isEmpty()) {
-            if (profileImageUrl != null && profileImageUrl.startsWith("/images/")) {
-                String oldFileName = profileImageUrl.replace("/images/", "");
-                fileService.deleteFile(oldFileName);
-                // 기존 파일 삭제
+            if (profileImageUrl != null && !profileImageUrl.equals(defaultProfileImageUrl) ) {
+                storageService.deleteByUrl(profileImageUrl);
             }
-            String newFileName = fileService.saveFile(image);
-            profileImageUrl = "/images/" + newFileName;
+            String newFileName = storageService.saveFile(image);
+            profileImageUrl = storageService.getFileUrl(newFileName);
         }
 
         Member member = getMemberByMemberId(memberId);
