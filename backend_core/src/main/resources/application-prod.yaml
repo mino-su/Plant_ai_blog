@@ -32,5 +32,5 @@ logging:
     org.hibernate.type.descriptor.sql: ERROR
 aws:
   s3:
-    bucket-name: ${AWS_S3_BUCKET_NAME}
+    bucket-name: ${AWS_S3_BUCKET_NAME:plant-parent-image-bucket}
     region: ${AWS_S3_REGION:ap-northeast-2}
