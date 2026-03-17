@@ -20,7 +20,7 @@ spring:
 
 
 app:
-  default-image-url: https://${AWS_S3_BUCKET_NAME}.s3.${AWS_S3_REGION:ap-northeast-2}.amazonaws.com/uploads/default_profile.jpg
+  default-image-url: https://${AWS_S3_BUCKET_NAME:plant-parent-image-bucket}.s3.${AWS_S3_REGION:ap-northeast-2}.amazonaws.com/uploads/default_profile.jpg
 
 logging:
   level:

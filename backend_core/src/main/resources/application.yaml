@@ -51,7 +51,7 @@ file:
   upload-dir: ./uploads/
 
 app:
-  default-image-url: /images/default_profile.jpg
+  default-image-url: "/images/default_profile.jpg"
 
 cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
