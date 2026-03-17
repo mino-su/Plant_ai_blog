@@ -61,7 +61,7 @@ public class S3StorageService implements StorageService{
 
     @Override
     public String getFileUrl(String fileName) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, S3_PREFIX + fileName);
     }
 
     @Override
