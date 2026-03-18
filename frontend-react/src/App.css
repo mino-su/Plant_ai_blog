@@ -1124,3 +1124,131 @@ button {
     justify-content: center;
     font-size: 2rem;
 }
+
+/* ============================================
+   20 .샘플 로그인 팝업 — 우측 하단 고정 플로팅
+   ============================================ */
+.sample-login-popup {
+    position: fixed;
+    top: 4rem;
+    right: 1.5rem;
+    z-index: 500;
+
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow), 0 8px 24px rgba(0, 0, 0, 0.08);
+
+    padding: 1rem 1.1rem;
+    width: 280px;
+    max-width: calc(100vw - 2rem);
+
+    animation: samplePopupIn 0.3s ease;
+}
+
+@keyframes samplePopupIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 헤더 영역 */
+.sample-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+}
+
+.sample-popup-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brand);
+}
+
+.sample-popup-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--text-muted);
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.sample-popup-close:hover {
+    color: var(--text-main);
+}
+
+/* 설명 */
+.sample-popup-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0 0 0.75rem 0;
+}
+
+/* 정보 행 */
+.sample-popup-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.sample-popup-label {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    width: 52px;
+    flex-shrink: 0;
+}
+
+.sample-popup-value {
+    flex: 1;
+    font-size: 0.78rem;
+    background: var(--bg-page);
+    color: var(--text-main);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 복사 버튼 */
+.sample-popup-copy-btn {
+    flex-shrink: 0;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    min-width: 36px;
+}
+
+.sample-popup-copy-btn:hover {
+    background: var(--brand-dark);
+}
+
+.sample-popup-copy-btn.copied {
+    background: #40c057;
+    transform: scale(1.05);
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+    .sample-login-popup {
+        bottom: 1rem;
+        right: 1rem;
+        width: calc(100vw - 2rem);
+    }
+}

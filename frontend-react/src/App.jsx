@@ -14,6 +14,7 @@ import Search from './pages/Search';
 import FollowListPage from "./pages/FollowListPage.jsx";
 import PlantEncyclopedia from './pages/PlantEncyclopedia';
 import PlantDetail from './pages/PlantDetail';
+import SampleLoginPopup from './components/SampleLoginPopup';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -85,6 +86,7 @@ function App() {
                 {/* Router 안쪽에 배치하여 추후 알림 클릭 시 페이지 이동(navigate)이 가능하도록 설계 */}
                 <ToastContainer />
                 <NotificationManager />
+                <SampleLoginPopup />
 
                 <Routes>
                     <Route path="/login" element={<Login />} />
