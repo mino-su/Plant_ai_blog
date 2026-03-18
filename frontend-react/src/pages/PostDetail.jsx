@@ -111,8 +111,6 @@ function AnalysisImageBlock({ imageInfo }) {
                             <div style={{ textAlign: 'center' }}>
                                 <img
                                     src={result.resultImgUrl.startsWith('http')
-                                        ? result.resultImgUrl
-                                        : `${BASE_URL}${result.resultImgUrl}`} src={result.resultImgUrl.startsWith('http')
                                     ? result.resultImgUrl
                                     : `${BASE_URL}${result.resultImgUrl}`}
                                     alt="AI 분석 결과"
