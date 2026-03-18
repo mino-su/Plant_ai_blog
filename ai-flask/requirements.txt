@@ -18,4 +18,3 @@ flask-limiter
 pillow
 filetype
 boto3
-logging
