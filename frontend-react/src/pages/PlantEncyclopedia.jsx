@@ -139,9 +139,11 @@ function PlantEncyclopedia() {
             <Header />
             <main className="container">
 
-                <div >
-                    <h2 style={{ marginTop: '2rem' }}>🌿 식물 도감</h2>
-                </div>
+                <h2 style={{ marginTop: '2rem' }}>
+                    <Link to="/plants" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        🌿 식물 도감
+                    </Link>
+                </h2>
 
 
                 {/* 검색창 */}
@@ -241,17 +243,17 @@ function PlantEncyclopedia() {
                             onClick={() => navigate(`/plants/${plant.cntntsNo}`, { state: { plant } })}
                             style={{ cursor: 'pointer' }}
                         >
-                            {getFirstThumb(plant.rtnThumbFileUrl) ? (
-                                <img
-                                    src={getFirstThumb(plant.rtnThumbFileUrl)}
-                                    alt={plant.cntntsSj}
-                                    style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
-                                />
-                            ) : (
-                                <div style={{ width: '100%', height: '180px', background: '#e8f5e9', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    🌱
-                                </div>
-                            )}
+                             <div className="plant-thumb-wrapper">
+                                 {getFirstThumb(plant.rtnThumbFileUrl) ? (
+                                     <img
+                                         src={getFirstThumb(plant.rtnThumbFileUrl)}
+                                         alt={plant.cntntsSj}
+                                         className="plant-thumb-img"
+                                     />
+                                 ) : (
+                                     <div className="plant-thumb-placeholder">🌱</div>
+                               )}
+                            </div>
                             <div style={{ padding: '12px' }}>
                                 <strong>{plant.cntntsSj}</strong>
                             </div>

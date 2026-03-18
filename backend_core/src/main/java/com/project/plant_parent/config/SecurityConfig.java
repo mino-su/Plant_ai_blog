@@ -67,7 +67,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/posts/images/*/analyze").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/members/me", "/api/members/*/profile").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/posts/category/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/publicData").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/publicData/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 // UsenamePasswordAuthenticationFilter 전에 JWT 인증 필터 적용
