@@ -41,6 +41,7 @@ services:
       - ./models:/app/models
     environment:
       REDIS_HOST: redis
+      STAGE_MODE: local
     networks:
       - plant-net
 

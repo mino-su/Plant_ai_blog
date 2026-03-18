@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from ultralytics import YOLO
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import logging
 import uuid
 import os
 import filetype
@@ -10,9 +11,10 @@ import io
 import boto3
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 redis_host = os.environ.get('REDIS_HOST', None)
 storage_uri = f"redis://{redis_host}:6379" if redis_host else "memory://"
-STORAGE_MODE = os.environ.get('STORAGE_MODE', 'local')  # 'local' 또는 's3'
+STORAGE_MODE = os.environ.get('STORAGE_MODE')  # 'local' 또는 's3'
 
 if STORAGE_MODE == 's3':
     AWS_S3_BUCKET = os.environ.get('AWS_S3_BUCKET_NAME')
