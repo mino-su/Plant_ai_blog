@@ -1,6 +1,7 @@
 package com.project.plant_parent.controller;
 
 import com.project.plant_parent.entity.dto.PlantApiResponseDto;
+import com.project.plant_parent.entity.dto.PlantDetailResponseDto;
 import com.project.plant_parent.service.PublicDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +34,11 @@ public class PublicDataController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{cntntsSj}")
-    public ResponseEntity<> getPlantDetailData() {
-
+    @GetMapping("/{cntntsNo}")
+    public ResponseEntity<PlantDetailResponseDto> getPlantDetailData(
+            @PathVariable int cntntsNo) {
+        PlantDetailResponseDto response = publicDataService.getPlantDetail(cntntsNo);
+        return ResponseEntity.ok(response);
     }
 
 }

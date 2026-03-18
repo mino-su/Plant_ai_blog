@@ -2,6 +2,7 @@ package com.project.plant_parent.service;
 
 import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.PlantApiResponseDto;
+import com.project.plant_parent.entity.dto.PlantDetailResponseDto;
 import com.project.plant_parent.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,5 +56,29 @@ public class PublicDataService {
             log.error("공공데이터 서버와 연결 불가", e);
             throw new BusinessException(ErrorCode.PUBLIC_DATA_CONNECT_ERROR);
         }
+    }
+
+    public PlantDetailResponseDto getPlantDetail(
+            int cntntsNo
+    ){
+        String uriPath = UriComponentsBuilder.fromPath("/gardenDtl")
+                .queryParam("apiKey", apiKey)
+                .queryParam("cntntsNo", cntntsNo).build().toUriString();
+
+        try{
+            return publicDataClient.get()
+                    .uri(uriPath)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, ((request, response) -> {
+                        throw new BusinessException(ErrorCode.GLOBAL_INVALID_INPUT);
+                    }))
+                    .body(PlantDetailResponseDto.class);
+
+        } catch (Exception e) {
+            log.error("공공데이터 서버와 연결 불가", e);
+            throw new BusinessException(ErrorCode.PUBLIC_DATA_CONNECT_ERROR);
+        }
+
+
     }
 }
