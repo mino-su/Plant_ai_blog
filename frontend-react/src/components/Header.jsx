@@ -142,7 +142,7 @@ const Header = () => {
             <div className="container">
 
 
-                <Link to="/" className="header-logo">Alleaf 🪴</Link>
+                <Link to="/" className="header-logo">TreeWithMe 🪴</Link>
 
 
                 <nav className="category-nav">
