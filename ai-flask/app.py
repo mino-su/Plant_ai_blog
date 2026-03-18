@@ -34,6 +34,7 @@ limiter = Limiter(
 
 # 이미지 저장 경로 설정
 UPLOAD_FOLDER = '/app/uploads'
+
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
