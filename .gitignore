@@ -1390,3 +1390,4 @@ ai-flask/.env
 /postgres_data/base/16384/24657
 /postgres_data/base/16384/24659
 /postgres_data/pg_stat/pgstat.stat
+/postgres_data/pg_wal/000000010000000000000002

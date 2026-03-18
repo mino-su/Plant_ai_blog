@@ -14,7 +14,7 @@ import Search from './pages/Search';
 import FollowListPage from "./pages/FollowListPage.jsx";
 import PlantEncyclopedia from './pages/PlantEncyclopedia';
 import PlantDetail from './pages/PlantDetail';
-import SampleLoginPopup from './components/SampleLoginPopup';
+import SampleLoginPopup from "./components/SampleLoginPopUp.jsx";
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 

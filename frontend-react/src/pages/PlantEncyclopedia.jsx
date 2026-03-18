@@ -77,7 +77,6 @@ function PlantEncyclopedia() {
 
             const res = await api.get(`/api/publicData?${params.toString()}`);
 
-            // ✅ 수정: bodyDto.items 까지 내려가야 itemDtoList와 totalCount에 접근 가능
             const items = res.data.bodyDto.items;
             setPlants(items.itemDtoList || []);
             setTotalCount(items.totalCount || 0);
