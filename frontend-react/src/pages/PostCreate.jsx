@@ -58,7 +58,7 @@ function PostCreate() {
                                     return {
                                         success: 1,
                                         file: {
-                                            url:`${BASE_URL}${data.imageUrl}`,
+                                            url : data.imageUrl.startsWith('http')? `${data.imageUrl}` : `${BASE_URL}${data.imageUrl}`,
                                             imageId: data.id // 이미지 블록 데이터에 ID 포함
                                         }
                                     };

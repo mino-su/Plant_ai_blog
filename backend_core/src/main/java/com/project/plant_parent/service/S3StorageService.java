@@ -33,7 +33,7 @@ public class S3StorageService implements StorageService{
     @Value("${aws.s3.bucket-name:plant-parent-image-bucket}")
     private String bucketName;
 
-    @Value("${aws.s3.regin:ap-northeast-2}")
+    @Value("${aws.s3.region:ap-northeast-2}")
     private String region;
 
     private static final String S3_PREFIX = "uploads/";
@@ -61,7 +61,7 @@ public class S3StorageService implements StorageService{
 
     @Override
     public String getFileUrl(String fileName) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, S3_PREFIX + fileName);
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
     }
 
     @Override

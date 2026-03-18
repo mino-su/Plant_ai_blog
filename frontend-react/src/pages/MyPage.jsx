@@ -184,7 +184,9 @@ export default function MyPage() {
                     }}>
                         {profile.profileImageUrl ? (
                             <img
-                                src={`${BASE_URL}${profile.profileImageUrl}`}
+                                src={profile.profileImageUrl.startsWith('http')
+                                    ? profile.profileImageUrl
+                                    : `${BASE_URL}${profile.profileImageUrl}`}
                                 alt="profile"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 crossOrigin="anonymous"
@@ -215,7 +217,7 @@ export default function MyPage() {
                                 {profile.bio || "반려 식물과 함께하는 일상을 소개해 보세요!"}
                             </p>
                             {profile.websiteUrl && (
-                                <a href={profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `${BASE_URL}${profile.websiteUrl}`}
+                                <a href={profile.websiteUrl.startsWith('http') ? profile.websiteUrl : `https://${profile.websiteUrl}`}
                                    target="_blank" rel="noopener noreferrer"
                                    style={{ color: '#12b886', textDecoration: 'none', fontSize: '0.9rem' }}>
                                     🔗 {profile.websiteUrl}

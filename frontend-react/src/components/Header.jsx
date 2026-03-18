@@ -206,7 +206,9 @@ const Header = () => {
                             <button className="profile-button" onClick={toggleMenu}>
                                 <div className="profile-avatar">
                                     {profile?.profileImageUrl ? (
-                                        <img src={`${BASE_URL}${profile.profileImageUrl}`} alt="profile" />
+                                        <img src={profile.profileImageUrl.startsWith('http')
+                                            ? profile.profileImageUrl
+                                            : `${BASE_URL}${profile.profileImageUrl}`} alt="profile" />
                                     ) : "👤"}
                                 </div>
                             </button>
