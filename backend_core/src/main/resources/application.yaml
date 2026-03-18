@@ -56,3 +56,7 @@ app:
 cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
+nongsaro:
+  api: https://api.nongsaro.go.kr/service/garden
+  key: ${NONGSARO_API_KEY}
+

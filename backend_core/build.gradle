@@ -62,6 +62,12 @@ dependencies {
     implementation 'software.amazon.awssdk:s3:2.31.14'
     implementation 'software.amazon.awssdk:sts:2.31.14'
 
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+
+
     // 테스트 코드에서 롬복 사용
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'

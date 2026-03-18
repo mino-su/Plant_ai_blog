@@ -5,28 +5,19 @@ import com.project.plant_parent.entity.ErrorCode;
 import com.project.plant_parent.entity.dto.FlaskResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FlaskService {
-    private final RestClient restClient;
+    private final RestClient flaskClient;
     private final StorageService storageService;
 
 
@@ -44,7 +35,7 @@ public class FlaskService {
 
         try {
             log.info(">>> Flask 서버로 분석 요청중 : {}", customFilename);
-            return restClient.post()
+            return flaskClient.post()
                     .uri("/detect")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(body)
