@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import api from '../api';
 import Header from '../components/Header.jsx';
 import '../App.css';
@@ -67,8 +67,8 @@ function PlantEncyclopedia() {
                 params.set('sText', sTextParam);
             }
             const wordParam = searchParams.get('word');
-            if(word){
-                params.set('wordType', 'sCntntsSj');
+            if(wordParam){
+                params.set('wordType', 'cntntsSj');
                 params.set('word', wordParam);
             }
             if (lightChecked.length > 0) params.set('lightChkVal', lightChecked.join(','));
@@ -93,7 +93,11 @@ function PlantEncyclopedia() {
     const handleSearch = (e) => {
         e.preventDefault();
         setPageNo(1);
+        setWord('');
+
         const newParams = new URLSearchParams(searchParams);
+        newParams.delete('word');
+
         if (sText.trim()) {
             newParams.set('sText', sText.trim());
         } else {
@@ -105,8 +109,11 @@ function PlantEncyclopedia() {
     // 초성 검색
     const handleConsonant = (consonant) => {
         setWord(consonant);
+        setSText('');
         setPageNo(1);
+
         const newParams = new URLSearchParams(searchParams);
+        newParams.delete('sText');
         newParams.set('word', consonant);
         setSearchParams(newParams);
     };
@@ -131,7 +138,11 @@ function PlantEncyclopedia() {
         <>
             <Header />
             <main className="container">
-                <h2 style={{ marginTop: '2rem' }}>🌿 식물 도감</h2>
+
+                <div >
+                    <h2 style={{ marginTop: '2rem' }}>🌿 식물 도감</h2>
+                </div>
+
 
                 {/* 검색창 */}
                 <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', margin: '1rem 0' }}>
@@ -157,7 +168,15 @@ function PlantEncyclopedia() {
                     ))}
                     <button
                         className="sort-btn"
-                        onClick={() => { setSText(''); setSearchParams({}); setPageNo(1); }}
+                        onClick={() => {
+                            setSText('');
+                            setWord('');
+                            setLightChecked([]);
+                            setGrowthChecked([]);
+                            setSeasonChecked([]);
+                            setPageNo(1);
+                            setSearchParams({});
+                        }}
                     >전체</button>
                 </div>
 

@@ -40,7 +40,7 @@ public class PublicDataService {
         if(grwhstleChkVal != null && !grwhstleChkVal.isBlank()) builder.queryParam("grwhstleChkVal", grwhstleChkVal);
         if(ignSeasonChkVal != null && !ignSeasonChkVal.isBlank()) builder.queryParam("ignSeasonChkVal", ignSeasonChkVal);
 
-        String uriPath = builder.toUriString();
+        String uriPath = builder.build().toUriString();
 
         try {
             return publicDataClient.get()

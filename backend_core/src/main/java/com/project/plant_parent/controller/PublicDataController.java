@@ -21,16 +21,21 @@ public class PublicDataController {
             @RequestParam(required = false) String wordType,
             @RequestParam(required = false) String word,
             @RequestParam(required = false) String lightChkVal,
-            @RequestParam(required = false) String grwhstlechkVal,
+            @RequestParam(required = false) String grwhstleChkVal,
             @RequestParam(required = false) String lefcolrChkVal,
             @RequestParam(required = false) String ignSeasonChkVal
 
     ) {
         PlantApiResponseDto response = publicDataService.fetchPlantData(
-                pageNo, numOfRows, sType, sText, wordType, word, lightChkVal, grwhstlechkVal,
+                pageNo, numOfRows, sType, sText, wordType, word, lightChkVal, grwhstleChkVal,
                 lefcolrChkVal, ignSeasonChkVal
         );
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{cntntsSj}")
+    public ResponseEntity<> getPlantDetailData() {
+
     }
 
 }
