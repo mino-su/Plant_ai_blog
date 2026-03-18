@@ -5,7 +5,8 @@ import com.project.plant_parent.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.*;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @Profile("local")
-public class LocalStorgeService implements StorageService{
+public class LocalStorageService implements StorageService{
     @Value("${file.upload-dir}")
     private String uploadDir;
 
