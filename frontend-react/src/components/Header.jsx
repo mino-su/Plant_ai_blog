@@ -21,9 +21,9 @@ const Header = () => {
     const activeCategory = searchParams.get('category') || '';
 
     const CATEGORIES = [
-        { value: 'COMMUNITY',   label: '커뮤니티' },
-        { value: 'QUESTION',    label: 'Q&A' },
-        { value: 'INFORMATION', label: '정보공유' },
+        { value: 'COMMUNITY',   label: '커뮤니티',  path: '/?category=COMMUNITY' },
+        { value: 'QUESTION',    label: 'Q&A',       path: '/?category=QUESTION' },
+        { value: 'INFORMATION', label: '식물 도감', path: '/plants' },
     ];
 
     // 알림 관련 상태
@@ -147,10 +147,10 @@ const Header = () => {
 
                 <nav className="category-nav">
                     <div className="container">
-                        {CATEGORIES.map(({ value, label }) => (
+                        {CATEGORIES.map(({ value, label, path }) => (
                             <Link
                                 key={value}
-                                to={value ? `/?category=${value}` : '/'}
+                                to={path}
                                 className={`cat-btn ${activeCategory === value ? 'active' : ''}`}
                             >{label}</Link>
                         ))}

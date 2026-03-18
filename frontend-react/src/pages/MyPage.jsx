@@ -184,7 +184,7 @@ export default function MyPage() {
                     }}>
                         {profile.profileImageUrl ? (
                             <img
-                                src={profile.profileImageUrl.startsWith('http') ? profile.profileImageUrl : `${BASE_URL}${profile.profileImageUrl}`}
+                                src={`${BASE_URL}${profile.profileImageUrl}`}
                                 alt="profile"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 crossOrigin="anonymous"

@@ -12,6 +12,8 @@ import MyPage from "./pages/MyPage";
 import Setting from "./pages/settings";
 import Search from './pages/Search';
 import FollowListPage from "./pages/FollowListPage.jsx";
+import PlantEncyclopedia from './pages/PlantEncyclopedia';
+import PlantDetail from './pages/PlantDetail';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -96,6 +98,8 @@ function App() {
                     <Route path="/search" element={<Search />} />
                     <Route path="*" element={<Navigate to="/" />} />
                     <Route path="/members/:memberId/:type" element={<PrivateRoute><FollowListPage /></PrivateRoute>} />
+                    <Route path="/plants" element={<PlantEncyclopedia />} />
+                    <Route path="/plants/:cntntsNo" element={<PlantDetail />} />
                 </Routes>
             </Router>
         </AuthProvider>
