@@ -128,6 +128,17 @@ def detect():
         plant_img_pil = Image.fromarray(disease_result_img[..., ::-1])
         plant_img_pil.save(plant_result_save_path)
 
+        if STORAGE_MODE == 's3':
+            result_s3_key = f"uploads/{plant_result_filename}"
+            with open(plant_result_save_path, 'rb') as result_f:
+                s3_boto.put_object(
+                    Bucket=AWS_S3_BUCKET,
+                    Key=result_s3_key,
+                    Body=result_f.read(),
+                    ContentType='image/jpeg'
+                )
+            app.logger.info(f"결과 이미지 S3 업로드 성공: {result_s3_key}")
+
 
         response_data = {
             "status": "success",
