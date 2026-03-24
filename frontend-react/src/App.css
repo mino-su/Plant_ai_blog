@@ -724,6 +724,7 @@ button {
 .post-content p { margin-bottom: 1rem; }
 .image-tool__caption { display: none !important; }
 
+
 .analysis-box {
     background: var(--bg-element);
     border: 1px solid var(--border-color);
@@ -1251,4 +1252,157 @@ button {
         right: 1rem;
         width: calc(100vw - 2rem);
     }
+}
+
+/* =============================================
+   [최종 정답] Editor.js 툴바 및 레이아웃 완벽 교정
+============================================= */
+
+/* 1. 에디터 묶음(Redactor) 자체를 오른쪽으로 밀어 왼쪽 60px의 고속도로를 뚫습니다. */
+/* 작동 원리: 개별 블록의 마진을 건드리지 않으므로 JS의 높이/너비 계산이 절대 고장나지 않습니다. */
+#editorjs .codex-editor__redactor {
+    padding-left: 60px !important;
+    padding-right: 0 !important;
+}
+
+/* 2. 에디터 본문과 툴바 컨테이너를 화면 100%로 쫙 폅니다. */
+#editorjs .ce-block__content,
+#editorjs .ce-toolbar__content {
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* 3. 1개뿐인 툴바를 왼쪽 60px 고속도로(left: 0)에 주차시키고 항상 보이게 만듭니다. */
+/* 작동 원리: 이제 사진이나 글을 '클릭'하여 JS가 툴바를 해당 높이로 이동시키기만 하면,
+   무조건 우리 눈에 100% 보이게 됩니다. */
+#editorjs .ce-toolbar__actions {
+    right: auto !important;
+    left: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+}
+
+/* 4. 사진 블럭 포커스 먹통 해결 (캡션 숨김 방식 변경) */
+/* 작동 원리: display: none으로 아예 지워버리면 포커스를 잃어버리므로,
+   눈에만 안 보이도록 크기를 0으로 압축하고 투명하게 숨깁니다. */
+#editorjs .image-tool__caption {
+    opacity: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+    pointer-events: none !important; /* 마우스가 캡션을 찌르지 못하게 차단 */
+}
+
+/* 사진 자체를 클릭했을 때 포커스 이벤트가 발생하도록 마우스 커서 및 클릭 신호 복구 */
+#editorjs .image-tool__image {
+    cursor: pointer !important;
+}
+
+/* 다수의 사진이 겹쳤을 때 클릭 신호가 꼬이는 것을 방지하기 위해 블럭별로 층을 분리합니다. */
+#editorjs .ce-block {
+    position: relative !important;
+    clear: both !important;
+}
+
+/* 5. 툴바 버튼 디자인 및 다크모드 대응 */
+#editorjs .ce-toolbar__plus,
+#editorjs .ce-toolbar__settings-btn {
+    color: #868e96;
+    background: transparent;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+#editorjs .ce-toolbar__plus:hover,
+#editorjs .ce-toolbar__settings-btn:hover {
+    color: var(--brand, #12b886);
+    background: #e6fcf5;
+}
+
+[data-theme='dark'] #editorjs .ce-toolbar__plus:hover,
+[data-theme='dark'] #editorjs .ce-toolbar__settings-btn:hover {
+    color: var(--brand, #12b886);
+    background: rgba(18, 184, 134, 0.15);
+}
+
+/* 6. 모바일 대응 (화면이 좁아지면 왼쪽 60px 도로를 다시 없앰) */
+@media (max-width: 650px) {
+    #editorjs .codex-editor__redactor {
+        padding-left: 0 !important;
+    }
+    #editorjs .ce-toolbar__actions {
+        /* 모바일에서는 원래 Editor.js 팝업 스타일을 따르도록 초기화 */
+        opacity: inherit !important;
+        visibility: inherit !important;
+    }
+}
+
+/* =============================================
+   [추가] 툴바 호버 이탈 방지 및 딜레이 설정
+============================================= */
+
+/* 1. 툴바가 사라질 때 0.5초의 유예 시간을 주어 마우스가 이동할 시간을 벌어줍니다. */
+#editorjs .ce-toolbar {
+    transition: opacity 0.5s ease, visibility 0.5s ease !important;
+}
+
+/* 2. 툴바 주변에 투명한 보호막(다리)을 넓게 펼쳐 마우스 이탈을 원천 차단합니다. */
+/* 작동 원리: 눈에 보이지 않는 투명한 영역이 툴바 우측(본문 쪽)으로 길게 뻗어 나와
+   마우스가 이동하는 경로를 안전하게 커버해 줍니다. */
+#editorjs .ce-toolbar__actions::before {
+    content: '';
+    position: absolute;
+    /* 상하좌우로 투명한 클릭/호버 영역을 확장합니다 */
+    top: -30px;
+    bottom: -30px;
+    left: -30px;
+    right: -60px; /* 본문 쪽으로 길게 뻗어 마우스가 건너올 다리를 만듭니다 */
+    z-index: -1;
+}
+/* =============================================
+   [완성] 사진 블럭 전용 툴바 인식 강화
+============================================= */
+
+/* 1. 사진 블럭 자체에 마우스 감지 영역 확장 */
+/* 작동 원리: 사진 블럭(.ce-block)에 충분한 왼쪽 패딩을 주어,
+   마우스가 사진에서 툴바로 이동할 때 '공백'을 지나지 않게 만듭니다. */
+#editorjs .ce-block--image {
+    position: relative !important;
+    padding-left: 60px !important;
+    margin-left: -60px !important; /* 시각적 위치는 고정 */
+    z-index: 1;
+}
+
+/* 2. 사진 태그의 이벤트 간섭 제거 */
+/* 작동 원리: 사진 자체가 마우스 클릭/호버 신호를 꿀꺽 삼키지 않고
+   부모인 에디터 엔진으로 투명하게 통과(Pass-through)시키도록 설정합니다. */
+#editorjs .image-tool__image-picture {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+/* 3. 유령 캡션 영역의 완전한 물리적 제거 */
+/* 작동 원리: display: none은 좌표 계산을 망가뜨리므로,
+   높이를 0으로 만들고 마우스 인식을 아예 꺼버려서 아래 블록을 침범하지 못하게 합니다. */
+#editorjs .image-tool__caption {
+    display: block !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+}
+
+/* 4. 사진 블록간의 층수(Z-index) 정리 */
+/* 작동 원리: 여러 장의 사진이 있을 때 뒷 사진이 앞 사진의 툴바를 덮지 못하게 격리합니다. */
+#editorjs .ce-block {
+    overflow: visible !important;
+}
+
+#editorjs .image-tool {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 사진을 왼쪽 정렬하여 툴바와 가깝게 배치 */
 }

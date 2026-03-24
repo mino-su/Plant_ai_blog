@@ -15,17 +15,18 @@ function PostCreate() {
     const [title, setTitle] = useState('');
     const [imageIds, setImageIds] = useState([]); // 업로드된 사진들의 ID를 추적
     const [category, setCategory] = useState('COMMUNITY'); // 게시글 카테고리 (기본값은 COMMUNITY)
+    const isInitialized = useRef(false);
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
     useEffect(() => {
-        // [중요] 리액트의 StrictMode 때문에 에디터가 두 번 생기는 것을 방지하기 위해 초기화 체크
-        if (!editorInstance.current) {
-            initEditor();
-        }
+        if (isInitialized.current) return;
+        isInitialized.current = true;
+        initEditor();
+
         return () => {
             if (editorInstance.current && editorInstance.current.destroy) {
-                editorInstance.current.destroy();
+                editorInstance.current.destroy().catch(() => {});
                 editorInstance.current = null;
             }
         };
@@ -33,7 +34,9 @@ function PostCreate() {
 
     const initEditor = () => {
         const editor = new EditorJS({
-            holder: 'editorjs', // 이 ID를 가진 div에 에디터가 생깁니다.
+            holder: 'editorjs',
+            autofocus: false,
+            logLevel: 'ERROR',
             placeholder: '당신의 식물 이야기를 블록 단위로 적어보세요...',
             tools: {
                 header: Header,
@@ -118,7 +121,6 @@ function PostCreate() {
                     {[
                         { value: 'COMMUNITY', label: '커뮤니티' },
                         { value: 'QUESTION',  label: 'Q&A' },
-                        { value: 'INFORMATION', label: '정보공유' },
                     ].map(({ value, label }) => (
                         <button
                             key={value}

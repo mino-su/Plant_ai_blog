@@ -9,7 +9,6 @@ import CustomHeader from "../components/Header";
 import '../App.css';
 
 function PostEdit() {
-    // [중요] App.jsx의 :postId와 이름을 반드시 맞춰야 합니다.
     const { postId } = useParams();
     const navigate = useNavigate();
     const editorInstance = useRef(null);
@@ -23,71 +22,89 @@ function PostEdit() {
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
+    // 1. 게시글 데이터 fetch
     useEffect(() => {
         const fetchPostData = async () => {
             try {
                 const res = await api.get(`/api/posts/${postId}`);
                 setTitle(res.data.title);
-                setCategory(res.data.category)
-                // 본문 파싱 로직
+                setCategory(res.data.category);
                 let parsedData;
                 try {
                     parsedData = JSON.parse(res.data.content);
                 } catch (e) {
-                    parsedData = {
-                        blocks: [{ type: 'paragraph', data: { text: res.data.content } }]
-                    };
+                    parsedData = { blocks: [{ type: 'paragraph', data: { text: res.data.content } }] };
                 }
-
-                setInitialEditorData(parsedData); // 데이터를 먼저 상태에 저장
-                setIsLoading(false); // 로딩 끝! (이제 화면에 <div id="editorjs">가 그려짐)
+                setInitialEditorData(parsedData);
+                setIsLoading(false);
             } catch (err) {
                 alert("게시글 정보를 불러올 수 없습니다.");
                 navigate(-1);
             }
         };
-
         if (postId) fetchPostData();
     }, [postId]);
 
-    // 2. [useEffect] 로딩이 끝나고 데이터가 준비되면 에디터를 초기화합니다.
+    // 2. 데이터 준비 후 EditorJS 초기화 (StrictMode 이중 실행 대응)
     useEffect(() => {
-        // 로딩 중이거나, 데이터가 없거나, 이미 에디터가 있으면 실행 안 함
-        if (isLoading || !initialEditorData || editorInstance.current) return;
+        if (isLoading || !initialEditorData) return;
 
-        const editor = new EditorJS({
-            holder: 'editorjs',
-            data: initialEditorData, // 불러온 데이터 주입
-            tools: {
-                header: HeaderTool,
-                list: List,
-                image: {
-                    class: ImageTool,
-                    config: {
-                        uploader: {
-                            uploadByFile: async (file) => {
-                                const data = await uploadImage(file);
-                                setNewImageIds(prev => [...prev, data.id]);
-                                return {
-                                    success: 1,
-                                    file: {
-                                        url: `${BASE_URL}${data.imageUrl}`,
-                                        imageId: data.id
-                                    }
-                                };
+        let isCleanedUp = false;
+        let currentEditor = null;
+
+        const initEditor = async () => {
+            // setTimeout(0): StrictMode의 동기 cleanup이 먼저 실행되도록 한 틱 미룸
+            await new Promise(resolve => setTimeout(resolve, 0));
+            if (isCleanedUp) return;
+
+            const editor = new EditorJS({
+                holder: 'editorjs',
+                data: initialEditorData,
+                autofocus: true,
+                tools: {
+                    header: HeaderTool,
+                    list: List,
+                    image: {
+                        class: ImageTool,
+                        config: {
+                            uploader: {
+                                uploadByFile: async (file) => {
+                                    const data = await uploadImage(file);
+                                    setNewImageIds(prev => [...prev, data.id]);
+                                    return {
+                                        success: 1,
+                                        file: {
+                                            url: `${BASE_URL}${data.imageUrl}`,
+                                            imageId: data.id
+                                        }
+                                    };
+                                }
                             }
                         }
                     }
                 }
+            });
+
+            try {
+                await editor.isReady;
+                if (!isCleanedUp) {
+                    currentEditor = editor;
+                    editorInstance.current = editor;
+                } else {
+                    editor.destroy();
+                }
+            } catch (e) {
+                console.error('EditorJS 초기화 실패:', e);
             }
-        });
+        };
 
-        editorInstance.current = editor;
+        initEditor();
 
-        // Cleanup: 페이지 나갈 때 해제
         return () => {
-            if (editorInstance.current && editorInstance.current.destroy) {
-                editorInstance.current.destroy();
+            isCleanedUp = true;
+            if (currentEditor) {
+                currentEditor.destroy();
+                currentEditor = null;
                 editorInstance.current = null;
             }
         };
@@ -95,16 +112,15 @@ function PostEdit() {
 
     const handleUpdate = async () => {
         try {
-            // 에디터에 작성된 최종 내용을 가져와 JSON 문자열로 변환합니다.
+            await editorInstance.current.isReady;
             const outputData = await editorInstance.current.save();
             const payload = {
-                title: title,
+                title,
                 content: JSON.stringify(outputData),
-                newImageIds: newImageIds,
-                deleteImageIds: deleteImageIds,
-                category: category,
+                newImageIds,
+                deleteImageIds,
+                category,
             };
-
             await api.put(`/api/posts/${postId}`, payload);
             alert("수정이 완료되었습니다! ✨");
             navigate(`/posts/${postId}`);
@@ -128,13 +144,9 @@ function PostEdit() {
                     type="text"
                     className="post-title"
                     style={{
-                        border: 'none',
-                        outline: 'none',
-                        width: '100%',
-                        background: 'transparent',
-                        fontSize: '2.5rem',
-                        fontWeight: 'bold',
-                        marginBottom: '1rem'
+                        border: 'none', outline: 'none', width: '100%',
+                        background: 'transparent', fontSize: '2.5rem',
+                        fontWeight: 'bold', marginBottom: '1rem'
                     }}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -142,8 +154,7 @@ function PostEdit() {
                 <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0' }}>
                     {[
                         { value: 'COMMUNITY', label: '커뮤니티' },
-                        { value: 'QUESTION',  label: 'Q&A' },
-                        { value: 'INFORMATION', label: '정보공유' },
+                        { value: 'QUESTION', label: 'Q&A' },
                     ].map(({ value, label }) => (
                         <button
                             key={value}
@@ -151,14 +162,13 @@ function PostEdit() {
                             onClick={() => setCategory(value)}
                             className={`sort-btn ${category === value ? 'active' : ''}`}
                         >{label}</button>
-
                     ))}
                 </div>
                 <div style={{ width: '100%', height: '4px', background: '#12b886', marginBottom: '2rem' }}></div>
 
-                {/* 에디터가 그려질 공간입니다. */}
-                <div id="editorjs" className="post-content"></div>
-
+                <div className="editor-wrapper" style={{ position: 'relative', width: '100%', minHeight: '500px', overflow: 'visible' }}>
+                    <div id="editorjs"></div>
+                </div>
                 <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', paddingBottom: '5rem' }}>
                     <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', color: '#868e96', cursor: 'pointer' }}>취소</button>
                     <button className="btn-primary" onClick={handleUpdate}>수정 완료</button>
