@@ -145,7 +145,8 @@ public class PostService {
         Post post = findPost(postId);
         validateWriter(post, member);
 
-        // 연관 댓글, 이미지, 좋야요는 CascadeType.All에 의해 자동으로 삭제
+        post.getPostImages().forEach(image -> deleteFileByUrl(image.getImageUrl()));
+
         postRepository.delete(post);
     }
 
