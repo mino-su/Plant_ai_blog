@@ -184,13 +184,20 @@ export default function MyPage() {
                     }}>
                         {profile.profileImageUrl ? (
                             <img
-                                src={profile.profileImageUrl.startsWith('http')
+                                // 1. URL 뒤에 ?t=시간값을 붙여 브라우저가 항상 새로운 요청으로 인식하게 합니다. (캐시 방지)
+                                src={`${profile.profileImageUrl.startsWith('http')
                                     ? profile.profileImageUrl
-                                    : `${BASE_URL}${profile.profileImageUrl}`}
+                                    : `${BASE_URL}${profile.profileImageUrl}`}?t=${new Date().getTime()}`}
+
                                 alt="profile"
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
+                                // 2. 반드시 이 속성이 있어야 S3에 'Origin' 헤더를 보냅니다.
                                 crossOrigin="anonymous"
+
+                                // 3. 로딩 실패 시 기본 이미지로 교체하는 로직
                                 onError={(e) => {
+                                    // 무한 루프 방지를 위해 onerror 핸들러를 제거합니다.
                                     e.target.onerror = null;
                                     e.target.src = "/default_profile.jpg";
                                 }}
