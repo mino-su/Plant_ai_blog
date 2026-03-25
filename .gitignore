@@ -1394,3 +1394,5 @@ ai-flask/.env
 /postgres_data/base/16384/24623_fsm
 /postgres_data/base/16384/24631_fsm
 /postgres_data/base/16384/24631_vm
+/postgres_data/base/16384/24623_vm
+/postgres_data/pg_wal/000000010000000000000003

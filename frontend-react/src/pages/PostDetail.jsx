@@ -115,7 +115,6 @@ function AnalysisImageBlock({ imageInfo }) {
                                     : `${BASE_URL}${result.resultImgUrl}`}
                                     alt="AI 분석 결과"
                                     style={{ width: '100%', borderRadius: '8px' }}
-                                    crossOrigin="anonymous"
                                 />
                             </div>
                         </div>
@@ -489,7 +488,6 @@ export default function PostDetail() {
                                     objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
                                 }}
                                 onClick={() => handleNicknameClick(post.memberId)}
-                                crossOrigin="anonymous"
                                 onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
                             />
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -638,7 +636,6 @@ export default function PostDetail() {
                                                     objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
                                                 }}
                                                 onClick={() => handleNicknameClick(comment.memberId)}
-                                                crossOrigin="anonymous"
                                                 onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
                                             />
                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
