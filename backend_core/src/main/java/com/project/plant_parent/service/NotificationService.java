@@ -74,6 +74,7 @@ public class NotificationService {
 
         // DB 저장이 성공한 후, 해당 사용자의 '모든' 활성 Emitter에 메시지 전송
         sendToReceiver(receiverId, content, eventName);
+        log.info(">>> 알림 전송 완료 : {} -> {} ", receiverId, eventName);
     }
 
     // 특정 사용자의 '모든' Emitter를 찾아 전송하는 메서드
