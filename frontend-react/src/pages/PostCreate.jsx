@@ -16,6 +16,7 @@ function PostCreate() {
     const [imageIds, setImageIds] = useState([]); // 업로드된 사진들의 ID를 추적
     const [category, setCategory] = useState('COMMUNITY'); // 게시글 카테고리 (기본값은 COMMUNITY)
     const isInitialized = useRef(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
 
@@ -83,9 +84,19 @@ function PostCreate() {
             return;
         }
 
+        if (isSubmitting) return;
+
         try {
+
+            setIsSubmitting(true);
             // 에디터의 모든 데이터를 가져옵니다 (JSON 형태)
             const outputData = await editorInstance.current.save();
+
+            if (outputData.blocks.length === 0) {
+                alert("내용을 입력해주세요.");
+                setIsSubmitting(false);
+                return;
+            }
 
             // 백엔드 PostRequestDto 구조에 맞게 조립
             const payload = {
@@ -97,10 +108,12 @@ function PostCreate() {
 
             await api.post('/api/posts', payload);
             alert("식물 일기가 출간되었습니다! 🌿");
-            navigate('/');
+            navigate('/', { replace: true });
         } catch (err) {
             console.error("저장 실패:", err);
             alert("저장에 실패했습니다.");
+        } finally {
+            setIsSubmitting(false); // 로딩 종료
         }
     };
 

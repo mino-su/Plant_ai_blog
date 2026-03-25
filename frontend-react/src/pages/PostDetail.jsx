@@ -89,7 +89,6 @@ function AnalysisImageBlock({ imageInfo }) {
                     alt="식물 사진"
                     className="analysis-img"
                     style={{ borderRadius: '12px', display: 'block' }}
-                    crossOrigin="anonymous"
                 />
                 {result.status === "SUCCESS" && (
                     <div style={{
@@ -716,7 +715,6 @@ export default function PostDetail() {
                                                                     objectFit: 'cover', cursor: 'pointer', border: '1px solid #dee2e6'
                                                                 }}
                                                                 onClick={() => handleNicknameClick(child.memberId)}
-                                                                crossOrigin="anonymous"
                                                                 onError={(e) => { e.target.onerror = null; e.target.src = "/default_profile.jpg"; }}
                                                             />
                                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
