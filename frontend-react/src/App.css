@@ -1406,3 +1406,133 @@ button {
     flex-direction: column;
     align-items: flex-start; /* 사진을 왼쪽 정렬하여 툴바와 가깝게 배치 */
 }
+
+/* =============================================
+   모바일 반응형 헤더 (Mobile Responsive Header)
+   ============================================= */
+
+/* ── 태블릿/폰 (768px 이하) ── */
+@media (max-width: 768px) {
+
+    /* 헤더 높이 자동(2행 수용) */
+    .site-header {
+        height: auto;
+        min-height: 4rem;
+    }
+
+    /* flex-wrap으로 카테고리 네비를 2번째 줄로 내림 */
+    .site-header .container {
+        flex-wrap: wrap;
+        padding: 0.5rem 1rem 0;
+        align-items: center;
+        row-gap: 0;
+    }
+
+    /* 로고: 1행 왼쪽 */
+    .header-logo {
+        font-size: 1.2rem;
+        flex: 0 0 auto;
+    }
+
+    /* header-right: 1행 오른쪽 */
+    .header-right {
+        flex: 0 0 auto;
+        gap: 10px;
+    }
+
+    /* 카테고리 네비: 2번째 줄 전체 너비 */
+    .category-nav {
+        order: 10;           /* 로고·header-right 보다 뒤로 */
+        width: calc(100% + 2rem);   /* container 양쪽 padding 상쇄 */
+        margin: 0 -1rem;
+        border-top: 1px solid var(--border-color);
+        border-bottom: none;
+        position: static;   /* 헤더 안에 포함됐으므로 sticky 해제 */
+        background: transparent;
+        backdrop-filter: none;
+    }
+
+    .category-nav .container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;     /* Firefox */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .category-nav .container::-webkit-scrollbar {
+        display: none;             /* Chrome/Safari */
+    }
+
+    .cat-btn {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    /* 새 글 작성 버튼 축소 */
+    .header-right .btn-primary {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    /* 알림 드롭다운 - 화면 밖 이탈 방지 */
+    .notif-dropdown {
+        right: 0;
+        left: auto;
+        width: min(320px, calc(100vw - 1.5rem));
+    }
+
+    /* 드롭다운 메뉴도 화면 안에 */
+    .dropdown-menu {
+        right: 0;
+        width: 10rem;
+    }
+}
+
+/* ── 소형 폰 (480px 이하) ── */
+@media (max-width: 480px) {
+
+    .site-header .container {
+        padding: 0.5rem 0.75rem 0;
+    }
+
+    .header-logo {
+        font-size: 1rem;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    /* "새 글 작성" → 초소형에서 글자 숨기고 "+" 아이콘으로 대체 */
+    .header-right .btn-primary {
+        font-size: 0;        /* 텍스트 숨김 */
+        padding: 0.45rem 0.6rem;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+    }
+    .header-right .btn-primary::before {
+        content: "+";
+        font-size: 1.2rem;
+        line-height: 1;
+        display: block;
+    }
+
+    /* 프로필 아바타 살짝 축소 */
+    .profile-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* 알림 드롭다운 너비 최적화 */
+    .notif-dropdown {
+        width: min(280px, calc(100vw - 1.2rem));
+    }
+
+    .category-nav {
+        width: calc(100% + 1.5rem);
+        margin: 0 -0.75rem;
+    }
+}
