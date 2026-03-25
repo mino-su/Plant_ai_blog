@@ -108,7 +108,8 @@ function PostCreate() {
 
             await api.post('/api/posts', payload);
             alert("식물 일기가 출간되었습니다! 🌿");
-            navigate('/', { replace: true });
+            window.location.replace('/');
+
         } catch (err) {
             console.error("저장 실패:", err);
             alert("저장에 실패했습니다.");
