@@ -1536,3 +1536,57 @@ button {
         margin: 0 -0.75rem;
     }
 }
+
+/* ============================================
+   20. 샘플 로그인 팝업 - 모바일 최적화 수정
+   ============================================ */
+
+/* ... (기본 스타일은 유지) ... */
+
+/* 모바일 대응 (480px 이하) */
+@media (max-width: 480px) {
+    .sample-login-popup {
+        /* 위치 조정: 우측 하단에 작게 배치 */
+        top: auto;
+        bottom: 1.5rem;
+        right: 1rem;
+
+        /* 크기 대폭 축소 */
+        width: 210px; /* 전체 너비 대신 고정 너비 사용 */
+        padding: 0.7rem 0.8rem;
+        border-radius: 10px;
+    }
+
+    .sample-popup-header {
+        margin-bottom: 0.2rem;
+    }
+
+    .sample-popup-title {
+        font-size: 0.85rem; /* 폰트 크기 축소 */
+    }
+
+    .sample-popup-desc {
+        display: none; /* 모바일에서는 설명 생략 (공간 확보) */
+    }
+
+    .sample-popup-row {
+        gap: 0.3rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .sample-popup-label {
+        font-size: 0.65rem;
+        width: 40px; /* 라벨 폭 축소 */
+    }
+
+    .sample-popup-value {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.3rem;
+    }
+
+    .sample-popup-copy-btn {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.65rem;
+        min-width: 32px;
+    }
+}
