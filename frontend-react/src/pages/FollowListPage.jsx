@@ -40,7 +40,6 @@ const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFo
                                             alt={user.username}
                                             className="profile-img"
                                             style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }}
-                                            crossOrigin="anonymous" // CORS 이슈 방지
                                             onError={(e) => {
                                                 e.target.onerror = null;
                                                 e.target.src = "/default_profile.jpg"; // 에러 시 기본 이미지
