@@ -31,6 +31,7 @@
 
 ### ✅ 게시판 상세 화면 ###
 
+![Alt Text](uploads/treewithme_detect_upload.gif)
 
 ### ✅ 마이 페이지 화면 ###
 
