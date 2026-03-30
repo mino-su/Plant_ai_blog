@@ -4,7 +4,7 @@ import '../FollowListPage.css';
 
 
 
-const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFollowToggle }) => {
+const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFollowToggle, myId }) => {
     const navigate = useNavigate();
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
     // [작동 원리] 페이지(모달)가 열릴 때 로그인 상태를 체크하는 로직입니다.
@@ -17,6 +17,11 @@ const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFo
     }, [isOpen, isLoggedIn, onClose, navigate]);
 
     if (!isOpen) return null;
+
+    const handleUserClick = (targetMemberId) => {
+        onClose();
+        navigate(`/members/${targetMemberId}/mypage`);
+    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -31,7 +36,10 @@ const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFo
                     {userList && userList.length > 0 ? (
                         userList.map((user) => (
                             <div key={user.memberId} className="user-item">
-                                <div className="user-info">
+                                <div className="user-info"
+                                    onClick={()=> handleUserClick(user.memberId)}
+                                    style={{cursor: 'pointer'}}
+                                >
                                     {user.profileImageUrl ? (
                                         <img
                                             src={user.profileImageUrl.startsWith('http')
@@ -40,6 +48,7 @@ const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFo
                                             alt={user.username}
                                             className="profile-img"
                                             style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }}
+
                                             onError={(e) => {
                                                 e.target.onerror = null;
                                                 e.target.src = "/default_profile.jpg"; // 에러 시 기본 이미지
@@ -50,16 +59,19 @@ const FollowListPage = ({ isOpen, onClose, userList = [], type, isLoggedIn, onFo
                                         <div className="profile-img-placeholder">🌿</div>
                                     )}
                                     {/* DTO의 username 필드를 표시합니다. */}
-                                    <span className="username">{user.username}</span>
+                                    <span className="username" >{user.username}</span>
+
                                 </div>
 
                                 {/* [핵심 로직] isFollowing 값에 따라 버튼의 텍스트와 스타일을 다르게 보여줍니다. */}
-                                <button
-                                    className={`follow-btn ${user.isFollowing ? 'unfollow' : 'follow'}`}
-                                    onClick={() => onFollowToggle(user.memberId, user.isFollowing)}
-                                >
-                                    {user.isFollowing ? '언팔로우' : '팔로우'}
-                                </button>
+                                {Number(user.memberId) !== Number(myId) &&(
+                                    <button
+                                        className={`follow-btn ${user.isFollowing ? 'unfollow' : 'follow'}`}
+                                        onClick={() => onFollowToggle(user.memberId, user.isFollowing)}
+                                    >
+                                        {user.isFollowing ? '언팔로우' : '팔로우'}
+                                    </button>
+                                )}
                             </div>
                         ))
                     ) : (

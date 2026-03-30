@@ -115,7 +115,27 @@ export default function MyPage() {
         try {
             const endpoint = type === 'follower' ? 'followers' : 'followings';
             const res = await api.get(`/api/members/${memberId}/${endpoint}`);
-            setModalUserList(res.data); // 서버에서 받은 FollowListResponseDto 리스트 저장
+            let users = res.data;
+
+            if (isMe && type === 'following') {
+                // 자신의 팔로잉 목록 → 모두 내가 팔로우하는 사람이므로 isFollowing: true
+                users = users.map(user => ({ ...user, isFollowing: true }));
+            } else if (isLoggedIn) {
+                // 타인 페이지이거나 팔로워 목록 → 내 팔로잉 목록과 교차 검증
+                try {
+                    const myFollowingsRes = await api.get(`/api/members/${myId}/followings`);
+                    const myFollowingIds = new Set(myFollowingsRes.data.map(u => u.memberId));
+                    users = users.map(user => ({
+                        ...user,
+                        isFollowing: myFollowingIds.has(user.memberId)
+                    }));
+                } catch (e) {
+                    // 교차 검증 실패 시 서버 응답값 그대로 사용
+                    console.warn("내 팔로잉 목록 조회 실패:", e);
+                }
+            }
+
+            setModalUserList(users);
             setShowModal(true);
         } catch (err) {
             console.error("목록을 불러오는데 실패했습니다.", err);
@@ -273,6 +293,7 @@ export default function MyPage() {
                     type={modalType}
                     isLoggedIn={isLoggedIn}
                     onFollowToggle={handleFollowToggleInModal}
+                    myId={myId}
                 />
 
                 <div className="mypage-tab-bar" style={{
