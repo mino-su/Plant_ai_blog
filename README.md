@@ -1,4 +1,7 @@
-# 🪴 Tree With Me #
+# 🪴 TreeWithMe #
+## AI 진단부터 데이터 검색까지, 사진 한 장으로 시작하는 스마트한 식물 생활! ##
+
+![treewithme2](https://github.com/user-attachments/assets/1e0529d2-4be1-41ab-b0af-72691da20e12)
 
 <h2> 📱 프로젝트 소개 </h2>
 <h4> 🏷️ 프로젝트 명 : 트리 윗 미 </h4>
@@ -52,14 +55,52 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 <h2> 💌 서비스 화면 및 기능 소개 </h2>
 
 ### ✅ 메인 페이지 화면 ###
+- 커뮤니티, Q&A 카테고리
+> 최신순, 좋아요 순으로 정렬해서 게시글을 확인 할 수 있다.
+
+
+![Alt Text](readme_assets/category.gif)
+
+
+
+- 알림 기능
+> 게시글 좋아요, 게시글 댓글, 팔로우 시 알림을 확인 할 수 있다.
+
+
+![Alt Text](readme_assets/comment.gif)
+
+
+
+- 검색 기능
+> 게시글 제목, 내용, 작성자, 게시글 내 이미지의 식물 종류 및 질병 결과를 검색으로 확인 할 수 있다.
+
+
+![Alt Text](readme_assets/search.gif)
+
+
 
 ### ✅ 게시판 상세 화면 ###
+- AI 식물 종류, 질병 추론 기능
+> 식물 사진을 올리고 게시글을 작성하면 실시간으로 식물 정보 및 질병을 추론해서 확인 할 수 있다.
+> 
+> 자세한 결과 보기를 누르면 ML모델이 어떻게 탐지 했는지 확인 할 수 있다.
 
-![Alt Text](uploads/treewithme_detect_upload.gif)
+![Alt Text](readme_assets/detect.gif)
 
 ### ✅ 마이 페이지 화면 ###
+- 팔로우 기능
+> 팔로우, 팔로잉 한 사용자들을 한번에 확인 할 수 있다.
+
+- 좋아요한 페이지 모아보기
+> 해당 사용자가 좋아요 한 게시판을 한번에 확인 할 수 있다.
+
+![Alt Text](readme_assets/mypage.gif)
 
 ### ✅ 식물 도감 화면 ###
+- 농사로 식물 도감 기능
+> 농촌진흥청 농사로에서 제공하는 실내 식물 DB를 불러와서 자세한 내용을 확인 할 수 있다.
+
+![Alt Text](readme_assets/plantDictionary.gif)
 
 ## 📜  프로젝트 산출물 ##
 
@@ -72,22 +113,53 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 
 
 
-## ⚒️ Tech Stack ##
-### 🔵 BackEnd & DB
--  JAVA 17 / Spring Boot 3.x
--  Spring Data JPA : Hibernate 기반 데이터 영속성 관리 및 Fetch Join을 통한 성능 최적화
--  Spring Security & JWT : Stateless 인증 체계 구축
--  Redis : JWT 블랙리스트 관리를 통한 보안 강화
--  PostgreSQL 15
+## ⚒️ 기술 스택
 
-### 🟣 AI/ ML Inference
-- Python / Flask : 경량 추론 서버 운영
-- YOLO v8/v11 : 식물 종류 및 병해 실시간 객체 탐지 모델 탑재
+---
 
-### 🟢 Frontend
- - React 19 / vite : 컴포넌트 기반 UI 설계
- - Editor.js : 블록형 에디터를 통한 구조화된 콘텐츠 관리 및 이미지/글 자유 배치
- - Axios : 인터셉터를 활용한 JWT 자동 인증 및 전역 에러 핸들링
+### FE
+
+![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+---
+
+### BE
+
+![Java](https://img.shields.io/badge/Java_21-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![QueryDSL](https://img.shields.io/badge/QueryDSL-0769AD?style=for-the-badge&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+---
+
+### AI
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![YOLO](https://img.shields.io/badge/YOLO_v8%2Fv11-00FFFF?style=for-the-badge&logoColor=black)
+
+---
+
+### DB
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+---
+
+### Dev-Ops
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![Amazon EC2](https://img.shields.io/badge/Amazon_EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
+![Amazon S3](https://img.shields.io/badge/Amazon_S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
+![NGINX](https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white)
 
 
 ## 📖 API 명세서
@@ -177,7 +249,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 </details>
 
 <details markdown="1">
-  <summary> <h3> 📊 공공데이터 API </h3> </summary>
+  <summary> <h4> 📊 공공데이터 API </h4> </summary>
   <ul>
    <img width="719" height="250" alt="스크린샷 2026-03-30 오후 1 58 53" src="https://github.com/user-attachments/assets/f6d34ddc-2a68-4350-b24e-7a5228ec326b" />
    <img width="674" height="521" alt="스크린샷 2026-03-30 오후 1 59 01" src="https://github.com/user-attachments/assets/eea244ed-242c-4cc6-bb3c-373c79ec6a1a" />
@@ -186,7 +258,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 </details>
 
 <details markdown="1">
-  <summary> <h3> 🤖 Flask AI 서버 API </h3> </summary>
+  <summary> <h4> 🤖 Flask AI 서버 API </h4> </summary>
   <ul>
    <img width="728" height="282" alt="스크린샷 2026-03-30 오후 1 59 14" src="https://github.com/user-attachments/assets/79c1b50d-6edf-4f0c-b39b-bc9ea02b2a85" />
    <img width="730" height="242" alt="스크린샷 2026-03-30 오후 1 59 24" src="https://github.com/user-attachments/assets/689f742c-9332-436a-b8b4-7ce0e10c227c" />
