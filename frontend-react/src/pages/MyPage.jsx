@@ -269,18 +269,18 @@ export default function MyPage() {
                         <div className="mypage-stats">
                             {/* [수정 포인트] Link를 div/span으로 바꾸고 onClick 연결 */}
                             <div
-                                onClick={() => openFollowModal('follower')}
-                                className="stat-item"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <span>팔로워</span> <b>{data.followerCount}</b>
-                            </div>
-                            <div
                                 onClick={() => openFollowModal('following')}
                                 className="stat-item"
                                 style={{ cursor: 'pointer' }}
                             >
                                 <span>팔로잉</span> <b>{data.followingCount}</b>
+                            </div>
+                            <div
+                                onClick={() => openFollowModal('follower')}
+                                className="stat-item"
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <span>팔로워</span> <b>{data.followerCount}</b>
                             </div>
                         </div>
                     </div>
