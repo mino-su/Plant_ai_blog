@@ -1,7 +1,7 @@
 # 🪴 TreeWithMe #
 ## AI 진단부터 데이터 검색까지, 사진 한 장으로 시작하는 스마트한 식물 생활! ##
 
-![treewithme2](https://github.com/user-attachments/assets/1e0529d2-4be1-41ab-b0af-72691da20e12)
+<img src="https://github.com/user-attachments/assets/1e0529d2-4be1-41ab-b0af-72691da20e12" width="600" />
 
 <h2> 📱 프로젝트 소개 </h2>
 <h4> 🏷️ 프로젝트 명 : 트리 윗 미 </h4>
@@ -40,7 +40,7 @@
 
 ### 🛡️ 로그인 보안
 
-Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT의 보안 취약점을 보완했습니다.
+로그아웃된 토큰의 재사용을 원천 차단하여 JWT의 보안 취약점을 보완했습니다.
 
 
 ---------------------------------------------------
@@ -58,8 +58,8 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 - 커뮤니티, Q&A 카테고리
 > 최신순, 좋아요 순으로 정렬해서 게시글을 확인 할 수 있습니다.
 
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/category_c.gif" width="600" />
 
-![Alt Text](readme_assets/category_c.gif)
 
 
 --------------------------------------------------------
@@ -68,7 +68,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 > 게시글 좋아요, 게시글 댓글, 팔로우 시 알림을 확인 할 수 있습니다.
 
 
-![Alt Text](readme_assets/comment_c.gif)
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/comment_c.gif" width="600" />
 
 
 
@@ -79,7 +79,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 > 게시글 제목, 내용, 작성자, 게시글 내 이미지의 식물 종류 및 질병 결과를 검색으로 확인 할 수 있습니다.
 
 
-![Alt Text](readme_assets/search_c.gif)
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/search_c.gif" width="600" />
 
 --------------------------------------------------------
 
@@ -91,8 +91,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 > 
 > 자세한 결과 보기를 누르면 ML모델이 어떻게 탐지 했는지 확인 할 수 있습니다.
 
-![Alt Text](readme_assets/detect_c.gif)
-
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/detect_c.gif" width="300"/>
 
 --------------------------------------------------------
 
@@ -103,12 +102,13 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 - 좋아요한 페이지 모아보기
 > 해당 사용자가 좋아요 한 게시판을 한번에 확인 할 수 있습니다.
 
-![Alt Text](readme_assets/mypage_c.gif)
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/mypage_c.gif" width="600"/>
+
 
 - 내 정보 수정
 > 해당 사용자의 프로필 사진, 닉네임, 소개글, url을 수정할 수 있습니다.
 
-![Alt Text](readme_assets/setting_c.gif)
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/setting_c.gif" width="600"/>
 
 --------------------------------------------------------
 
@@ -116,7 +116,7 @@ Redis Blacklist: 로그아웃된 토큰의 재사용을 원천 차단하여 JWT�
 - 농사로 식물 도감 기능
 > 농촌진흥청 농사로에서 제공하는 실내 식물 DB를 불러와서 자세한 내용을 확인 할 수 있습니다.
 
-![Alt Text](readme_assets/plantDictionary_c.gif)
+<img src="https://github.com/mino-su/Plant_ai_blog/blob/main/readme_assets/plantDictionary_c.gif" width="600"/>
 
 
 --------------------------------------------------------
