@@ -127,7 +127,7 @@ function AnalysisImageBlock({ imageInfo }) {
                         <div className="loading-container" style={{ textAlign: 'center', padding: '2rem' }}>
                             <div className="spinner"></div> {/* CSS로 애니메이션 추가 필요 */}
                             <p style={{ color: '#12b886', fontWeight: 'bold', marginTop: '1rem' }}>
-                                Alleaf AI가 잎사귀를 정밀 분석 중입니다...
+                                TreeWithMe AI가 잎사귀를 정밀 분석 중입니다...
                             </p>
                         </div>
                     ) : result.status === "SUCCESS" ? (
