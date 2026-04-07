@@ -13,6 +13,10 @@ spring:
         show_sql: false
         format_sql: false
 
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: 6379
 
   sql:
     init:
