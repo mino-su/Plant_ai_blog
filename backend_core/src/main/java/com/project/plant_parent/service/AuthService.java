@@ -113,16 +113,17 @@ public class AuthService {
     public void logout(String accessToken) {
         // 1. accessToken에서 authentication 정보 가져오기
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-        // 2. refreshRepository에서 refreshToken 삭제
-        if(refreshTokenRepository.existsById(authentication.getName())){
-            refreshTokenRepository.deleteById(authentication.getName());
 
-        }
+
+        // 2. refreshRepository에서 refreshToken 삭제
+        refreshTokenRepository.findById(authentication.getName()).ifPresent(token -> {
+            refreshTokenRepository.delete(token);
+            log.info(">>> Redis에서 RefreshToken 삭제 완료: {}", authentication.getName());
+        });
+
         // 3. AccessToken BlackList 처리
         Long expiration = jwtTokenProvider.getExpiration(accessToken);
-
         // (Key: 토큰 값, value: logout, TTL: 남은시간)
-        // 토큰이 만료 될때까지만 저장
         redisTemplate.opsForValue()
                 .set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
 
