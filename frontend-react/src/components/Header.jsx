@@ -125,13 +125,22 @@ const Header = () => {
         setShowNotifications(false);
     };
 
-    const onLogoutClick = () => {
-        handleLogout();
-        setShowMenu(false);
-        setShowNotifications(false);
-        setProfile(null);
-        alert("로그아웃 되었습니다.");
-        navigate('/');
+    const onLogoutClick = async () => {
+        try {
+            await api.post('/auth/logout');
+
+            // 서버 처리가 끝나면 로컬 상태 정리
+            handleLogout();
+            setShowMenu(false);
+            setShowNotifications(false);
+            setProfile(null);
+            alert("로그아웃 되었습니다.");
+            navigate('/');
+        } catch (error) {
+            console.error("로그아웃 중 오류 발생:", error);
+            handleLogout();
+            navigate('/');
+        }
     };
 
     const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || "";
