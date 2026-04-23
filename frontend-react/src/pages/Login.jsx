@@ -48,7 +48,7 @@ function Login() {
             <div className="auth-box">
                 {/* 로고 클릭 시 홈으로 이동 */}
                 <Link to="/" style={{ textDecoration: 'none', textAlign: 'center', marginBottom: '1rem' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#12b886' }}>Plant.log</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#12b886' }}>TreeWithMe</span>
                 </Link>
 
                 <h2 className="auth-title">로그인</h2>
